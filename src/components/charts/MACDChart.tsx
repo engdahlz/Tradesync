@@ -26,24 +26,24 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
 
         const chart = createChart(chartContainerRef.current, {
             layout: {
-                background: { color: '#0f172a' },
-                textColor: '#64748b',
+                background: { color: '#ffffff' },
+                textColor: '#202124',
             },
             grid: {
-                vertLines: { color: '#1e293b' },
-                horzLines: { color: '#1e293b' },
+                vertLines: { color: '#f1f3f4' },
+                horzLines: { color: '#f1f3f4' },
             },
             width: chartContainerRef.current.clientWidth,
             height: chartContainerRef.current.clientHeight,
             rightPriceScale: {
-                borderColor: '#1e293b',
+                borderColor: '#dadce0',
                 scaleMargins: {
                     top: 0.2,
                     bottom: 0.2,
                 },
             },
             timeScale: {
-                borderColor: '#1e293b',
+                borderColor: '#dadce0',
                 visible: false,
             },
             crosshair: {
@@ -65,7 +65,7 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
 
         // MACD Line
         const macdLine = chart.addLineSeries({
-            color: '#3b82f6',
+            color: '#1a73e8', // Google Blue
             lineWidth: 2,
             priceLineVisible: false,
         })
@@ -73,7 +73,7 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
 
         // Signal Line
         const signalLine = chart.addLineSeries({
-            color: '#f97316',
+            color: '#fbbc04', // Google Yellow
             lineWidth: 2,
             priceLineVisible: false,
         })
@@ -81,7 +81,7 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
 
         // Zero line
         const zeroLine = chart.addLineSeries({
-            color: '#475569',
+            color: '#5f6368', // Muted foreground
             lineWidth: 1,
             lineStyle: 2,
             priceLineVisible: false,
@@ -113,7 +113,7 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
                 data.map((d) => ({
                     time: d.time,
                     value: d.histogram,
-                    color: d.histogram >= 0 ? '#22c55e80' : '#ef444480',
+                    color: d.histogram >= 0 ? 'rgba(19, 115, 51, 0.5)' : 'rgba(165, 14, 14, 0.5)',
                 }))
             )
             macdSeriesRef.current.setData(data.map((d) => ({ time: d.time, value: d.macd })))
@@ -127,7 +127,7 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
 
     if (data.length === 0) {
         return (
-            <div className="w-full h-full flex items-center justify-center text-xs text-slate-500 bg-slate-900/50 rounded">
+            <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground bg-secondary/50 rounded">
                 No Data
             </div>
         )

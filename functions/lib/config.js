@@ -26,5 +26,5 @@ exports.MODEL_FLASH = 'googleai/gemini-2.0-flash-exp'; // Using 2.0 Flash as 3.0
 exports.MODEL_PRO = 'googleai/gemini-2.0-pro-exp';
 // Default exports for backward compatibility (during migration)
 exports.MODEL_NAME = exports.MODEL_FLASH;
-exports.EMBEDDING_MODEL = 'googleai/gemini-embedding-001';
+exports.EMBEDDING_MODEL = 'googleai/text-embedding-004';
 //# sourceMappingURL=config.js.map

@@ -78,14 +78,14 @@ export default function MainChart({ symbol }: MainChartProps) {
                 signals.push({
                     time: data[i].time as Time,
                     text: 'OVERSOLD',
-                    color: '#22c55e',
+                    color: 'rgb(19, 115, 51)', // Use TS Green from index.css logic
                     position: 'belowBar',
                 })
             } else if (rsi > 70 && !signals.some(s => Math.abs((s.time as number) - data[i].time) < 3600 * 4)) {
                 signals.push({
                     time: data[i].time as Time,
                     text: 'OVERBOUGHT',
-                    color: '#ef4444',
+                    color: 'rgb(165, 14, 14)', // Use TS Red from index.css logic
                     position: 'aboveBar',
                 })
             }
@@ -106,11 +106,11 @@ export default function MainChart({ symbol }: MainChartProps) {
         const chart = createChart(chartContainerRef.current, {
             layout: {
                 background: { color: '#ffffff' },
-                textColor: '#333333',
+                textColor: '#202124', // --foreground
             },
             grid: {
-                vertLines: { color: '#f0f0f0' },
-                horzLines: { color: '#f0f0f0' },
+                vertLines: { color: '#f1f3f4' }, // --secondary
+                horzLines: { color: '#f1f3f4' },
             },
             width: chartContainerRef.current.clientWidth,
             height: chartContainerRef.current.clientHeight,

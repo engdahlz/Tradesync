@@ -12,6 +12,7 @@ const config_js_1 = require("../config.js");
 const InputSchema = genkit_1.z.object({
     symbol: genkit_1.z.string(),
     interval: genkit_1.z.string().default('4h'),
+    model: genkit_1.z.string().optional(),
     marketData: genkit_1.z.object({
         price: genkit_1.z.number(),
         rsi: genkit_1.z.number(),
@@ -37,7 +38,7 @@ exports.suggestStrategyFlow = genkit_js_1.ai.defineFlow({
     inputSchema: InputSchema,
     outputSchema: OutputSchema,
 }, async (input) => {
-    const { symbol, interval, marketData, prices } = input;
+    const { symbol, interval, marketData, prices, model } = input;
     // Construct prompt for the "Master Strategy" engine
     let prompt = `You are the Master Strategy Engine for TradeSync. 
     Analyze the following for ${symbol} on the ${interval} timeframe.`;
@@ -67,7 +68,7 @@ exports.suggestStrategyFlow = genkit_js_1.ai.defineFlow({
     Suggest stop-loss and take-profit levels if applicable.
     `;
     const result = await genkit_js_1.ai.generate({
-        model: config_js_1.MODEL_PRO,
+        model: model || config_js_1.MODEL_PRO,
         prompt: prompt,
         config: {
             temperature: 0.2, // Low temperature for consistent strategy

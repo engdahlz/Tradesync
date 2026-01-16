@@ -6,11 +6,12 @@
 import type { Request, Response } from 'express';
 import { ai } from '../genkit.js';
 import { z } from 'genkit';
-import { MODEL_PRO } from '../config.js';
+import { MODEL_PRO, MODEL_FLASH } from '../config.js';
 
 const InputSchema = z.object({
     symbol: z.string(),
     interval: z.string().default('4h'),
+    model: z.string().optional(),
     marketData: z.object({
         price: z.number(),
         rsi: z.number(),
@@ -38,7 +39,7 @@ export const suggestStrategyFlow = ai.defineFlow({
     inputSchema: InputSchema,
     outputSchema: OutputSchema,
 }, async (input) => {
-    const { symbol, interval, marketData, prices } = input;
+    const { symbol, interval, marketData, prices, model } = input;
 
     // Construct prompt for the "Master Strategy" engine
     let prompt = `You are the Master Strategy Engine for TradeSync. 
@@ -70,7 +71,7 @@ export const suggestStrategyFlow = ai.defineFlow({
     `;
 
     const result = await ai.generate({
-        model: MODEL_PRO,
+        model: model || MODEL_PRO,
         prompt: prompt,
         config: {
             temperature: 0.2, // Low temperature for consistent strategy

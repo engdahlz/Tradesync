@@ -2,6 +2,7 @@
 import { suggestStrategyFlow } from './suggestStrategy.js';
 import { sendTopicNotification } from '../utils/notifications.js';
 import { z } from 'zod';
+import { MODEL_FLASH } from '../config.js';
 
 const CoinCapHistoryItemSchema = z.object({
     priceUsd: z.string(),
@@ -81,11 +82,12 @@ export async function runMarketScan() {
         try {
             const prices = await fetchCoinCapPrices(asset);
 
-            // Run AI Strategy Logic
+            // Run AI Strategy Logic (Using Flash for high-volume scanner)
             const analysis = await suggestStrategyFlow({
                 symbol: asset,
                 prices: prices,
-                interval: '1h'
+                interval: '1h',
+                model: MODEL_FLASH
             });
 
             // Log result

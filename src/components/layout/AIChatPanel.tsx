@@ -85,48 +85,55 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-y-0 right-0 w-[400px] bg-background border-l border-border shadow-xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
+        <div className="fixed inset-y-0 right-0 w-full sm:w-[400px] bg-background border-l border-border shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
             {/* Header */}
-            <div className="h-16 border-b border-border flex items-center justify-between px-4 bg-background">
+            <div className="h-16 border-b border-border flex items-center justify-between px-4 bg-background shrink-0">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                         <Sparkles className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                        <h3 className="font-medium text-foreground">Gemini Assistant</h3>
-                        <p className="text-xs text-muted-foreground">Powered by Google AI</p>
+                        <h3 className="font-medium text-sm sm:text-base text-foreground">Gemini Assistant</h3>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">Powered by Google AI</p>
                     </div>
                 </div>
-                <button onClick={onClose} className="p-2 hover:bg-secondary rounded-full text-muted-foreground">
+                <button 
+                    onClick={onClose} 
+                    className="p-2 hover:bg-secondary rounded-full text-muted-foreground transition-colors"
+                    aria-label="Close chat"
+                >
                     <X className="w-5 h-5" />
                 </button>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-secondary/30">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30">
                 {messages.map((msg) => (
                     <div
                         key={msg.id}
                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
-                            className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === 'user'
-                                ? 'bg-primary text-primary-foreground rounded-tr-none'
+                            className={`max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === 'user'
+                                ? 'bg-primary text-primary-foreground rounded-tr-none shadow-sm'
                                 : 'bg-card border border-border text-foreground rounded-tl-none shadow-sm'
                                 }`}
                         >
-                            <div className="prose prose-sm max-w-none dark:prose-invert prose-p:text-foreground prose-headings:text-foreground prose-strong:text-foreground">
+                            <div className="prose prose-sm max-w-none dark:prose-invert prose-p:text-inherit prose-headings:text-inherit prose-strong:text-inherit prose-code:text-primary-foreground/90">
                                 <ReactMarkdown>
                                     {msg.content}
                                 </ReactMarkdown>
                             </div>
 
                             {msg.sources && msg.sources.length > 0 && (
-                                <div className="mt-3 pt-3 border-t border-border/50">
-                                    <p className="text-xs font-semibold mb-1 opacity-70">Sources:</p>
-                                    <ul className="text-xs space-y-1 opacity-70">
+                                <div className={`mt-3 pt-3 border-t ${msg.role === 'user' ? 'border-primary-foreground/20' : 'border-border/50'}`}>
+                                    <p className="text-[10px] font-bold mb-1 opacity-80 uppercase tracking-wider">Sources</p>
+                                    <ul className="text-xs space-y-1 opacity-80">
                                         {msg.sources.map((s, i) => (
-                                            <li key={i}>• {s.title}</li>
+                                            <li key={i} className="flex gap-1.5 items-start">
+                                                <span className="mt-1 w-1 h-1 rounded-full bg-current shrink-0" />
+                                                <span>{s.title}</span>
+                                            </li>
                                         ))}
                                     </ul>
                                 </div>
@@ -136,9 +143,9 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
                 ))}
                 {isLoading && (
                     <div className="flex justify-start">
-                        <div className="bg-card border border-border rounded-2xl rounded-tl-none px-4 py-3 shadow-sm flex items-center gap-2">
+                        <div className="bg-card border border-border rounded-2xl rounded-tl-none px-4 py-3 shadow-sm flex items-center gap-3">
                             <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                            <span className="text-xs text-muted-foreground">Analyzing market data...</span>
+                            <span className="text-xs text-muted-foreground">Thinking...</span>
                         </div>
                     </div>
                 )}
@@ -146,19 +153,21 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t border-border bg-background">
-                <form onSubmit={handleSend} className="relative">
+            <div className="p-4 border-t border-border bg-background shrink-0">
+                <form onSubmit={handleSend} className="relative flex items-center gap-2">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder="Ask about stocks, crypto, or analysis..."
-                        className="w-full pl-4 pr-12 py-3 bg-secondary rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all border border-transparent focus:border-primary/20"
+                        placeholder="Ask Gemini anything..."
+                        className="flex-1 pl-4 pr-12 py-2.5 bg-secondary border border-transparent rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-background focus:border-primary/30 transition-all"
+                        aria-label="Chat input"
                     />
                     <button
                         type="submit"
                         disabled={!input.trim() || isLoading}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-primary text-primary-foreground rounded-full hover:shadow-md disabled:opacity-50 disabled:shadow-none transition-all"
+                        className="absolute right-1.5 p-2 bg-primary text-primary-foreground rounded-full hover:shadow-lg disabled:opacity-50 disabled:shadow-none transition-all"
+                        aria-label="Send message"
                     >
                         <Send className="w-4 h-4" />
                     </button>

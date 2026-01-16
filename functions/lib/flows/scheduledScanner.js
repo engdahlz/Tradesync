@@ -4,6 +4,7 @@ exports.runMarketScan = runMarketScan;
 const suggestStrategy_js_1 = require("./suggestStrategy.js");
 const notifications_js_1 = require("../utils/notifications.js");
 const zod_1 = require("zod");
+const config_js_1 = require("../config.js");
 const CoinCapHistoryItemSchema = zod_1.z.object({
     priceUsd: zod_1.z.string(),
     time: zod_1.z.number(),
@@ -69,11 +70,12 @@ async function runMarketScan() {
     for (const asset of assets) {
         try {
             const prices = await fetchCoinCapPrices(asset);
-            // Run AI Strategy Logic
+            // Run AI Strategy Logic (Using Flash for high-volume scanner)
             const analysis = await (0, suggestStrategy_js_1.suggestStrategyFlow)({
                 symbol: asset,
                 prices: prices,
-                interval: '1h'
+                interval: '1h',
+                model: config_js_1.MODEL_FLASH
             });
             // Log result
             const confidence = analysis.confidence;

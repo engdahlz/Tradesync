@@ -5,7 +5,7 @@
  */
 
 import type { Request, Response } from 'express';
-import { MODEL_NAME } from '../config.js';
+import { MODEL_FLASH } from '../config.js';
 import { ai } from '../genkit.js';
 import { z } from 'genkit';
 
@@ -46,7 +46,7 @@ export const analyzeNewsFlow = ai.defineFlow({
 
     try {
         const result = await ai.generate({
-            model: MODEL_NAME,
+            model: MODEL_FLASH,
             prompt: prompt,
             output: { schema: OutputSchema }
         });

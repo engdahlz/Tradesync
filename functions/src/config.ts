@@ -28,4 +28,4 @@ export const MODEL_PRO = 'googleai/gemini-2.0-pro-exp';
 
 // Default exports for backward compatibility (during migration)
 export const MODEL_NAME = MODEL_FLASH; 
-export const EMBEDDING_MODEL = 'googleai/gemini-embedding-001';
+export const EMBEDDING_MODEL = 'googleai/text-embedding-004';

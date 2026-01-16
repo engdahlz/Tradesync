@@ -18,24 +18,24 @@ export default function RSIChart({ data = [] }: RSIChartProps) {
         // Create chart with synchronized TimeScale styling
         const chart = createChart(chartContainerRef.current, {
             layout: {
-                background: { color: '#0f172a' },
-                textColor: '#64748b',
+                background: { color: '#ffffff' },
+                textColor: '#202124',
             },
             grid: {
-                vertLines: { color: '#1e293b' },
-                horzLines: { color: '#1e293b' },
+                vertLines: { color: '#f1f3f4' },
+                horzLines: { color: '#f1f3f4' },
             },
             width: chartContainerRef.current.clientWidth,
             height: chartContainerRef.current.clientHeight,
             rightPriceScale: {
-                borderColor: '#1e293b',
+                borderColor: '#dadce0',
                 scaleMargins: {
                     top: 0.1,
                     bottom: 0.1,
                 },
             },
             timeScale: {
-                borderColor: '#1e293b',
+                borderColor: '#dadce0',
                 visible: false, // Hide time scale for sub-charts per @tradesync-frontend-expert
             },
             crosshair: {
@@ -47,7 +47,7 @@ export default function RSIChart({ data = [] }: RSIChartProps) {
 
         // Add RSI line series
         const rsiSeries = chart.addLineSeries({
-            color: '#a855f7',
+            color: '#1a73e8', // Google Blue
             lineWidth: 2,
             priceLineVisible: false,
         })
@@ -89,7 +89,7 @@ export default function RSIChart({ data = [] }: RSIChartProps) {
 
     if (data.length === 0) {
         return (
-            <div className="w-full h-full flex items-center justify-center text-xs text-slate-500 bg-slate-900/50 rounded">
+            <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground bg-secondary/50 rounded">
                 No Data
             </div>
         )

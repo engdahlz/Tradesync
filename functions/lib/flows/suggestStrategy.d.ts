@@ -7,6 +7,7 @@ import { z } from 'genkit';
 export declare const suggestStrategyFlow: import("genkit").Action<z.ZodObject<{
     symbol: z.ZodString;
     interval: z.ZodDefault<z.ZodString>;
+    model: z.ZodOptional<z.ZodString>;
     marketData: z.ZodOptional<z.ZodObject<{
         price: z.ZodNumber;
         rsi: z.ZodNumber;
@@ -47,6 +48,7 @@ export declare const suggestStrategyFlow: import("genkit").Action<z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     symbol: string;
     interval: string;
+    model?: string | undefined;
     marketData?: {
         price: number;
         rsi: number;
@@ -61,6 +63,7 @@ export declare const suggestStrategyFlow: import("genkit").Action<z.ZodObject<{
 }, {
     symbol: string;
     interval?: string | undefined;
+    model?: string | undefined;
     marketData?: {
         price: number;
         rsi: number;

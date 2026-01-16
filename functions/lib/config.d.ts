@@ -6,5 +6,5 @@ export declare const ALPHA_VANTAGE_API_KEY = "F84UJC6092ZGTLM8";
 export declare const MODEL_FLASH = "googleai/gemini-2.0-flash-exp";
 export declare const MODEL_PRO = "googleai/gemini-2.0-pro-exp";
 export declare const MODEL_NAME = "googleai/gemini-2.0-flash-exp";
-export declare const EMBEDDING_MODEL = "googleai/gemini-embedding-001";
+export declare const EMBEDDING_MODEL = "googleai/text-embedding-004";
 //# sourceMappingURL=config.d.ts.map

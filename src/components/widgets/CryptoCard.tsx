@@ -50,7 +50,7 @@ function Sparkline({ data, positive }: { data: number[]; positive: boolean }) {
 
         ctx.clearRect(0, 0, width, height)
         ctx.beginPath()
-        ctx.strokeStyle = positive ? '#22c55e' : '#ef4444'
+        ctx.strokeStyle = positive ? 'rgb(19, 115, 51)' : 'rgb(165, 14, 14)' // MD3 Colors from index.css logic
         ctx.lineWidth = 1.5
 
         data.forEach((value, i) => {
