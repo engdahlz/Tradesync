@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // RAG chunks - read-only for authenticated users, write for admin
+    match /rag_chunks/{chunkId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // RAG sources - read-only for authenticated users, write for admin
+    match /rag_sources/{sourceId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Orders - authenticated users can manage their own
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Scheduled sells - authenticated users can view their own
+    match /scheduledSells/{sellId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if request.auth != null;
+    }
+    
+    // User data and trade history
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      match /trades/{tradeId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

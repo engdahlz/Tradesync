@@ -1,0 +1,233 @@
+KÄLLA: https://www.chartguys.com/candlestick-patterns/hammer-candlestick-pattern
+TITEL: Hammer – Candlestick Pattern | Chart Guys
+================================================================================
+
+Hammer Candlestick Pattern
+
+Key Takeaways...
+
+A real Hammer's lower shadow stretches at least twice the length of its body, showing where buyers overwhelmed sellers.
+
+While the closing price can land above or below the open, they should sit close together - creating that small body that marks true Hammers.
+
+The pattern needs confirmation - wait for price to actually move up after the Hammer forms before taking action.
+
+These patterns show up at the end of downtrends when selling pressure finally breaks and buyers take control.
+
+Bullish Reversal
+
+Every trader knows that sinking feeling - watching a stock drop lower and lower, wondering if it will ever stop. Most people panic and sell right at the bottom. But in these moments of maximum fear, a simple signal often appears: the Hammer Candlestick pattern.
+
+Like footprints in the sand, the Hammer Candlestick tells a story of fear turning to hope. Its long lower shadow shows where sellers tried to push prices down but failed. Its small body at the top reveals how buyers stepped in and took control. This simple pattern has caught countless market reversals over decades of trading.
+
+You're about to learn exactly what makes a real Hammer pattern, how to tell it apart from false signals, and the smart way to trade it. No fancy indicators or complex systems - just a clean, repeatable setup that's worked since markets began trading.
+
+Ready to add this tool to your trading toolkit?
+
+Anatomy of a Hammer Candlestick
+
+Anatomy of a Hammer Candlestick
+
+The Hammer Candlestick pattern is beautifully simple - it looks exactly like its name suggests. This candlestick formation appears during downtrends and has three distinct parts: a small head (the real body), a long handle (the lower shadow), and almost no upper shadow. The magic lies in these proportions.
+
+Pattern Breakdown
+
+Lower shadow should be at least twice the size of the real body
+
+Real body can be green (bullish) or red (bearish)
+
+Upper shadow should be tiny or non-existent
+
+Forms after a clear downtrend
+
+Best patterns have wicks 3-4 times the body length
+
+Classic Hammer vs Inverted Hammer
+
+Two Hammer Candlestick Variations
+
+Classic Hammer:
+
+Small body at the top, long lower shadow
+
+Inverted Hammer (Shooting Star):
+
+Small body at the bottom, long upper shadow
+
+The difference between the classic and inverted Hammer comes down to timing and position. The classic Hammer Candlestick shows immediate buyer strength, while the inverted version suggests sellers are losing steam. Both pack the same reversal potential, just through slightly different market dynamics.
+
+Market Psychology Behind the Hammer Candlestick Pattern
+
+Hammer Candlestick Psychology
+
+Every Hammer Candlestick tells a story of market psychology - a battle between fear and confidence playing out in real-time. The pattern captures that perfect moment when sellers run out of steam and buyers step in with conviction. It's like watching the exact second a crowd stops panicking and starts thinking clearly again.
+
+The Momentum Shift
+
+When a downtrend reaches its limit, something fascinating happens. Sellers, who've been controlling the action, start to doubt themselves. Maybe the price is too low. Maybe they've pushed too far. This doubt creates hesitation, and hesitation creates opportunity. Smart buyers notice this weakness and begin testing the waters with small positions. As more buyers join in, the sellers' resolve weakens further.
+
+The Story in the Candle
+
+The Long Lower Shadow:
+
+Shows where desperate sellers tried and failed to push prices down
+
+The Small Body:
+
+Represents the final battleground where buyers finally matched and overcame selling pressure
+
+The Body Color:
+
+Green means buyers won decisively, red shows they're still fighting
+
+The Minimal Upper Shadow:
+
+Indicates no significant selling pressure at higher prices
+
+The Pattern's Location:
+
+Appears at potential support levels where smart money often steps in
+
+The Following Candle:
+
+Confirms whether buyers maintained control or sellers regained it
+
+Finding Real Hammer Candlestick Patterns
+
+Here's the thing about Hammer Candlesticks - they're like DNA evidence at a crime scene. They tell us exactly what happened during that trading period, but only if we read them correctly. The pattern works because it shows us when sellers get exhausted and buyers step in. But context matters more than the pattern itself.
+
+Strong Volume Tells the Story
+
+Volume spikes indicate real buying pressure
+
+Higher volume than the previous 3-5 candles suggests strong reversal potential
+
+Low volume Hammer Candlesticks often fail to follow through
+
+Volume should be at least 150% of the 10-period average
+
+Morning reversals tend to show better volume than afternoon patterns
+
+Pre-market volume can hint at potential Hammer Candlestick setups
+
+Common Fakes and How to Avoid Them
+
+The Partial Hammer:
+
+Lower shadow only 1.5x the body length
+
+The Choppy Hammer:
+
+Forms during sideways action, not a downtrend
+
+The Lonely Hammer:
+
+Shows up without support nearby
+
+The Volume Trap:
+
+Perfect shape but weak volume
+
+The Gap Hammer:
+
+Forms after a gap down, less reliable
+
+The Late Day Hammer:
+
+Forms in the last hour, often lacks follow-through
+
+Remember - real Hammer Candlesticks need three things: the right shape, strong volume, and proper context. Miss any of these, and you're probably looking at a fake signal that'll burn your account. Like a good detective, build your case with multiple pieces of evidence before taking action.
+
+Trading with Hammer Candlestick Signals
+
+Entry Timing
+
+Smart entries come after confirmation. Wait for the next candle to push above the Hammer's high point before buying. This small delay might cost a few pennies but saves you from many false signals. The best entries often come with a small pullback to the Hammer's closing price.
+
+Stop Loss Placement
+
+Your stop goes below the Hammer's low point - exactly where the pattern's logic breaks. Add a small buffer of 10-15 cents to avoid getting shaken out by normal market noise. If your stop feels too wide, reduce your position size instead of tightening the stop.
+
+Profit Targets
+
+The nearest resistance level offers the first logical target. Take partial profits there, letting the rest run to the next resistance zone. The best Hammers often lead to moves equal to at least twice the pattern's length - measured from high to low.
+
+Risk Management
+
+Size positions so each trade risks 1% or less of your account. Scale into winners if they prove themselves, but never add to losing trades. Keep a 2:1 reward-to-risk ratio minimum - anything less turns winning patterns into losing strategies over time.
+
+Think of trading Hammers like playing poker - you need more than just good cards to win. The pattern gives you an edge, but how you play that edge makes all the difference. Your entry confirms the pattern's strength, your stop protects your downside, your targets lock in profits, and position sizing keeps you in the game through the inevitable rough patches. Master these four elements, and you've got a complete trading strategy, not just a pattern.
+
+Trading the Hammer Candlestick
+
+False Signal Traps
+
+Trading Hammer Candlesticks during choppy, sideways markets
+
+Jumping in before the next candle confirms
+
+Missing the volume requirement
+
+Trading against major market trends
+
+Taking signals near major earnings reports
+
+Forcing trades in low-liquidity stocks
+
+Chasing Hammers after a big gap down
+
+Let's break these traps down. Most false signals happen when traders focus too much on the pattern and ignore everything else. Take sideways markets - they're like a tennis match with no winner. Prices bounce up and down, creating lots of Hammers that go nowhere. Or trading against the trend - like swimming upstream, you might make progress but you're fighting the current the whole way.
+
+The volume trap catches many traders too. A perfect Hammer shape without volume is like a car without an engine - it looks right but won't get you anywhere. And those post-gap Hammers? They're tempting, but gap downs often need time to stabilize before any reversal pattern becomes reliable. Your best defense is patience. Wait for setups that tick all the boxes, not just some of them.
+
+The Bigger Picture
+
+Markets move in trends and cycles. A perfect Hammer Candlestick means nothing if it forms right at major resistance or during a market-wide selloff. Check the daily chart before trading hourly Hammers. Check the weekly before trading daily patterns. This simple habit saves more money than any winning trade will make you.
+
+Position Sizing Blunders
+
+Risking too much on a single trade
+
+Adding to losing positions
+
+Taking oversized positions with tight stops
+
+Not scaling out of winners
+
+Using the same size for every setup
+
+Trading maximum size during volatile markets
+
+These mistakes might seem obvious on paper, but they show up again and again in real trading. The best defense? A clear plan before each trade and the discipline to stick to it. Remember - protecting your capital matters more than catching every move. The market will serve up new Hammers every week, but only if you're still around to trade them.
+
+Wrapping Up
+
+The Hammer Candlestick is just one of many powerful tools in a trader’s arsenal. Understanding its nuances and applying it with discipline can help you catch key reversals and improve your trading outcomes. But why stop here? The world of candlestick patterns offers a wealth of strategies to navigate different market conditions.
+
+Ready to deepen your expertise? Browse our
+
+TCG Candlestick Patterns
+
+section to discover more game-changing setups, from Dojis to Engulfing patterns. Each pattern brings its unique edge—learn them, master them, and take your trading to the next level.
+
+Authored by:
+
+Jason Bush
+
+November 8, 2024
+
+|
+
+Jason Bush
+
+|
+
+Candlestick Patterns
+
+Disclaimer: The contents of this article have been in part created or edited with the help of various AI tools.
+
+Explore Membership
+
+Want to get notified when we publish new articles?
+
+Sign up to the Chart Guys Newsletter

@@ -1,0 +1,394 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script data-prerender-keep="">// Define URL patterns where Sentry should be disabled
+      const sentryDisabledPatterns = [
+        /\/pdf\//,      // Disable on PDF pages
+        /\/summary\//,  // Disable on summary pages
+        /\/podcast\//,  // Disable on podcast pages
+
+      ];
+      
+      // Check if current URL matches any disabled pattern
+      const shouldDisableSentry = sentryDisabledPatterns.some(pattern => 
+        pattern.test(window.location.pathname)
+      );
+
+      function loadSentry() {
+        const script = document.createElement('script');
+        script.src = 'https://js.sentry-cdn.com/558b86a002bd4643aebf355866e5bce2.min.js';
+        script.crossOrigin = 'anonymous';
+        script.setAttribute('data-prerender-keep', '');
+        document.head.appendChild(script);
+      }
+      
+      // Only load Sentry if it's not disabled for this URL
+      if (!shouldDisableSentry) {
+        const isHomepage = window.location.pathname === '/' || window.location.pathname === '';
+        if (isHomepage && document.readyState !== 'complete') {
+          // On homepage, wait for load event to not affect LCP
+          window.addEventListener('load', loadSentry, { once: true });
+        } else {
+          // On other pages or if homepage is already loaded, load immediately
+          loadSentry();
+        }
+      }</script>
+<script src="/js/consent-banner.js" defer="defer" data-prerender-keep=""></script>
+<script src="https://app.termly.io/resource-blocker/488c340e-3aec-4753-b00c-f7a5f771235c" defer="defer" onload="onTermlyLoaded()" data-prerender-keep=""></script>
+<script data-prerender-keep="">// GTM global variables.
+      window.dataLayer = window.dataLayer || []
+      function gtag() {
+        dataLayer.push(arguments)
+      }
+      // Consent Mode defaults (must be called before GTM is initialized).
+      gtag('consent', 'default', {
+        ad_personalization: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        analytics_storage: 'denied',
+        functionality_storage: 'denied',
+        personalization_storage: 'denied',
+        security_storage: 'granted',
+        social_storage: 'denied',
+        unclassified_storage: 'denied',
+        // Set denied defaults only for GDPR countries
+        region: ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GB', 'IS', 'LI', 'NO'],
+        wait_for_update: 500,
+      })
+      // Set the `userId` variable in Google Tag Manager.
+      try {
+        var data = localStorage.getItem('user')
+        if (data) {
+          user = JSON.parse(data)
+          // Set the `userId` variable in Google Tag Manager
+          // if there's user data in local storage.
+          // Note: we also set user id on user registration and login via
+          // gtag('set') call in src/analytics/gtm.ts, `register` method.
+          gtag('set', { userId: user.id })
+        }
+      } catch (e) {
+        console.log(e)
+      }</script>
+<script data-prerender-keep="">;(function (w, d, s, l, i) {
+        w[l] = w[l] || []
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' })
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : ''
+        j.async = true
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl
+        f.parentNode.insertBefore(j, f)
+      })(window, document, 'script', 'dataLayer', 'GTM-TZKKGXF')</script>
+<link rel="preload" href="/pdf/public-assets/fonts/Rotunda-Medium.53176085.woff2" as="font" crossorigin="">
+<link rel="preload" href="/pdf/public-assets/fonts/Rotunda-Regular.e773392e.woff2" as="font" crossorigin="">
+<script src="https://js.stripe.com/v3/" defer="defer" data-prerender-keep=""></script>
+<title>[PDF] A Random Walk Down Wall Street Summary - Burton G. Malkiel</title>
+<script data-prerender-keep="">;(function (c, a) {
+        if (!a.__SV) {
+          var b = window
+          try {
+            var d,
+              m,
+              j,
+              k = b.location,
+              f = k.hash
+            d = function (a, b) {
+              return (m = a.match(RegExp(b + '=([^&]*)'))) ? m[1] : null
+            }
+            f &&
+              d(f, 'state') &&
+              ((j = JSON.parse(decodeURIComponent(d(f, 'state')))),
+              'mpeditor' === j.action &&
+                (b.sessionStorage.setItem('_mpcehash', f),
+                history.replaceState(
+                  j.desiredHash || '',
+                  c.title,
+                  k.pathname + k.search,
+                )))
+          } catch (n) {}
+          var l, h
+          window.mixpanel = a
+          a._i = []
+          a.init = function (b, d, g) {
+            function c(b, i) {
+              var a = i.split('.')
+              2 == a.length && ((b = b[a[0]]), (i = a[1]))
+              b[i] = function () {
+                b.push([i].concat(Array.prototype.slice.call(arguments, 0)))
+              }
+            }
+            var e = a
+            'undefined' !== typeof g ? (e = a[g] = []) : (g = 'mixpanel')
+            e.people = e.people || []
+            e.toString = function (b) {
+              var a = 'mixpanel'
+              'mixpanel' !== g && (a += '.' + g)
+              b || (a += ' (stub)')
+              return a
+            }
+            e.people.toString = function () {
+              return e.toString(1) + '.people (stub)'
+            }
+            l = 'disable time_event track track_pageview track_links track_forms track_with_groups add_group set_group remove_group register register_once alias unregister identify name_tag set_config reset opt_in_tracking opt_out_tracking has_opted_in_tracking has_opted_out_tracking clear_opt_in_out_tracking people.set people.set_once people.unset people.increment people.append people.union people.track_charge people.clear_charges people.delete_user people.remove'.split(
+              ' ',
+            )
+            for (h = 0; h < l.length; h++) c(e, l[h])
+            var f = 'set set_once union unset remove delete'.split(' ')
+            e.get_group = function () {
+              function a(c) {
+                b[c] = function () {
+                  call2_args = arguments
+                  call2 = [c].concat(Array.prototype.slice.call(call2_args, 0))
+                  e.push([d, call2])
+                }
+              }
+              for (
+                var b = {},
+                  d = ['get_group'].concat(
+                    Array.prototype.slice.call(arguments, 0),
+                  ),
+                  c = 0;
+                c < f.length;
+                c++
+              )
+                a(f[c])
+              return b
+            }
+            a._i.push([b, d, g])
+          }
+          a.__SV = 1.2
+          b = c.createElement('script')
+          b.type = 'text/javascript'
+          b.async = !0
+          b.src =
+            'undefined' !== typeof MIXPANEL_CUSTOM_LIB_URL
+              ? MIXPANEL_CUSTOM_LIB_URL
+              : 'file:' === c.location.protocol &&
+                '//cdn4.mxpnl.com/libs/mixpanel-2-latest.min.js'.match(/^\/\//)
+              ? 'https://cdn4.mxpnl.com/libs/mixpanel-2-latest.min.js'
+              : '//cdn4.mxpnl.com/libs/mixpanel-2-latest.min.js'
+          d = c.getElementsByTagName('script')[0]
+          d.parentNode.insertBefore(b, d)
+        }
+      })(document, window.mixpanel || [])</script>
+<script data-prerender-keep="">document.addEventListener('DOMContentLoaded', () => {
+        var lang = document.documentElement.lang
+        // Set Weglot's `wglang` key in the localStorage.
+        localStorage.setItem('wglang', lang)
+
+        if (lang !== 'en') {
+          // Update relative links to have `/{lang}` prefix.
+          document.querySelectorAll('a[href^="/"]').forEach((link) => {
+            // Skip links that start with `/app...`.
+            if (!link.pathname.startsWith('/app')) {
+              link.href = `/${lang}${link.pathname}`
+            }
+          })
+          // Update the canonical link
+          const canonicalLink = document.querySelector('link[rel="canonical"]')
+          if (canonicalLink) {
+            const parts = canonicalLink.href.split('://www.shortform.com/')
+            if (parts.length === 2) {
+              canonicalLink.href = `https://www.shortform.com/${lang}/${parts[1]}`
+            }
+          }
+        }
+      })</script>
+<link href="/pdf/public-assets/css/pdf.9bcdbaf3.css" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/pdf/public-assets/img/icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/pdf/public-assets/img/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/pdf/public-assets/img/icons/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#FFD000">
+<meta name="apple-mobile-web-app-capable" content="no">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Shortform">
+<link rel="apple-touch-icon" href="/pdf/public-assets/img/icons/apple-touch-icon-152x152.png">
+<link rel="mask-icon" href="/pdf/public-assets/img/icons/safari-pinned-tab.svg" color="#FFD000">
+<meta name="msapplication-TileImage" content="/img/icons/msapplication-icon-144x144.png">
+<meta name="msapplication-TileColor" content="#000000">
+<link rel="canonical" href="https://www.shortform.com/pdf/a-random-walk-down-wall-street-pdf-burton-g-malkiel" id="canonical" data-vue-router-controlled="">
+<meta name="description" content="Download a PDF summary of A Random Walk Down Wall Street by Burton G. Malkiel. We have the world's best book summaries. Free PDF download." data-vue-router-controlled="">
+<meta property="og:url" content="https://www.shortform.com/pdf/a-random-walk-down-wall-street-pdf-burton-g-malkiel" data-vue-router-controlled="">
+<meta property="og:type" content="website" data-vue-router-controlled="">
+<meta property="og:title" content="[PDF] A Random Walk Down Wall Street Summary - Burton G. Malkiel" data-vue-router-controlled="">
+<meta property="og:description" content="Download a PDF summary of A Random Walk Down Wall Street by Burton G. Malkiel. We have the world's best book summaries. Free PDF download." data-vue-router-controlled="">
+<meta property="og:image" content="https://media.shortform.com/covers/png/a-random-walk-down-wall-street-cover.png" data-vue-router-controlled="">
+<meta property="twitter:card" content="summary_large_image" data-vue-router-controlled="">
+<meta property="twitter:site" content="@_shortform" data-vue-router-controlled="">
+<meta property="twitter:title" content="[PDF] A Random Walk Down Wall Street Summary - Burton G. Malkiel" data-vue-router-controlled="">
+<meta property="twitter:image" content="https://media.shortform.com/covers/png/a-random-walk-down-wall-street-cover.png" data-vue-router-controlled="">
+<meta property="twitter:description" content="Download a PDF summary of A Random Walk Down Wall Street by Burton G. Malkiel. We have the world's best book summaries. Free PDF download." data-vue-router-controlled="">
+<link href="/pdf/public-assets/js/pdf-public-vendors.531d65b4.js" rel="preload" as="script">
+<link href="/pdf/public-assets/js/pdf-public.7d61d998.js" rel="preload" as="script">
+
+</head><body><div id="appRoot" data-v-app=""><div id="app" class="sf-app-pdf"><div id="iosFix"></div><div class="sf-public"><header class="header"><div class="container header__container"><a href="/" class="header__logo"><img class="header__logo__img" src="/pdf/public-assets/img/logo.1fcd5cb3.svg" alt="Shortform"></a><div class="nav"><ul class="menu"><li class="menu__item"><a href="/summaries" class="menu__link"> Our Content </a></li><li class="menu__item"><a href="/pricing" class="menu__link"> Pricing </a></li><li class="menu__item"><a href="/about" class="menu__link"> About </a></li></ul><div class="button-group header__button-group"><a href="/app/login?cta=top_login" class="button button--login button-logged-out"> Login <img class="button__arrow-img" src="/pdf/public-assets/img/arrow.d62c58c8.svg" alt=""></a><a href="/app/signup?cta=top_signup" class="button button--theme ab-site-page-1208 button-logged-out"> Sign up for free </a><a href="/app?cta=top_login" class="button button--theme button-logged-in" style="display: none;"> Login </a></div></div><a href="/app/signup?cta=top_signup" class="button button--theme button--mobile button-sign-up--mobile ab-site-page-1208e button-logged-out"> Sign up </a><a href="/app?cta=top_login" class="button button--theme button--mobile button-login--mobile button-logged-in" style="display: none;"> Login </a><button class="hamburger"><span class="hamburger__item"></span><span class="hamburger__item"></span><span class="hamburger__item"></span></button></div></header><div class="public-pdf__content main-content container"><div class="public-pdf__header"><div><div itemscope="" itemtype="https://schema.org/Book"><h1 class="public-pdf__header-book-title"><span class="public-pdf__header-book-title--item sub-title">PDF Summary:</span><span itemprop="name" class="ab-13448-doc-title">A Random Walk Down Wall Street</span><span>, </span><span>by </span><span itemprop="author" itemscope="" itemtype="https://schema.org/Person"><span itemprop="name">Burton G. Malkiel</span></span></h1><h2 class="public-pdf__header-summary ab-13448-pdf-header-title"> Book Summary: Learn the key points in minutes. </h2></div></div></div><section class="public-pdf__public-summary"><div class="public-pdf__container"><div><div><p> Below is a preview of the Shortform book summary of A Random Walk Down Wall Street by Burton G. Malkiel. <a href="/app/book/a-random-walk-down-wall-street" class="ab-13448-read-full-summary"> Read the full comprehensive summary at Shortform. </a></p><h2 class="public-pdf__title"> 1-Page PDF Summary of A Random Walk Down Wall Street</h2><div class=""><p>A massive bestseller now in its 13th edition, Burton Malkiel’s <em>A Random Walk Down Wall Street</em> provides a comprehensive and entertaining introduction to the world of finance. Malkiel leverages his experience as an academic economist and former Wall Street portfolio manager to explain for the lay reader the intricacies of security analysis, asset valuation, and investment theory. He also offers a wealth of practical investment principles that will be useful for novice and seasoned investors alike.</p>
+</div><div><p>(continued)...</p>
+<p>1) <strong>Don’t Follow the Crowd</strong></p>
+<p>Studies in behavioral finance have shown that<strong> word of mouth is a frequent driver of stock purchases</strong>. When some new investment is the talk of the town, it’s natural to want to take part. <strong>But resist the urge</strong>: Stocks or funds that are hot one quarter are almost invariably losers the next. <strong>It’s generally better to stick with “value” stocks</strong>—securities issued by tried-and-true companies with steady revenues—than gamble on “growth” stocks with high risk.</p>
+<p>2) <strong>Don’t Overtrade</strong></p>
+<p>When investors trade to realize short-term gains, <strong>they tend to incur high transaction costs and taxes</strong>. One study of 66,000 households found that the households that traded the most earned an 11.4% return on their investments—<strong>while the market returned 17.9%</strong>.</p>
+<p>If you have to trade,<strong> trade losers. </strong>The tax benefits of incurring a loss are likely better than the gains of selling a winner.</p>
+<h3 id="part-2-the-basics">Part 2: The Basics</h3>
+<p>Valuable for the novice and experienced investor alike, these 10 principles are essential to realizing returns.</p>
+<h4 id="principle-1-start-saving-sooner-rather-than-later">Principle #1: Start Saving Sooner Rather Than Later</h4>
+<p>In investing, there is truly <strong>no such thing as getting rich quick</strong>. The best way to realize returns is to begin investing as soon as possible and <strong>keep investing steadily</strong>, whether through the automatic reinvestment of dividends or regular contributions to a tax-advantaged retirement plan.</p>
+<h4 id="principle-2-back-yourself-up-with-cash-and-insurance">Principle #2: Back Yourself Up With Cash and Insurance</h4>
+<p>Even the most successful investor needs <strong>liquid assets that can be called upon in a pinch</strong> (or the financial protection of insurance). In terms of cash reserves, if you have decent health and disability insurance, <strong>three months’ worth of living expenses</strong> is a good benchmark.</p>
+<p>As for insurance,<strong> home, auto, health, and disability</strong> are musts. As is<strong> life insurance</strong>, if you’re the primary breadwinner for a family with dependents. <strong>Malkiel favors buying low-premium term life insurance</strong>.</p>
+<h4 id="principle-3-set-up-your-cash-to-keep-pace-with-inflation">Principle #3: Set Up Your Cash to Keep Pace With Inflation</h4>
+<p>Keeping your cash in a low-interest savings account can be a<strong> losing proposition</strong> when <strong>inflation outpaces the interest you’re earning</strong>.</p>
+<p>Malkiel believes <strong>money-market mutual funds are the best product in general for cash reserves</strong>. Make sure to choose a low-expense option like those offered by Vanguard or Fidelity. There are also<strong> tax-exempt money-market funds</strong> that are ideal for high-income investors.</p>
+<p>If you know the date of a sizable future expenditure, <strong>certificates of deposit (or “CDs”) are your best choice</strong>.</p>
+<p>Additional products include <strong>internet banks</strong>, which can offer higher interest rates because of low overhead, and <strong>U.S. Treasury bills</strong>, which can offer decent (and tax-free returns).</p>
+<h4 id="principle-4-sidestep-the-tax-collector">Principle #4: Sidestep the Tax Collector</h4>
+<p>There is <strong>no good reason you should pay taxes on investment earnings for retirement or expenses like college tuition</strong>.</p>
+<p>First, <strong>take advantage of individual retirement accounts (IRAs)</strong>. Earnings on IRA holdings aren’t taxed, and, by the time you actually withdraw the funds from the IRA, you’re likely to be in a lower tax bracket than you are currently.</p>
+<p>There are also <strong>Roth IRAs</strong>. The key difference between a traditional IRA and Roth IRA concerns tax advantages: With traditional IRAs, contributions are tax deductible, but you’ll pay taxes when you eventually withdraw your funds; with Roth IRAs, <strong>you pay taxes upfront, but withdrawals (including earnings) are tax-free</strong>.</p>
+<p><strong>Which IRA is best depends on your personal financial situation</strong>. Investors with low taxes now might opt for a Roth IRA. Investors with high taxes now might go with a traditional IRA.</p>
+<p>If you have access to a retirement plan like a <strong>401(k) or 403(b)</strong>, which are tax-free, Malkiel’s advice is to <strong>max them out wherever possible</strong>. And if you want to save for a child or grandchild’s college tuition,<strong> tax-advantaged “529” accounts are the way to go</strong>.</p>
+<h4 id="principle-5-know-yourself">Principle #5: Know Yourself</h4>
+<p>One way to align your goals with the products available is to<strong> determine your tolerance for risk</strong>. Those who are nearing retirement (or who just want to sleep well at night) should opt for <strong>“low” and “moderate” risk assets</strong> like broad market index funds and high-quality corporate bonds. Younger (or thrill-seeking) investors might opt for high-risk assets like small-cap stocks and/or equities in developing nations.</p>
+<h4 id="principle-6-invest-in-real-estate">Principle #6: Invest in Real Estate</h4>
+<p>Owning a home has proven to be a reliable means<strong> for families to hedge against inflation and realize returns</strong>. For those investors without the means or desire to buy a home,<strong> real estate investment trusts (or REITs) provide a nice alternative</strong>. REITs consist of real estate assets—apartment buildings, offices, and the like—packaged into securities that can be traded like common stock.</p>
+<h4 id="principle-7-buy-bonds-wisely">Principle #7: Buy Bonds Wisely</h4>
+<p>Bonds are an essential component of a well-diversified portfolio. There are a number of bond options in addition to the traditional, interest-earning bond, including zero-coupon bonds (or “zeroes”), which sell at a discount and simply pay out their face value at maturity, and tax-exempt bonds, which comprise state or municipal debt that earns interest tax-free.</p>
+<p>If you’re planning to buy bonds directly—rather than gaining exposure through a mutual fund—then your <strong>best bets are new issues</strong>. Newer bonds generally offer better yields than established bonds, but only buy<strong> bonds rated A or above</strong> by Moody’s or S&amp;P.</p>
+<p>Investors interested in exposure to a wide range of bonds can opt for<strong> bond mutual funds </strong>from companies like Fidelity and Vanguard. Popular bond substitutes include <strong>Treasury inflation-protected securities (TIPS)</strong>, whose face value rises to keep pace with inflation, and <strong>high-dividend stocks</strong>.</p>
+<h4 id="principle-8-tread-carefully-in-gold-collectibles-and-commodities">Principle #8: Tread Carefully in Gold, Collectibles, and Commodities</h4>
+<p>Assets like gold, fine art, baseball cards, and commodities futures are extremely fickle and don’t pay interest or dividends. Unless you have ample resources in other instruments, assets like these should only occupy <strong>a modest part of your portfolio</strong>.</p>
+<h4 id="principle-9-limit-costs-wherever-you-can">Principle #9: Limit Costs Wherever You Can</h4>
+<p>With the advent of commission-free brokerage services, <strong>stock trading has become accessible to even the humblest investor</strong>. That said, there are still high-expense products that <strong>investors need to be aware of and avoid</strong>.</p>
+<p>Steer clear of “wrap accounts.” Offered by various brokerages, these accounts can run you up to 3% per year, <strong>which makes outpacing the market almost impossible</strong>.</p>
+<p>You should also <strong>be wary of mutual funds and ETFs with high expense ratios</strong>. (An expense ratio is the percent of a fund’s assets deducted annually for operating expenses.) Anything above 1% is worth second-guessing. Index ETFs and mutual funds, for example, can be had for a few hundredths of a percent.</p>
+<h4 id="principle-10-diversify">Principle #10: Diversify!</h4>
+<p>The key to consistent and positive returns over the long run is (a)<strong> diversification <em>among</em> asset classes</strong> (stocks, bonds, REITs, and so on.) and (b) <strong>diversification <em>within</em> asset classes</strong> (negatively correlated common stocks, a mix of corporate bonds and TIPS, etc.).</p>
+<h3 id="age-dependent-investing">Age-Dependent Investing</h3>
+<p>Age may be the most important factor in<strong> deciding how to allocate your investments</strong>. For example, a fully employed 30-year-old, with many years of labor income ahead of her, can weather more losses (and thus tolerate more risk) than a retired 70-year-old who relies on his investment income to get by.</p>
+<p>In terms of age-dependent investing, Malkiel’s advice boils down to this: <strong>The longer you’re able to hold on to your investments, the more common stock you should have in your portfolio</strong>.</p>
+<p>For example, a fully employed person in their mid-twenties should have a <em>high-risk allocation</em>: <strong>70% stocks, 15% bonds, 10% real estate, 5% cash</strong>. A person in their sixties and about to retire should have a<em> low-risk allocation</em>: <strong>40% stocks, 35% bonds, 15% real estate, 10% cash</strong>.</p>
+<h3 id="saving-for-and-in-retirement">Saving for (and in) Retirement</h3>
+<p>Retirees’ investment options depend on how much they’ve been able to save.</p>
+<p><em>For retirees with low savings</em>, the options are narrow. Malkiel suggests continuing to<strong> work part time</strong>—which can have ulterior health benefits by keeping seniors active and social—and <strong>delaying taking Social Security</strong> for as long as possible to maximize those benefits. (Seniors in poor health with lower life expectancy might opt to begin taking Social Security as soon as possible to realize the benefits while they can.)</p>
+<p><em>For retirees who’ve managed to build up a nest egg</em>, there are two primary options: <strong>annuitizing your savings</strong> or holding onto your portfolio and<strong> establishing a spending rate</strong>. Malkiel recommends <strong>at least a <em>partial</em> annuitization </strong>of your retirement savings and, if you choose to manage your own investments, <strong>spending only 4% of the total value of your nest egg annually</strong>.</p>
+<h5 id="annuities">Annuities</h5>
+<p>An “annuity”—or “long-life insurance”—is a <strong>contract with an insurance company for regular payments as long as the purchaser lives</strong>.</p>
+<p>Malkiel’s take is that while annuities offer the security of never running out of money, <strong>they can be tax inefficient and unwieldy, </strong>especially<strong> </strong>if you want to vary your spending year over year or leave a bequest to descendants.</p>
+<h5 id="establishing-your-own-spending-rate">Establishing Your Own Spending Rate</h5>
+<p>Retirees who opt to manage their investments themselves—or only annuitize a portion of their nest egg—should <strong>spend no more than 4% of their retirement savings annually </strong>(the “4% rule”).</p>
+<p><em>First</em>, 4% is likely to be <strong>below the average return rate of a diversified portfolio</strong> of stocks and bonds minus inflation. This means that the portfolio will continue to offset the reduction in purchasing power inflicted by inflation.</p>
+<p><em>Second</em>, 4% protects you from the<strong> inevitable volatility in returns</strong>. If you limit your annual withdrawals in bull years<strong>, you create a backstop against bear markets</strong>.</p>
+<h3 id="picking-investments">Picking Investments</h3>
+<p>Once you’ve determined the ideal asset allocation for your age, economic situation, and risk tolerance, the next step is to<strong> decide which precise securities to purchase</strong>. Malkiel proposes three strategies for picking stocks: The <strong>“autopilot” strategy</strong>, the <strong>“interested-and-engaged” strategy</strong>, and the <strong>“trust-the-experts” strategy</strong>.</p>
+<h4 id="the-autopilot-strategy">The Autopilot Strategy</h4>
+<p>The autopilot strategy consists of <strong>purchasing broad index mutual funds or exchange-traded index funds (ETFs) </strong>rather than individual stocks or industries.</p>
+<p>The autopilot strategy is Malkiel’s preferred method of investing. No matter how knowledgeable or engaged the investor, Malkiel advises <strong>building the core of a portfolio around index funds</strong> and only making active bets<strong> with excess cash</strong>.</p>
+<p>While the S&amp;P 500 index funds are generally the most popular type of index fund, Malkiel actually recommends that investors choose<strong> a total market index fund</strong> over an S&amp;P 500 fund. This is because the <strong>S&amp;P 500 index excludes smaller stocks</strong> that, historically and on average, <strong>have outperformed larger ones</strong>. Try to find a fund indexed to the Russell 3000, the Wilshire Total Market Index, the CRSP Index, or the MSCI US Broad Market Index.</p>
+<p>Of course, diversification is the key to a successful portfolio. But one need not abandon index funds to diversify:<strong> There are funds that track REIT, corporate bonds, international capital, and emerging market indices</strong>.</p>
+<h4 id="the-interested-and-engaged-strategy">The Interested-and-Engaged Strategy</h4>
+<p><strong>No matter what, for large sums like your retirement savings</strong>, a diverse portfolio of index funds is the strategy that Malkiel recommends. That said, some investors—for example, those with a taste for gambling—will find indexing an entire portfolio boring and may want to try their luck picking winners. Malkiel advises that thrillseekers <strong>only speculate with secondary monies </strong>that they can afford to lose, and that they follow four key principles.</p>
+<h5 id="principle-1-only-buy-stocks-whose-earnings-growth-promises-to-be-above-average-for-at-least-five-years">Principle #1: Only buy stocks whose earnings growth promises to be above average for at least five years</h5>
+<p>Simply put, <strong>earnings growth is what produces winners</strong>. Not only do consistently above-average earnings boost dividends, they also result in higher price-earnings (P/E) multiples. <strong>That means higher capital gains on top of dividends</strong>.</p>
+<h5 id="principle-2-never-overpay-for-a-stock-without-a-firm-foundation-of-value">Principle #2: Never overpay for a stock without a firm foundation of value</h5>
+<p>The ideal stock is<strong> reasonably priced with positive growth prospects</strong>. Although determining the precise value of a stock is effectively impossible, you <em>can </em>tell whether a stock is reasonably priced by comparing its P/E multiple to that of the market as a whole. <strong>If a stock’s P/E is well beyond the market’s, you might be wise to stay away</strong>. (Note that it’s OK to buy stocks with P/E multiples greater than market’s <strong>as long as growth prospects are above average as well</strong>.)</p>
+<h5 id="principle-3-keep-an-eye-out-for-castles-in-the-air-and-take-advantage">Principle #3: Keep an eye out for castles in the air, and take advantage</h5>
+<p>If you come across a firm-foundation stock around which buzz might build—for example, because the company is about to hire a charismatic CEO or debut a new technology—<strong>those are stocks worth purchasing</strong>. The key is to buy in before the builders of castles of air drive the price up.</p>
+<h5 id="principle-4-trade-as-little-as-possible">Principle #4: Trade as little as possible</h5>
+<p><strong>You should hold your purchases as long as possible</strong>, and, if you have to trade, <strong>sell your losers before your winners</strong>—the tax benefits of incurring a loss are likely to be more beneficial than the tax burden of realizing a gain.</p>
+<h4 id="the-trust-the-experts-strategy">The “Trust-the-Experts” Strategy</h4>
+<p>Some investors might prefer to entrust their money to a professional. But Malkiel’s years of studying actively managed mutual funds have yielded two key insights: One, that <strong>fund managers’ past performance has little bearing on future performance</strong>, and two, actively managed funds <strong>rarely beat the average market return for long</strong>.</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade public-pdf__fade-200"></div></div><!----><div class="public-pdf__yellow-box"><h4><strong>Want to learn the rest of A Random Walk Down Wall Street in 21 minutes?</strong></h4><p> Unlock the full book summary of A Random Walk Down Wall Street by <a href="/app/signup" class="">signing up for Shortform</a>. </p><p class="ab-13448-pdf-yellow-box-paragraph"> Shortform summaries help you learn 10x faster by: </p><ul><li class="ab-13448-pdf-yellow-box-list-1"> Being 100% comprehensive: you learn the <strong>most important points in the book</strong></li><li class="ab-13448-pdf-yellow-box-list-2"> Cutting out the fluff: you don't spend your time wondering what the author's point is. </li><li class="ab-13448-pdf-yellow-box-list-3"> Interactive exercises: <strong>apply the book's ideas to your own life</strong> with our educators' guidance. </li></ul><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div><p></p><p> Here's a preview of the rest of Shortform's A Random Walk Down Wall Street PDF summary: </p></div></div></div></div></section></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Shortform Introduction</h2><div><p>...</p>
+<p>Whatever your priority, if you only take one thing from Malkiel’s book, it should be this: <strong>Investors are better off putting their money in a passively managed index fund—a</strong> <strong>total market index fund</strong>, to be precise—than trading stocks themselves or investing in an actively managed mutual fund. For example, an investor who put $10,000 into an S&amp;P 500 Index Fund in 1969 would have had a $1,092,489 portfolio in April 2018 (assuming all dividends were reinvested). An investor who put the same amount of money into an actively managed fund would’ve only had $817,741.</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Part 1: Valuing Stocks | Chapter 1: Two Theories of Asset Valuation</h2><div><p>...</p>
+<p>Keynes’s understanding of the castle-in-the-air theory made him a fortune. His process was as follows: Because no one can know with any certainty the future revenues or dividends of a given stock, <strong>he invested based on what he thought <em>other investors </em>would value</strong>. For example, if he sensed there was prevailing optimism in a certain sector of the economy, say in steel production, he would invest in steel companies regardless of their underlying fundamentals, simply because he anticipated other investors would soon rush into steel.</p>
+<p><strong>The key to the castle-in-the-air theory is <em>timing</em></strong>: The successful investor will buy an asset just <em>before </em>mass enthusiasm causes its price to rise and sell before that enthusiasm wanes. A less charitable name for the castle-in-the-air theory is the “greater fool” theory—the less attuned an investor is to the prevailing winds, the more likely she’ll end up owning a stock that’s worth far less than she paid for it.</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Chapter 2: Booms and Busts</h2><div><p>...</p>
+<h3 id="the-great-crash-of-1929">The Great Crash of 1929</h3>
+<p>Speculative crazes like the tulipmania in Holland and the South Sea Bubble in 18th-century England—during which a trading firm called the South Sea Company rose in value by nearly 700% in a matter of months and fell by the same amount shortly thereafter—aren’t just a thing of the distant past. <strong>The stock market crash of 1929, which precipitated the Great Depression, is another example of irresponsible castle-in-the-air thinking</strong>.</p>
+<p>Wide prosperity in the U.S. had boosted the stock market, and increased optimism among investors, and investing on margin—that is, borrowing to speculate in the stock market—had become commonplace. Traders were also engaging in some unsavory practices, like forming investment pools, to manipulate stock prices. (An investment pool consisted of a group of traders who would collude to bid up a stock price and then sell once those outside the pool began buying the stock.)</p>
+<p>A key indicator of investors’ irrational optimism was the price of shares of closed-end funds. (Closed-end funds are pooled assets managed by an investment company, in which investors can buy shares.) Shares in these funds typically sell at small discounts...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_readers_say"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><!----><section class="public-pdf__readers"><div class=""><h2 class="public-pdf__readers-title">What Our Readers Say</h2><div class="public-pdf__readers-container"><div class="public-pdf__readers-card"><div class="public-pdf__card-body"><p class="ab-13448-pdf-what-readers-say">This is the best summary of A Random Walk Down Wall Street I've ever read. I learned all the main points in just 20 minutes.</p><a href="/summaries" class="public-pdf__readers-link"> Learn more about our summaries → </a></div></div></div></div></section><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Chapter 3: The Insecurity of Institutions</h2><div><p>...</p>
+<h5 id="the-conglomerate-boom">The Conglomerate Boom</h5>
+<p>Firms were able to impart the perception of growth by absorbing companies of equal or lesser value, often in wildly different industries from themselves. The crux of this boom was, again, the price-earnings multiplier: As a conglomerate absorbed more companies, thereby raising earnings, its multiplier would grow as well—but the <strong>multiplier would often outpace the actual earnings</strong>. When the conglomerates’ earnings came in far lower than the multiplier’s calculation, prices tumbled.</p>
+<h5 id="the-rise-of-concept-stocks">The Rise of “Concept” Stocks</h5>
+<p>In the later years of the decade, risk-taking fund managers banked on so-called “concept” stocks—shares in firms with a dynamic leader or good “story.” Of course, in many cases,<strong> the stories were too good to be true</strong>—the firms had no revenue-generating potential, and the stock prices were revealed to be absurdly inflated.</p>
+<h4 id="the-1970s">The 1970s</h4>
+<h5 id="the-turn-to-blue-chip-companies">The Turn to Blue-Chip Companies</h5>
+<p>After the boom and bust of conglomerates and concept stocks in the ’60s, finance professionals placed their bets on so-called “blue-chip” companies: Firms with household names, like IBM, Disney, and McDonalds, whose growth potential was taken for granted....</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Chapter 4: 21st-Century Booms and Busts</h2><div><p>...</p>
+<p>Of course, this is precisely what happened. In January of 2000, the price-earnings multiples of stocks in the NASDAQ Index—the index of technology and Internet stocks—were over 100, and investors expected returns of between 15 and 25 percent on Internet stocks. When the bubble burst later in the year, <strong>many Internet stocks became worthless</strong>, and blue-chip Internet stocks like Cisco and Amazon lost 86.5% and 98.7% of their value.</p>
+<p>(Shortform note: From a high of $75.25 in 2000, Amazon fell to a low of $5.51 in 2001–2002. In May 2020,<strong> Amazon stock traded for $2,411.03</strong>.)</p>
+<h4 id="the-role-of-finance-professionals">The Role of Finance Professionals</h4>
+<p>Driving the absurdly bullish attitude toward tech stocks were the finance professionals with whom many Americans trust their life savings.</p>
+<p>One major moral hazard that encouraged financial professionals’ magical thinking was the porous boundary between Wall Street firms’ research and investment banking arms. An investment company’s analysts are supposed to work on behalf of investors, communicating information as truthful and accurate as possible to the ones risking their money. A firm’s investment banking business, on the other hand,** caters to corporate clients who...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Part 2: Classic Methods of Analysis | Chapter 5: The Canard of Technical Analysis</h2><div><p>...</p>
+<p>In practice, what this means is that technical analysts will study a stock’s charts to deduce trends. If there’s an “uptrend”—in other words, the stock price has risen over the course of a day or several days—then the chartist will be bullish on the stock. A head-and-shoulders pattern—where there’s a rise and fall, a greater rise and fall, and then a rise and fall similar to the first—indicates that a stock may have reached its “resistance level” and is due for a downturn.</p>
+<h3 id="does-technical-analysis-have-any-validity">Does Technical Analysis Have Any Validity?</h3>
+<p>Despite its seeming arbitrariness, technical analysis does indeed have a logic.</p>
+<ul>
+<li><strong>Technical analysts bank on mass psychology</strong>. They presume that when investors see a stock rising, they’ll hop on the bandwagon, driving the price even higher.</li>
+<li><strong>Technical analysts assume unequal access to information</strong>. If a price is rising, chartists theorize that company insiders or more expert observers know something the wider market doesn’t and are driving up the price by buying stock.</li>
+<li><strong>Technical analysts believe prices have a delayed reaction to new information</strong>. Some research suggests that when “earnings surprises,” either good or bad, for a company are...</li>
+</ul>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Chapters 6-7: Fundamental Analysis: The Equally Flawed Alternative</h2><div><p>...</p>
+<p>Generally speaking,<strong> the fundamentalist investor will pay a higher price for stock in a high-growth company</strong> (especially if that company is built to last).</p>
+<h5 id="principle-2-accept-a-higher-price-for-large-dividends">Principle #2: Accept a Higher Price for Large Dividends</h5>
+<p>Depending on a company’s size, management, and capital strategy,<strong> the percentage of a company’s earnings paid out in dividends will vary</strong>. Which presents a dilemma for investors: Should one invest in a high-growth-potential stock that pays near zero in dividends (as high-potential stocks commonly do)? Or go with a near-peak company that pays out a lot in dividends but won’t grow much larger?</p>
+<p>If two companies have the same expected growth rate (in other words, the same or similar P/E multiples), <strong>the fundamentalist investor will pay a higher price for the company that disburses a higher proportion of earnings as dividends</strong>.</p>
+<h5 id="principle-3-accept-a-higher-price-the-less-risky-the-stock">Principle #3: Accept a Higher Price the Less Risky the Stock</h5>
+<p>Stock prices often reflect the relative risk of an investor’s stake. For example, a “blue chip” stock—that is, stock in a well-established company more or less resilient to recessions—will sell at a premium, whereas shares in an unproven company will likely be...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Part 3: New Investment Strategies | Chapter 8: Modern Portfolio Theory (MPT)</h2><div><p>...</p>
+<p>Economists of finance typically define risk in terms of returns’ “variance” from the mean return. Simply put,<strong> the more widely dispersed real returns are around the average, the more risky the stock</strong>. For example, consider Stock 1, whose returns over the last three years are -5%, 0%, and 5%. The mean return for Stock 1 is 0%. Now examine Stock 2, whose returns over the last three years are -25%, 3%, and 22%. The mean return for Stock 2 is also 0%, but the variance is greater due to the wider dispersion around the mean—that is, <strong>an investor in Stock 2 will be assuming more risk</strong>.</p>
+<h3 id="how-mpt-manages-risk">How MPT Manages Risk</h3>
+<p>Essentially, MPT mitigates a portfolio’s overall risk by <strong>offsetting the risks of certain stocks with those of <em>other</em> stocks</strong>. These various levels of risk are determined by analyzing the “covariance”—that is, the relative variance—between two or more stocks and deducing a “correlation coefficient”—a single number between 1 and -1 that defines their relation.</p>
+<p>For example, take two stocks, one an airline company, another a commercial aircraft manufacturer. If real-world events—say, a global pandemic—severely reduce consumers’ air travel, both stocks will suffer...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_why_best"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><!----><!----><section class="public-pdf__why-best"><div class="public-pdf__container public-pdf__why-best-container"><div class="row justify-content-center text-center"><h2 class="public-pdf__why-best-title"> Why are Shortform Summaries the Best? </h2><p class="public-pdf__why-best-subtitle ab-13448-pdf-why-best-subtitle"> We're the most efficient way to learn the most useful ideas from a book. </p></div><div><div><div class="public-pdf__why-best-items"><div class="public-pdf__why-best-item"><div class="public-pdf__circle-wrapper"><div class="public-pdf__circle public-pdf__bg-gradient-yellow"></div></div><h4 class="public-pdf__why-best-red ab-13448-best-items-red-title"> Cuts Out the Fluff </h4><p class="ab-13448-best-items-red-paragraph-1"> Ever feel a book rambles on, giving anecdotes that aren't useful? Often get frustrated by an author who doesn't get to the point? </p><p class="ab-13448-best-items-red-paragraph-2"> We cut out the fluff, keeping only the most useful examples and ideas. We also re-organize books for clarity, putting the most important principles first, so you can learn faster. </p></div><div class="public-pdf__why-best-item"><div class="public-pdf__circle-wrapper"><div class="public-pdf__circle public-pdf__bg-gradient-green"></div></div><h4 class="public-pdf__why-best-green ab-13448-best-items-green-title"> Always Comprehensive </h4><p class="ab-13448-best-items-green-paragraph-1"> Other summaries give you just a highlight of some of the ideas in a book. We find these too vague to be satisfying. </p><p class="ab-13448-best-items-green-paragraph-2"> At Shortform, we want to cover <strong>every point worth knowing in the book</strong>. Learn nuances, key examples, and critical details on how to apply the ideas. </p></div><div class="public-pdf__why-best-item"><div class="public-pdf__circle-wrapper"><div class="public-pdf__circle public-pdf__bg-gradient-blue"></div></div><h4 class="public-pdf__why-best-blue ab-13448-best-items-blue-title"> 3 Different Levels of Detail </h4><p class="ab-13448-best-items-blue-paragraph-1"> You want different levels of detail at different times. That's why every book is summarized in three lengths: </p><p class="ab-13448-best-items-blue-paragraph-2"> 1) Paragraph to get the gist<br> 2) 1-page summary, to get the main takeaways<br> 3) Full comprehensive summary and analysis, containing every useful point and example </p></div></div><div class="public-pdf__button-wrapper"><a href="/app/signup" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Sign up for free book</span><!----></a></div></div></div></div></section></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Chapter 9: Leveraging Risk</h2><div><p>...</p>
+<p>A stock’s “systematic” risk—its<strong> “beta”</strong>—consists in its<strong> sensitivity to the stock market in general</strong>. For example, say that the biopharma company we’ve been discussing has received funds for five years of work. For those five years,<strong> the company might have relatively low systematic risk</strong>—given the fact its funding is already in hand, its operations might not be much affected by market volatility.</p>
+<p>As you might expect, <strong>beta <em>cannot </em>be diversified away</strong>. This is because all stocks, to some degree or other, parallel the market (that is, when the market falls, by definition so too do stocks in general). At least in terms of common stocks, <strong>there is no such thing as a risk-free investment</strong>; even the most diversified holdings—for example, those contained in a broad market index fund—entail some risk.</p>
+<p>Individual betas are calculated using relatively high-level mathematics, but the concept behind the math is simple: A stock’s beta consists in a comparison of its<strong> price movements over a certain period of time with the market’s movements over that same period</strong>.</p>
+<p>In practice, beta analysis looks like this: A broad market index is assigned a beta of 1, and stocks’ betas...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Chapter 10: The New New Portfolio Theories</h2><div><p>...</p>
+<h4 id="four-flavors">Four Flavors</h4>
+<p>Four common portfolio flavors that investors tend toward include:</p>
+<h5 id="value">Value</h5>
+<p>Preached by early investment sages like David Dodd and Benjamin Graham—and later adopted by Warren Buffett—“value” investing consists in buying stocks with (1) low price-earnings multiples and (2) low price–book value ratios. More rudimentarily, it means investing in companies that are <strong>realizing revenues currently and consistently<em> </em></strong>rather than those promising exponential future growth.</p>
+<h5 id="small-companies">Small Companies</h5>
+<p><strong>A portfolio flavored in favor of smaller stocks may result in larger returns</strong>. One study examined returns from 1926 to the present and found small-company stocks produced returns about 2% higher than large-companies’. The Sharpe ratio of small-company stocks over approximately the same period was .23—which means that a diversified portfolio with a tilt toward smaller stocks might raise the overall portfolio’s ratio above the market’s.</p>
+<h5 id="momentum">Momentum</h5>
+<p>As noted above, in the long run, there’s no discernable “momentum” in stocks’ prices—rather, their price increases and decreases resemble a “random walk.” However, <em>in the short run</em>, **there is some evidence to...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Chapter 11: Irrational Investors</h2><div><p>...</p>
+<p>As always, a <strong>buy-and-hold strategy is superior to trying to beat the market</strong>.</p>
+<p>3) <strong>Sell Losers, Not Winners</strong></p>
+<p>If you do decide to trade, make sure<strong> you sell your losers, not your winners</strong>.</p>
+<p>Most investors think it’s best to unload stocks that have risen in value (to realize a gain) and hold on to stocks that have declined in value (to avoid realizing a loss). As noted above, <strong>selling a winning stock can result in prohibitive tax liability</strong>.</p>
+<p>And although holding on to a sinking stock <em>can </em>be worthwhile—if the stock has a chance to rebound—<strong>it’s often better to unload that stock and realize the tax breaks of the loss</strong>.</p>
+<p>4) <strong>Don’t Fall for IPOs</strong></p>
+<p>Even the savviest investors are prone to falling for “get rich quick” schemes, and few are as prevalent and as pernicious as <strong>highly publicized initial public offerings</strong>.</p>
+<p>Simply put, an individual investor should <strong>never buy an IPO at its initial price</strong>. Though the stock may pop right after trading begins—because institutional investors are snapping up the stock at the offering price—studies have shown that IPOs underperform the stock market by about 4% per annum. And it’s common to see** IPO values drop exactly six...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Part 4: A User’s Guide to Investing | Chapter 12: The Basics</h2><div><p>...</p>
+<p>Although the high-premium products have advantages—primarily tax-free contributions—the commissions and fees can be prohibitive. <strong>Thus Malkiel favors buying low-premium term insurance</strong> and investing the difference between the high-premium product and the low-premium product in a tax-deferred retirement plan.</p>
+<p>(The same advice applies to variable-annuity products, which typically tack on an insurance feature to an investment product like a mutual fund. These products often entail <strong>steep commissions and fees</strong>—unnecessary expenses for the typical investor. Only extremely high-wealth individuals who’ve maxed out all other tax-deferred alternatives should consider annuities.)</p>
+<p>Ideally, the term insurance product will be renewable without the need for a doctor’s visit and <strong>feature an “A” rating from A.M. Best</strong> (don’t buy anything with a rating lower than “A”). And you should <strong>shop around for the best product on your own</strong> rather than consulting an insurance agent—the agent’s commission will be tacked onto your premium payment.</p>
+<h3 id="principle-3-set-up-your-cash-to-keep-pace-with-inflation">Principle #3: Set Up Your Cash to Keep Pace With Inflation</h3>
+<p>Keeping a robust cash reserve is essential for emergencies, but it can also be a losing...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Chapter 13: Projecting Returns</h2><div><p>...</p>
+<p>To calculate returns in the short run, investors must include a third term:<strong> the price/earnings multiple</strong>. (Analysts will also sometimes use the price/<em>dividend</em> multiple). These ratios of share price to earnings/dividends are <strong>highly variable year to year</strong>, and so they better reflect the impact of short-run market conditions on returns.</p>
+<p>Take Thingamajig again. You’ve bought a share at $100, with a dividend yield of 5% and an estimated annual growth rate of 5%. Let’s say Thingamajig reports earnings of $10 per share. That means its P/E multiple is 10 (because a share of Thingamajig sells for 10x its per-share earnings). Now, imagine a year after you bought Thingamajig, the market enters a recession, and its price plummets to $50. Even if earnings and dividends stay constant, you end up with a lower return at the end of that year—<strong>because the P/E multiple has been reduced by half</strong>.</p>
+<h5 id="the-decline-of-dividends">The Decline of Dividends</h5>
+<p>Some security analysts argue that dividends are no longer a useful indicator of future returns. This is because more and more companies are electing to distribute profits to shareholders through <strong>stock buybacks rather than dividends</strong>.</p>
+<p>The rationale for...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Chapter 14: Age-Calibrated Strategies</h2><div><p>...</p>
+<p>Bonds, too, mellow with age. If you’re able to hold a bond until maturity, you should see a return at or near the initial yield. If you have to sell the bond a year after you’ve purchased it, though, <strong>you might see a null or negative return</strong>.</p>
+<p>As noted above, the longer you can hold onto your investments—that is, <strong>if you’re currently earning a wage and have no need to sell assets to maintain your quality of life</strong>—the more common stock you should have in your portfolio. If you’re <strong>past working age and need a reliable stream of income</strong> from your investments, a <strong>higher concentration of bonds</strong> is the more prudent choice.</p>
+<h4 id="3-reduce-risk-further-with-dollar-cost-averaging">3) Reduce Risk Further With Dollar-Cost Averaging</h4>
+<p>Dollar-cost averaging is simply a fancy term for<strong> investing in fixed amounts at regular intervals over a long period of time</strong>. The classic example is electing to contribute some percentage of your monthly paycheck to a 401(k). By investing regularly and in consistent amounts over an extended period, <strong>you mitigate the risk of buying into the market at inflated prices </strong>(because the market will fluctuate over the period you’re investing).</p>
+<p>For example, if you had made an initial investment of $500...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Chapter 15: Picking Stocks</h2><div><p>...</p>
+<p>Not only are returns better with broad market index funds,<strong> fees and expenses tend to be, too</strong>. Because index funds are passively managed—that is, they adjust their holdings more or less automatically on the basis of market values—they tend to have extremely low expense ratios (.0005% or less for some). And because index funds only trade to rebalance their weights,<strong> they incur low trading costs as well</strong>.</p>
+<p>While the S&amp;P 500 index funds are generally the most popular type of index fund—and they will outperform actively managed funds on average—Malkiel actually recommends that investors choose<strong> a total market index fund</strong> over an S&amp;P 500 fund. This is because the <strong>S&amp;P 500 index excludes smaller stocks</strong> that, historically and on average, <strong>have outperformed larger ones</strong>. Try to find a fund indexed to the Russell 3000, the Wilshire Total Market Index, the CRSP Index, or the MSCI US Broad Market Index.</p>
+<p>Of course, as Modern Portfolio Theory teaches (see Chapter 8), diversification is the key to a successful portfolio. But one need not abandon index funds to diversify:** There are funds that track REIT, corporate bonds, international capital, and emerging market...</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><div class="public-pdf__wrapper_chapter"><div class="public-pdf__content main-content container"><div class="public-pdf__content"><section class="public-pdf__public-summary" rendercommentaries="true"><div class="public-pdf__container"><div><div class="public-pdf__chapter-text"><div><h2>PDF Summary  Epilogue: The Index Fund Backlash</h2><div><p>...</p>
+<p>Simply put, as far Malkiel is concerned, <strong>index funds are a clear positive for individual investors</strong>—and for society as a whole.</p>
+</div><div class="public-pdf__eoc-relative"><div class="public-pdf__fade"></div></div><div class="public-pdf__button-wrapper"><a href="/app/book/a-random-walk-down-wall-street" class="app-btn button button--theme" disabled="false"><span class="app-btn__content"><span class="iconfont"></span>Read full PDF summary</span><!----></a></div></div></div></div></div></section><!----><!----></div></div></div><footer class="footer border-top"><div class="container"><div class="footer__logos"><a href="/" class="footer__logo"><img class="footer__logo-img" src="/pdf/public-assets/img/logo.1fcd5cb3.svg" alt="Shortform - Book Summary"></a><div class="apps"><a id="appstore_link_bottom" class="apps__link" href="https://apps.apple.com/us/app/shortform/id1489472007" target="_blank"><img class="apps__img" src="/pdf/public-assets/img/app.5105fa9a.svg" alt="Download from App Store"></a><a id="googleplay_link_bottom" class="apps__link" href="https://play.google.com/store/apps/details?id=com.shortform.app" target="_blank"><img class="apps__img" src="/pdf/public-assets/img/google.1aa3507c.svg" alt="Download on Google Play"></a></div></div><div class="quick-links border-top"><div class="quick-links__item quick-links__item--menu"><h3 class="quick-links__title">Menu</h3><ul class="footer-menu"><li class="footer-menu__item"><a href="/" class="footer-menu__link">Home</a></li><li class="footer-menu__item"><a href="/summaries" class="footer-menu__link">Our Content</a></li><li class="footer-menu__item"><a href="/pricing" class="footer-menu__link">Pricing</a></li><li class="footer-menu__item"><a href="/about" class="footer-menu__link">About</a></li></ul></div><div class="quick-links__item quick-links__item--categories"><h3 class="quick-links__title">Popular Categories</h3><div class="flex"><ul class="footer-menu"><li class="footer-menu__item"><a class="footer-menu__link" href="https://www.shortform.com/best-books/genre/best-management-books-of-all-time">Management &amp; Leadership</a></li><li class="footer-menu__item"><a class="footer-menu__link" href="https://www.shortform.com/best-books/genre/best-business-books-of-all-time">Business</a></li><li class="footer-menu__item"><a class="footer-menu__link" href="https://www.shortform.com/best-books/genre/best-entrepreneurship-books-of-all-time">Entrepreneurship</a></li><li class="footer-menu__item"><a class="footer-menu__link" href="https://www.shortform.com/best-books/genre/best-money-books-of-all-time">Money &amp; Finance</a></li></ul><ul class="footer-menu"><li class="footer-menu__item"><a class="footer-menu__link" href="https://www.shortform.com/best-books/genre/best-career-guide-books-of-all-time">Career &amp; Success</a></li><li class="footer-menu__item"><a class="footer-menu__link" href="https://www.shortform.com/best-books/genre/best-productivity-books-of-all-time">Productivity</a></li><li class="footer-menu__item"><a class="footer-menu__link" href="https://www.shortform.com/best-books/genre/best-health-books-of-all-time">Health &amp; Well-Being</a></li><li class="footer-menu__item"><a class="footer-menu__link" href="https://www.shortform.com/best-books/genre/best-communication-books-of-all-time">Communication</a></li></ul></div></div><div class="quick-links__item quick-links__item--summaries"><h3 class="quick-links__title"><span>Popular Book Guides</span></h3><ul class="footer-menu"><li class="footer-menu__item"><a class="footer-menu__link" href="/summary/the-7-habits-of-highly-effective-people-summary-stephen-covey">The 7 Habits of Highly Effective People</a></li><li class="footer-menu__item"><a class="footer-menu__link" href="/summary/rich-dad-poor-dad-summary-robert-kiyosaki">Rich Dad, Poor Dad</a></li><li class="footer-menu__item"><a class="footer-menu__link" href="/summary/the-4-hour-workweek-summary-tim-ferriss">The 4-Hour Workweek</a></li><li class="footer-menu__item"><a class="footer-menu__link" href="/summary/the-power-of-habit-summary-charles-duhigg">The Power of Habit</a></li></ul></div><div class="quick-links__item quick-links__item--contact"><h3 class="quick-links__title">Contact Us</h3><ul class="footer-menu"><li class="footer-menu__item"><a class="footer-menu__link" href="mailto:help@shortform.com"><span class="footer-menu__link-img"><img src="/pdf/public-assets/img/email.0194922f.svg" alt=""></span><span>help@shortform.com</span></a></li><li class="footer-menu__item"><span class="footer-menu__link"><span class="footer-menu__link-img"><img src="/pdf/public-assets/img/map.a437a6b3.svg" alt=""></span><span>1449 S. Michigan Ave Ste 13130 Chicago, IL 60605</span></span></li></ul></div></div><div class="footer__copyright-social border-top"><div class="copyright"><p class="copyright__text"> Copyright © 2026 ShortForm™ | All Rights Reserved | <a href="/privacy" class="copyright__link">Privacy</a> | <a href="/terms" class="copyright__link">Terms</a></p></div><div class="social"><a class="iconfont icon-facebook social__icon" href="https://www.facebook.com/shortformhq" title="Facebook"></a><a class="iconfont icon-instagram social__icon" href="https://www.instagram.com/_shortform" title="Instagram"></a><a class="iconfont icon-linkedin social__icon" href="https://www.linkedin.com/company/shortform-summaries" title="LinkedIn"></a></div></div></div></footer></div></div></div><script src="/pdf/public-assets/js/pdf-public-vendors.531d65b4.js"></script>
+<script src="/pdf/public-assets/js/pdf-public.7d61d998.js"></script>
+</body></html>

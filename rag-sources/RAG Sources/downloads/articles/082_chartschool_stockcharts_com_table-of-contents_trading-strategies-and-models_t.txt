@@ -1,0 +1,169 @@
+KÄLLA: https://chartschool.stockcharts.com/table-of-contents/trading-strategies-and-models/trading-strategies/ichimoku-cloud-trading-strategies
+TITEL: Ichimoku Cloud Trading Strategies | ChartSchool | StockCharts.com
+================================================================================
+
+hashtag
+
+What Is the Ichimoku Cloud?
+
+Even though the name implies one cloud, the Ichimoku Cloud is really a set of indicators designed as a standalone trading system. These indicators can identify support and resistance, determine trend direction, and generate trading signals.
+
+Ichimoku Kinko Hyo
+
+, the Japanese name for the technique, is translated as “one look equilibrium chart.” With one look, you can identify the trend and look for potential signals within that trend.
+
+hashtag
+
+What Are the Ichimoku Cloud's Five Components?
+
+There are five lines on the Ichimoku Cloud chart at any given time, so let's review the indicators before looking at strategy in depth. See our ChartSchool article for
+
+a detailed article on the Ichimoku Cloud
+
+. The Japanese name is shown first, followed by the English translation in parentheses. This article will use the English translations.
+
+Chart 1  -  Ichimoku Trading Strategy
+
+Tenkan-sen (Conversion Line):
+
+(9-period high + 9-period low)/2
+
+On a daily chart, this line is the midpoint of the 9-day high-low range, almost two weeks.
+
+Kijun-sen (Base Line):
+
+(26-period high + 26-period low)/2
+
+On a daily chart, this line is the midpoint of the 26-day high-low range, almost one month.
+
+Senkou Span A (Leading Span A):
+
+(Conversion Line + Base Line)/2
+
+This is the midpoint between the Conversion Line and the Base Line. The Leading Span A forms one of the two Cloud boundaries. It is referred to as “Leading” because it is plotted 26 periods in the future and forms the faster Cloud boundary.
+
+Senkou Span B (Leading Span B):
+
+(52-period high + 52-period low)/2
+
+On the daily chart, this line is the midpoint of the 52-day high-low range, a little less than three months. The default calculation setting is 52 periods, but it can be adjusted. This value is plotted 26 periods in the future and forms the slower Cloud boundary.
+
+Chikou Span:
+
+The chikou span, aka “lagging span,” is the current period's closing price plotted 26 days back on the chart. This line shows buying pressure in relation to “current” prices, possible areas of support and resistance, and trend reversals.
+
+hashtag
+
+Trading Strategy Based on Ichimoku Cloud
+
+Chartists use the actual cloud to identify the overall trend and establish a trading bias. Once a bias is established, chartists wait for a correction when prices cross the Base Line (red line). An actual signal triggers when prices cross the Conversion Line (blue line) to signal an end to the correction.
+
+This trading strategy will set three criteria for a bullish signal. First, the trading bias is bullish when prices are above the lowest line of the cloud. In other words, prices are either above or above cloud support. Second, price moves below the Base Line to signal a pullback and improve the risk-reward ratio for new long positions. Third, a bullish signal triggers when prices reverse and move above the Conversion Line.
+
+As you can see, the three criteria will not be met in just one day. There is a pecking order to the process. First, the trend is bullish as defined by the cloud. Second, the stock pulls back with a move below the Base Line. Third, the stock turns back up with a move above the Conversion Line.
+
+Buy Signal Recap:
+
+Price is above the lowest line of the cloud (bullish bias)
+
+Price moves below the Base Line (pullback)
+
+Price Moves above the Conversion Line (upturn)
+
+Chart 2  -  Ichimoku Trading Strategy
+
+There are also three criteria for a bearish signal. First, the trading bias is bearish when prices are below the highest line of the cloud. This means price is either below the cloud or has yet to break above cloud resistance. Second, price moves above the Base Line to signal a bounce within a bigger downtrend. Third, a bearish signal triggers when prices reverse and move below the Conversion Line.
+
+Sell Signal Recap:
+
+Price is below the highest line of the cloud (bearish bias)
+
+Price moves above the Base Line (bounce)
+
+Price moves below the Conversion Line (downturn)
+
+Chart 3  -  Ichimoku Trading Strategy
+
+hashtag
+
+Trading Example
+
+The examples below show Sandisk (SNDK) with five different trading biases over a twelve-month period. Even though the stock declined from January 2011 until August 2011, the trading bias shifted three times from January to June (blue box). Signals 1 and 2 resulted in whipsaws because the SNDK did not hold the cloud. The trading bias can change often for volatile stocks because the cloud is based on lagging indicators.
+
+Chart 4  -  Ichimoku Trading Strategy
+
+A relatively strong trend is required to sustain a trading bias. Prices remain above the lower cloud line during a strong uptrend and below the upper cloud line during a strong downtrend. The trading bias shifted to bearish in early June and remained bearish as a strong decline unfolded. There were two sell signals during this period: Signal 3 resulted in a whipsaw, but Signal 4 preceded a sharp decline.
+
+Chart 5  -  Ichimoku Trading Strategy
+
+After a sharp reversal in August, the trading bias turned bullish with the upside breakout in September and remained bullish as the advance extended. The first pullback produced a buy signal (5) with a dip below the Base Line (red) and a subsequent move above the Conversion Line (blue). There were two more buy signals during the consolidation period (6 & 7).
+
+hashtag
+
+Adjusting
+
+Chartists can use volume to confirm signals, especially buy signals. A buy signal with expanding volume would carry more weight than a buy signal on low volume. Expanding volume shows strong interest, which increases the chances of a sustainable advance.
+
+Chartists also need to consider a strategy for stops, which can be based on indicators or key levels on the actual price chart. The low just before a buy signal would be logical for an initial stop-loss after a buy signal. The high just before a sell signal would be logical for an initial stop-loss after a sell signal.
+
+Chart 6  -  Ichimoku Trading Strategy
+
+Once the trade is underway and prices move in a favorable direction, chartists should consider a trailing stop to lock in profits. The example above shows Novellus (NVLS) with the Parabolic SAR for trailing stops. The indicator window shows the Average True Range (ATR), which can be used to set a volatility-type stop. Some traders set stops two ATRs below current prices for long positions and two ATRs above current prices on short positions.
+
+hashtag
+
+The Bottom Line
+
+This Ichimoku Cloud system provides chartists with a means of identifying a trading bias, spotting corrections, and timing turning points. The cloud sets the overall tone and provides a longer perspective on the price trend. The Conversion Line (blue) is a relatively short-term indicator that catches turns early. Catching the turn early will improve the risk-reward ratio for trades. Remember that this article is designed as a starting point for developing a trading system. Use these ideas to augment your trading style, risk-reward preferences, and personal judgments.
+
+Click here
+
+arrow-up-right
+
+for a chart of IBM with the Ichimoku trading strategy.
+
+hashtag
+
+Suggested Scans
+
+hashtag
+
+Ichimoku Buy Signal
+
+This scan searches for stocks on an Ichimoku Buy Signal.
+
+hashtag
+
+Ichimoku Sell Signal
+
+This scan searches for stocks on an Ichimoku Sell Signal.
+
+hashtag
+
+Further Study
+
+Ichimoku Charts
+
+arrow-up-right
+
+Nicole Elliott
+
+arrow-up-right
+
+Previous
+
+Hindenburg Omen
+
+chevron-left
+
+Next
+
+The 'Last' Stochastic Technique
+
+chevron-right
+
+Last updated
+
+1 year ago
+
+Was this helpful?

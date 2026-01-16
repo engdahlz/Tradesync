@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "tradesync-ai-prod"
+  },
+  "targets": {},
+  "etags": {}
+}

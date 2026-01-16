@@ -1,0 +1,307 @@
+KÄLLA: https://deepvue.com/indicators/on-balance-volume-obv/
+TITEL: How Traders Actually Use On-Balance Volume (OBV) | 2026
+================================================================================
+
+Indicators
+
+How Traders Actually Use On-Balance Volume (OBV)
+
+Deepvue
+
+Last Updated:
+
+January 4, 2025
+
+Share
+
+Copy Link
+
+Share on X
+
+Share on Facebook
+
+Share on Linkedin
+
+What Is On-Balance Volume?
+
+On-Balance Volume
+
+(
+
+OBV
+
+) is a momentum indicator built around one idea: volume moves
+
+before
+
+price. It’s not about how much a stock moved—it’s about how much buying or selling power was behind the move.
+
+Developed by Joseph Granville in 1963, OBV was his answer to the problem of price lag. He saw volume as a pressure gauge, building up quietly before an inevitable release. Think of it as a coiled spring on your chart.
+
+OBV adds volume on up days, subtracts it on down days, and ignores sideways noise. The math is simple. The impact isn’t.
+
+The OBV Formula (Without the Noise)
+
+Let’s keep it clean:
+
+If today’s close > yesterday’s close → OBV = Yesterday’s OBV + Today’s volume
+
+If today’s close < yesterday’s close → OBV = Yesterday’s OBV – Today’s volume
+
+If unchanged → OBV stays the same
+
+That’s it. The result is a running tally of volume pressure. Ignore the absolute number. What matters is the slope.
+
+Why OBV Still Matters
+
+1. It Spots the Smart Money
+
+OBV is a favorite for tracking institutional accumulation or distribution before price reacts. If volume spikes while price stalls, someone’s loading up.
+
+When price finally catches up, it’s usually late. That’s why smart traders often combine OBV with
+
+institutional ownership insights
+
+.
+
+2. Divergences Are the Main Course
+
+The best OBV signals come when price and volume disagree:
+
+Positive Divergence:
+
+Price hits new lows, but OBV doesn’t? Selling pressure is drying up.
+
+Negative Divergence:
+
+Price makes new highs, but OBV flattens or falls? The rally’s running out of gas.
+
+3. Breakouts That Stick
+
+When OBV breaks a trendline
+
+before
+
+price does, that’s your whisper. Watch for price to follow.
+
+Combine it with a moving average
+
+or support level, and it’s no longer just a hunch.
+
+OBV in Action: A Quick Walkthrough
+
+Say a stock closes higher five days in a row, then falls for three, flattens, then ticks up again.
+
+Volume from up days is added
+
+Volume from down days is subtracted
+
+Flat days? Ignored
+
+Your OBV line will mirror the market’s pressure—not the price chop. Here’s what that might look like across 10 sessions:
+
+Day
+
+Close
+
+Volume
+
+OBV
+
+1
+
+10.00
+
+25,200
+
+0
+
+2
+
+10.15
+
+30,000
+
+30,000
+
+3
+
+10.17
+
+25,600
+
+55,600
+
+4
+
+10.13
+
+32,000
+
+23,600
+
+5
+
+10.11
+
+23,000
+
+600
+
+6
+
+10.15
+
+40,000
+
+40,600
+
+7
+
+10.20
+
+36,000
+
+76,600
+
+8
+
+10.20
+
+20,500
+
+76,600
+
+9
+
+10.22
+
+23,000
+
+99,600
+
+10
+
+10.21
+
+27,500
+
+72,100
+
+Up days? Add volume. Down days? Subtract. OBV isn’t about where the price ends—it’s about who was moving the needle.
+
+OBV vs. Accumulation/Distribution
+
+Same goals, different paths.
+
+OBV:
+
+Binary logic. Up or down close? All-in volume or nothing.
+
+Accumulation/Distribution (A/D):
+
+More nuanced. It weighs where price closed within the day’s range.
+
+OBV is blunt but fast. A/D adds detail, but can lag.
+
+Limitations (Don’t Skip This)
+
+OBV is a
+
+leading
+
+indicator. That’s both its edge and its flaw.
+
+It can get ahead of itself.
+
+Spikes in volume (news, earnings, ETF rebalancing) can distort the line for days.
+
+Works better when paired with lagging indicators like moving averages.
+
+Also, remember this: OBV’s value is cumulative
+
+from a starting point you pick
+
+. That means comparing OBV across assets is pointless. Only compare slopes, trends, and divergences.
+
+When OBV Actually Helps
+
+Trend Confirmation:
+
+If OBV confirms higher highs, the trend’s alive. If not, look closer.
+
+Trading Ranges:
+
+Rising OBV in a range = quiet accumulation. Falling OBV = stealth exit.
+
+Breakout Spotting:
+
+If OBV breaks out before price, it’s your advance scout—especially helpful when
+
+screening for breakout stocks
+
+.
+
+Final Word
+
+OBV isn’t magic. It won’t give you a buy signal in neon lights. But it’s a damn good way to see what the big money’s doing before the crowd notices.
+
+It’s clean, direct, and unfiltered. Just how volume should be.
+
+Frequently asked questions
+
+Is On-Balance Volume better than using raw volume bars?
+
+Yes. On-Balance Volume gives cumulative context to trading volume, while raw volume bars just show isolated spikes. If you’re trying to read market intent—not just noise—On-Balance Volume tells you who’s really moving.
+
+Can I use On-Balance Volume for intraday trading?
+
+You can, but On-Balance Volume works better on daily or weekly charts. Intraday moves often include noise and false signals. On-Balance Volume needs time to show real accumulation or distribution.
+
+Should I trade solely based on On-Balance Volume?
+
+No. On-Balance Volume is a directional tool. It tells you where pressure is building but not when to act. Use it with price structure or trend-following indicators for a full picture.
+
+Does On-Balance Volume work in all market conditions?
+
+On-Balance Volume performs best in trending or coiling markets. In sideways, low-volume chop, signals can get murky. Wait for volume direction to clean up before relying on On-Balance Volume signals.
+
+Related articles
+
+Explore relevant educational content & features.
+
+Explore
+
+Indicators
+
+5 Secrets to Find Winning Relative Strength Stocks
+
+December 21, 2025
+
+[kt_reading_time]
+
+Indicators
+
+Use Relative Measured Extension To Sell Into Strength
+
+September 16, 2025
+
+[kt_reading_time]
+
+Indicators
+
+3 Must-Know Mike Webster Indicators That Could Transform Your Trading
+
+August 7, 2025
+
+[kt_reading_time]
+
+Indicators
+
+Market Timing Made Easy With The Market Cycle Indicator
+
+May 16, 2025
+
+[kt_reading_time]
+
+Deepvue – Isolated WordPress Footer

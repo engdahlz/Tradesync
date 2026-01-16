@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Google Finance (Material 3) Theme */
+    --background: 0 0% 100%;
+    /* #FFFFFF */
+    --foreground: 210 11% 15%;
+    /* #202124 */
+
+    --card: 0 0% 100%;
+    /* #FFFFFF */
+    --card-foreground: 210 11% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 11% 15%;
+
+    --primary: 214 82% 51%;
+    /* #1A73E8 (Google Blue) */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 17% 95%;
+    /* #F1F3F4 */
+    --secondary-foreground: 210 11% 15%;
+
+    --muted: 210 17% 98%;
+    /* #F8F9FA */
+    --muted-foreground: 215 8% 41%;
+    /* #5F6368 */
+
+    --accent: 214 82% 51%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 354 71% 55%;
+    /* #D93025 (Google Red) */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 214 9% 88%;
+    /* #DADCE0 */
+    --input: 214 9% 88%;
+    --ring: 214 82% 51%;
+
+    --radius: 0.5rem;
+    /* 8px for cards, 24px for pills usually manually set */
+
+    /* Google-specific Chart Colors */
+    --ts-green: 145 74% 33%;
+    /* #137333 */
+    --ts-red: 354 71% 55%;
+    /* #A50E0E */
+    --ts-blue: 214 82% 51%;
+    /* #1A73E8 */
+  }
+
+  .dark {
+    /* Google Dark Mode (Optional Future Support - Stick to Light for now per request "clone") */
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Material 3 Card Style */
+.m3-card {
+  @apply bg-card text-card-foreground border border-border rounded-xl;
+  /* Google Finance cards have very subtle borders, no shadow usually, or very light shadow */
+}
+
+/* Google-style Pill Button */
+.google-pill {
+  @apply px-4 py-1.5 rounded-full border border-border text-sm font-medium hover:bg-secondary transition-colors;
+}
+
+.google-pill-active {
+  @apply px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-transparent text-sm font-medium;
+}
+
+/* Animations */
+@keyframes flashGreen {
+  0% {
+    @apply bg-green-100;
+  }
+
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes flashRed {
+  0% {
+    @apply bg-red-100;
+  }
+
+  100% {
+    background-color: transparent;
+  }
+}
+
+.flash-green {
+  animation: flashGreen 0.5s ease-out;
+}
+
+.flash-red {
+  animation: flashRed 0.5s ease-out;
+}

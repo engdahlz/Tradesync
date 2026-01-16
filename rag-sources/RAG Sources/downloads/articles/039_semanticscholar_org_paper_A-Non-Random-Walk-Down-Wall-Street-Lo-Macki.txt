@@ -1,0 +1,545 @@
+KÄLLA: https://www.semanticscholar.org/paper/A-Non-Random-Walk-Down-Wall-Street-Lo-Mackinlay/cb40cc3c2039e68dd794e93d561cdafc0ec3ef7e
+TITEL: [PDF] A Non-Random Walk Down Wall Street | Semantic Scholar
+================================================================================
+
+DOI:
+
+10.5860/choice.37-2272
+
+Corpus ID: 153938338
+
+A Non-Random Walk Down Wall Street
+
+@inproceedings{Lo1999ANW,
+
+title={A Non-Random Walk Down Wall Street},
+
+author={Andrew W. Lo and A. Craig Mackinlay},
+
+year={1999},
+
+url={https://api.semanticscholar.org/CorpusID:153938338}
+
+}
+
+A. Lo
+
+,
+
+A. Mackinlay
+
+Published
+
+1999
+
+Economics
+
+List of Figures List of Tables Preface 1 Introduction 1.1 The Random Walk and Efficient Markets 1.2 The Current State of Efficient Markets 1.3 Practical Implications Part I 2 Stock Market Prices Do Not Follow Random Walks: Evidence from a Simple Specification Test 2.1 The Specification Test 2.1.1 Homoskedastic Increments 2.1.2 Heteroskedastic Increments 2.2 The Random Walk Hypothesis for Weekly Returns 2.2.1 Results for Market Indexes 2.2.2 Results for Size-Based Portfolios 2.2.3 Results for…
+
+Expand
+
+View via Publisher
+
+electionsdev.calmatters.org
+
+Save to Library
+
+Save
+
+Create Alert
+
+Alert
+
+Cite
+
+Share
+
+958 Citations
+
+Highly Influential Citations
+
+38
+
+Background Citations
+
+353
+
+Methods Citations
+
+50
+
+Results Citations
+
+20
+
+View All
+
+958 Citations
+
+Citation Type
+
+Has PDF
+
+Author
+
+More Filters
+
+More Filters
+
+Filters
+
+Sort by Relevance
+
+Sort by Most Influenced Papers
+
+Sort by Citation Count
+
+Sort by Recency
+
+An analysis of the random walk hypothesis: Evidence from the Lusaka stock exchange
+
+Taniya Kabaye
+
+Economics
+
+2014
+
+ii DECLARATION iii DEDICATION iv ACKNOWLEDGMENTS v TABLE OF CONTENTS vi LIST OF FIGURES AND TABLES ix CHAPTER 1: INTRODUCTION 1 1.1.BACKGROUND 1 1.2. EFFICIENCT MARKET HYPOTHESIS 1 1.3. CONTEXT OF
+
+…
+
+Expand
+
+Save
+
+Random Walk Characteristics of Stock Returns
+
+G. Hiremath
+
+Economics
+
+2014
+
+This chapter studies the behavior of stock returns in India. For this purpose, data from 1997 to 2010 of 14 indices traded on the National stock exchange (NSE) and Bombay stock exchange (BSE) are
+
+…
+
+Expand
+
+3
+
+1 Excerpt
+
+Save
+
+An Analysis of the Random Walk Hypothesis based on Stock Prices, Dividends, and Earnings
+
+Risa Leigh Kavalerchik
+
+Economics
+
+2010
+
+This paper explores the stationarity of price movements, dividend yields, and earnings yields for stock market indices and individual stocks within the broader context of the random walk hypothesis.
+
+…
+
+Expand
+
+5
+
+[PDF]
+
+Save
+
+Random walk: statistical data analysis and application in finance
+
+Yilin Chen
+
+Economics, Business
+
+Other Conferences
+
+2022
+
+TLDR
+
+According to the statistic tests, it is revealed that both stock price and foreign exchange rate follows a random walk pattern and the price of one financial product is also independent of another product.
+
+Expand
+
+1
+
+Save
+
+Random walk or mean reversion? Empirical evidence from crude oil market.
+
+Knowledge Chinhamu
+
+D. Chikobvu
+
+Economics
+
+2013
+
+The paper investigates empirical evidence for or against the random walk theory in the crude oil market. The paper investigates whether there are periods when crude oil prices follow the random walk
+
+…
+
+Expand
+
+5
+
+PDF
+
+Save
+
+The Efficient Market, Random Walk, and the Ohlson (1995) Model
+
+S. Senthilnathan
+
+Economics
+
+2009
+
+Though the efficient market and random walk are closely related to each other, the gaining of risk free return (the result of risk free price change) indicated in efficient market needs to be
+
+…
+
+Expand
+
+1
+
+1 Excerpt
+
+Save
+
+A Variance-Ratio Test of Random Walk in International Stock Markets
+
+Bin Li
+
+Benjamin Liu
+
+Economics
+
+2012
+
+Over the past several decades, researchers in finance, economics and other related fields conduct extensive studies to examine whether stock prices follow random walk. They, using various statistical
+
+…
+
+Expand
+
+9
+
+Save
+
+Random Walk Hypothesis : Evidence from Market Efficiency of the Zimbabwe Stock Exchange
+
+Owen Jakata
+
+Patience Hlupo
+
+Cliff Gondo
+
+Economics
+
+2015
+
+This study examined whether the share prices of companies listed on the Zimbabwe Stock Exchange follow the Random Walk Hypothesis. The research was motivated by the fact that investors are interested
+
+…
+
+Expand
+
+1
+
+PDF
+
+1 Excerpt
+
+Save
+
+Random Walk, Ergodicity versus Predictability – The Case of the Budapest Stock Exchange
+
+Bélyácz Iván
+
+N. Zsolt
+
+Economics
+
+2016
+
+In financial markets, the term 'random walk' is frequently used in relation to price movement over a period of time. This highly expressive term simply means that prices do not follow a predictable
+
+…
+
+Expand
+
+2
+
+PDF
+
+Save
+
+A “ Random-walk ” through the Saudi Arabian financial market : Is the Tadawul efficient ?
+
+Bruce Q. Budd
+
+Alotaibi Faisal
+
+Economics
+
+2015
+
+This paper examines the Efficient Market Hypothesis (EMH) and Random-walk Hypothesis (RWH) using the Variance-ratio test and Runs tests for seventeen sectors of the Saudi Arabia Tadawul stock
+
+…
+
+Expand
+
+10
+
+PDF
+
+Save
+
+...
+
+1
+
+2
+
+3
+
+4
+
+5
+
+...
+
+15 References
+
+Citation Type
+
+Has PDF
+
+Author
+
+More Filters
+
+More Filters
+
+Filters
+
+Sort by Relevance
+
+Sort by Most Influenced Papers
+
+Sort by Citation Count
+
+Sort by Recency
+
+Estimating the Variances of Autocorrelations Calculated from Financial Time Series
+
+Stephen J. Taylor
+
+Economics
+
+1984
+
+SUMMARY Autocorrelation coefficients calculated from n observations are known to have variances approxi- mately equal to 1/n, for a series of independent and identically distributed variables. The
+
+…
+
+Expand
+
+35
+
+Save
+
+An Investigation of Transactions Data for NYSE Stocks
+
+R. Wood
+
+Thomas H. Mcinish
+
+J. Ord
+
+Economics, Business
+
+1985
+
+Using transactions data, the behavior of returns and characteristics of trades at the micro level is examined. A minute-by-minute market return series is formed and tested for normality and
+
+…
+
+Expand
+
+860
+
+Save
+
+Inferring the Components of the Bid‐Ask Spread: Theory and Empirical Tests
+
+H. Stoll
+
+Economics, Business
+
+1989
+
+The relation between the square of the quoted bid-ask spread and two serial covariances--the serial covariance of transaction returns and the serial covariance of quoted returns--is modeled as a
+
+…
+
+Expand
+
+1,066
+
+Save
+
+The Performance of Tactical Asset Allocation
+
+Eric J. Weigel
+
+Economics, Business
+
+1991
+
+Tactical asset allocation (TAA) is the practice of altering asset class exposures in accordance with model-based risk-reward expectations. An analysis of 17 U.S. managers who use TAA to rebalance
+
+…
+
+Expand
+
+30
+
+Save
+
+Some Invariance Principles and Central Limit Theorems for Dependent Heterogeneous Processes
+
+J. Wooldridge
+
+H. White
+
+Economics, Mathematics
+
+Econometric Theory
+
+1988
+
+Building on work of McLeish, we present a number of invariance principles for doubly indexed arrays of stochastic processes which may exhibit considerable dependence, heterogeneity, and/or trending
+
+…
+
+Expand
+
+221
+
+Save
+
+Size, Seasonality, and Stock Market Overreaction
+
+Paul Zarowin
+
+Economics
+
+Journal of Financial and Quantitative Analysis
+
+1990
+
+Abstract Recent research finds that the prior period's worst stock return performers (losers) outperform the prior period's best return performers (winners) in the subsequent period. This potential
+
+…
+
+Expand
+
+425
+
+Save
+
+A Model of Competitive Stock Trading Volume
+
+Jiang Wang
+
+Economics, Political Science
+
+Journal of Political Economy
+
+1994
+
+A model of competitive stock trading is developed in which investors are heterogeneous in their information and private investment opportunities and rationally trade for both informational and
+
+…
+
+Expand
+
+957
+
+PDF
+
+Save
+
+ON ESTIMATION OF LONG-MEMORY TIME SERIES MODELS
+
+Yoshihiro Yajima
+
+Mathematics, Economics
+
+1985
+
+Summary
+
+This paper discusses estimation associated with the long-memory time series models proposed by Granger & Joyeux (1980) and Hosking (1981). We consider the maximum likelihood estimator and
+
+…
+
+Expand
+
+119
+
+Save
+
+Asymptotic theory for econometricians
+
+H. White
+
+Economics
+
+1984
+
+The Linear Model and Instrumental Variables Estimators. Consistency. Laws of Large Numbers. Asymptotic Normality. Central Limit Theory. Estimating Asymptotic Covariance Matrices. Functional Central
+
+…
+
+Expand
+
+1,748
+
+Save
+
+Evidence of superior performance from timing
+
+R. Vandell
+
+Jerry L. Stevens
+
+Economics
+
+1989
+
+19
+
+Save
+
+...
+
+1
+
+2
+
+...
+
+Related Papers
+
+Showing 1 through 3 of 0 Related Papers

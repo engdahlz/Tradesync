@@ -1,0 +1,413 @@
+KÄLLA: https://capital.com/en-int/learn/trading-strategies/pivot-point-trading
+TITEL: Guide to Applying the Pivot Point Trading Strategy | Capital.com
+================================================================================
+
+Pivot point trading strategies: a comprehensive guide
+
+Imagine a basketball game – the pivot foot anchors the player’s movement, allowing quick turns, passes, or shots. In trading, pivot points serve the same purpose. Calculated from the previous day’s price action, they act as a hinge around which the market moves. Traders use these key levels to anticipate support and resistance zones and plan entries or exits. This forms the foundation of a pivot point trading strategy because it helps them decide on their next move.
+
+Remember, as with all technical analysis, while these patterns may give clues on potential future price action, past performance is not a reliable indicator of future results.
+
+What are pivot points in trading?
+
+Pivot points are key price levels. They are calculated based on the previous trading period, which is usually the prior day. The calculation uses the high, low, and closing prices of this previous period. These points are then used to project potential support and resistance levels.
+
+Application in technical analysis
+
+Pivot points are a leading indicator. They estimate where an asset’s price might turn. They help traders by defining market sentiment. Price above the pivot suggests bullish sentiment, while price below the pivot suggests bearish sentiment.
+
+Advantages for short-term and intraday trading
+
+Pivot points are very popular across asset classes and trading strategies. They are widely used in intraday trading. They are fixed for the day, and provide clear, actionable levels. This is helpful for short-term traders. Traders use pivot points to identify specific entry and exit levels. They also help with stop-loss placement.
+
+Open a demo account
+
+to practice recognising pivot points on real price charts without risking real money.
+
+How to calculate pivot points
+
+The pivot point formula is quite straightforward. It uses price data from the previous period.
+
+The basic formula includes:
+
+PP = (High + Low+ Close)/3
+
+Here:
+
+The core level is the pivot point (PP)
+
+Period’s highest price is High
+
+Lowest price is Low
+
+Closing price is Close
+
+Additional formulae can be used to determine the resistance and support levels.
+
+The levels above PP are resistance (R). The levels below PP are support (S).
+
+R1, R2, R3
+
+: resistance levels.
+
+S1, S2, S3
+
+: support levels.
+
+Step-by-step calculation
+
+Find the previous period’s prices to get the high, low, and close.
+
+Calculate the PP, which is the sum of the 3 prices divided by 3.
+
+Calculate the first support (S1) and resistance (R1) by using the PP in the formula.
+
+Calculate the second levels (S2) and (R2) by using the R1/S1 and the range.
+
+Use the same formula for S3 and R3.
+
+Here’s a look at the standard pivot point formula set:
+
+Level
+
+Formula
+
+Pivot Point (PP)
+
+(H+L+C)/3
+
+First Resistance (R1)
+
+(2×PP)−L
+
+First Support (S1)
+
+(2×PP)−H
+
+Second Resistance (R2)
+
+PP + (R1 - S1) or PP + (High - Low)
+
+Second Support (S2)
+
+PP - (R1 - S1) or PP - (High - Low)
+
+Third Resistance (R3)
+
+R1+(High−Low)
+
+Third Support (S3)
+
+S1−(High−Low)
+
+(Note: H = high, L = low, C = close from the previous period.)
+
+Types of pivot points and when to use them
+
+Not all pivot points are the same. Different formulas exist. Each type suits a different trading style or market.
+
+Standard pivot points
+
+These are the most common pivots, with a simple formula. It uses the previous day’s high, low, and close prices. The formula uses the simple average. They are great for general pivot point trading. They work well in most liquid markets.
+
+Fibonacci pivot points
+
+Fibonacci pivot points use the standard pivot point (PP). They then use Fibonacci ratios. These ratios are applied to the previous day’s price range. The most common ratios are 38.2%, 61.8%, and 100%. These pivots often predict strong reversal areas. Use them if you already use
+
+Fibonacci retracements
+
+. They are very popular for pivot point trading in the
+
+forex
+
+market
+
+.
+
+Camarilla pivot points
+
+Camarilla pivot points emphasise the closing price. The formula generates tighter support and resistance levels. These levels are very close to the market’s opening price and are considered ideal for short-term pivot point day trading. Camarilla pivot points are designed to catch quick reversals near the open. Use them on highly volatile stocks or for intraday strategies.
+
+Woodie’s pivot points
+
+Woodie’s pivot points also focus on the previous close. The main PP formula gives the closing price more weight. But Woodie’s pivot point uses a different calculation for the PP, which emphasises the most recent market activity. They are similar to standard pivots. They are most suited for fast-moving markets to get a quicker read on momentum.
+
+Demark pivot points
+
+Demark pivot points use a unique, conditional formula. The calculation changes based on how the previous close relates to the open. This method often projects fewer support and resistance levels. It is considered suitable for anticipating trend continuation or reversal. You can use them when looking for simple, key turning points.
+
+Comparison table: advantages, formulas, best markets
+
+Type
+
+Key Advantage
+
+Best Markets
+
+Standard
+
+Simplicity, widely recognised
+
+All liquid markets (forex, stocks)
+
+Fibonacci
+
+Aligns with natural price retracements
+
+Forex, futures
+
+Camarilla
+
+Tighter levels, ideal for reversals
+
+Day trading, volatile stocks
+
+Woodie’s
+
+Emphasises recent closing price
+
+Fast-moving markets
+
+Demark
+
+Unique conditional calculation
+
+Stocks, indices
+
+How to trade using pivot points
+
+Knowing how to trade with pivot points can help strengthen your trading strategy. It involves interpreting the various levels, including PP, support and resistance.
+
+How to interpret levels
+
+Pivot point (PP):
+
+the market’s balance point. Trading above PP suggests a bullish bias. Trading below PP signals a bearish bias.
+
+Resistance (R1, R2, R3):
+
+price ceilings. Traders expect selling pressure here.
+
+Support (S1, S2, S3):
+
+price floors. Traders expect buying pressure here.
+
+Price behaviour around the levels
+
+The price often reacts in different ways at these levels. It may bounce off a level or breakout through a level. R3/S3 are more extreme levels and are less frequently reached; reactions there can be sharp, but they aren’t inherently ‘stronger’ than R1/S1. A test of R3/S3 often suggests an overbought/oversold condition.
+
+Using pivot points for entries, exits, and stop placements
+
+Entry:
+
+enter a long trade near S1 or S2 (bounce). Enter a short trade near R1 or R2 (bounce).
+
+Exit/take profit:
+
+use R1/R2 as targets for a long trade. Use S1/S2 as targets for a short trade.
+
+Stop-loss placement:
+
+place a stop-loss just below a support level for a long trade and just above a resistance level for a short trade.
+
+Best pivot point trading strategies
+
+Here are effective and popular pivot point
+
+trading strategies
+
+. They cover both reversals and trend-following.
+
+However, please note that while these strategies can be useful for identifying potential trading opportunities, they do not guarantee profits, and past performance does not guarantee future results.
+
+Pivot point bounce strategy
+
+This is a reversal approach. Price reaches a support or resistance level. It then fails to move through that level. The price ‘bounces’ away from the pivot line.
+
+To take a long position, wait for the price to drop to S1 or S2. Look for a bullish candle pattern to signal that the price will rise. Place your stop-loss just below the support level.
+
+To take a short position, wait for the price to rise to R1 or R2. Look for a bearish candle pattern that signals that the price is likely to fall. Place your stop-loss just above the resistance level.
+
+This strategy works best in a ranging or consolidating market.
+
+Pivot point breakout strategy
+
+This is a trend-following approach. The price moves forcefully through a pivot point level. This signals that strong momentum is entering the market.
+
+For a buy position, watch for the price to break clearly above R1 or R2. The breakout should happen with high trading volume. Buy immediately on the breakout. A safer entry is to wait for a ‘retest.’ The price pulls back to the broken R1 and then turns back up.
+
+To open a sell position, watch for the price to break clearly below S1 or S2. This breakout should also have high volume. Sell immediately on the breakdown. A safer entry is to wait for a retest. The price pulls back to the broken S1 and then turns back down.
+
+This strategy is powerful when a new trend is starting.
+
+Pivot point with RSI or MACD
+
+Combining pivots with oscillators increases confirmation. This reduces false signals. The
+
+relative strength index (RSI)
+
+and
+
+moving average convergence divergence (MACD)
+
+are potential choices.
+
+For a bounce confirmation, wait for the price to hit S2. At the same time, the RSI drops below 30. This means the market is oversold. This is a strong signal for a bounce up.
+
+For a breakout confirmation, wait for the price to break above R1. At the same time, the MACD indicator turns bullish. This means the MACD line crosses above its signal line. This confirms the new buying pressure.
+
+Use RSI to validate the move suggested by the pivot level.
+
+Intraday reversal using pivot + candlestick patterns
+
+Candlestick patterns
+
+show market psychology. When they form at a pivot point, the signal is considered strong. This is very useful for pivot point day trading.
+
+Bullish reversal:
+
+look for a pin bar or bullish engulfing pattern. These patterns must form right at the PP, S1, or S2 level. This indicates buyers are taking control.
+
+Bearish reversal:
+
+look for a shooting star or bearish engulfing pattern. These must form right at the PP, R1, or R2 level. This indicates sellers are taking control.
+
+The combination provides a high-probability entry point. The pivot level acts as the area of value. The candlestick is the trigger.
+
+Pivot points in different markets
+
+Pivot points are versatile and can be applied to various asset classes.
+
+Forex
+
+The forex market trades 24 hours a day, 5 days a week. It is a highly liquid market. Pivot points are extremely popular here. The daily pivot is based on the New York closing time. Standard and Fibonacci pivot points work very well. They help define daily trading ranges.
+
+Shares / indices
+
+Shares
+
+and
+
+indices
+
+have fixed trading hours. This makes the next day’s pivots clear. They respect these levels strongly. Camarilla pivots are useful for highly volatile stocks. They help identify tight, intraday reversals. They are also great for index day trading.
+
+Commodities
+
+Commodity
+
+markets often show strong trends. They are influenced by global supply and demand. A pivot point breakout trading strategy is effective here. Woodie’s pivots can help track momentum during strong trends. Gold and oil traders use pivots for major reversal points.
+
+Cryptocurrencies
+
+The crypto markets trade 24/7 and are highly volatile. Daily pivots can be very noisy. Weekly and monthly pivot points are better here. They filter out the extreme daily swings, and provide stronger, longer-term support and resistance. Standard pivots are a good starting point for crypto.
+
+When to use each type of pivot point
+
+Use daily pivots for intraday trading in any market.
+
+Use weekly pivots for
+
+swing trading strategies
+
+.
+
+Use standard pivots for a reliable starting point in any market.
+
+Use camarilla pivots to identify quick intraday reversals in fast markets.
+
+Use Fibonacci pivot points if you want levels that align with common market retracements.
+
+Combining pivot points with other indicators
+
+Pivot points may work best when combined with other tools. This helps confirm trade signals, which increases confidence in trading decisions.
+
+Pivot points + RSI, MACD, volume, EMA
+
+The relative strength index (RSI) and moving average convergence divergence (MACD) indicators measure momentum. They confirm the strength of a price move.
+
+Pivot points + RSI:
+
+if the price hits S2, check if the RSI is oversold (below 30). This strongly confirms a potential price bounce upwards.
+
+Pivot points + MACD:
+
+if the price breaks R1, check if the MACD lines cross to the bullish side. This confirms the new upward trend.
+
+Volume:
+
+confirms the conviction of a move. A breakout through a pivot point must happen on high volume. Low volume suggests a false or weak breakout.
+
+Pivot points + exponential moving average (EMA):
+
+EMAs show dynamic support and resistance. If a pivot level aligns with a major EMA (like the 50-day), it forms a very strong price zone.
+
+Price action & pivot confluence zones
+
+Confluence means that 2 or more indicators point to the same signal. A confluence zone is a strong area of price support or resistance. To find this zone, look for other historical levels. Past high or low points are important. For instance, if S1 lines up with a previous swing low, the zone is much stronger. If R2 is exactly at a major round number (like $1.5000), traders pay extra attention. More tools agreeing on a level means a higher probability trade.
+
+Pivot points + Fibonacci levels
+
+Fibonacci retracements
+
+show common market turning points. Combining them with your pivot point trading strategy can be very powerful. For this, use Fibonacci retracements on the last major swing. If the R1 pivot level falls exactly on the 61.8% Fibonacci line, it creates a powerful resistance zone. If the S2 pivot level matches the 38.2% Fibonacci line, it suggests a high-probability bounce area.
+
+You can also use the special Fibonacci pivot points. These are calculated using Fibonacci ratios. They already combine the 2 concepts.
+
+Common mistakes when using pivot points
+
+Here are the common errors to avoid to improve your pivot point trading strategy.
+
+Ignoring the overall trend
+
+Pivots are best used in the direction of the trend. Trying to short a strong uptrend at R1 is risky. Use support (S1, S2) to buy in an uptrend.
+
+Using pivot levels without volume confirmation
+
+Breakouts on low volume are often false. Wait for strong volume to confirm a pivot point breakout.
+
+Neglecting major news events
+
+Major news breaks and key economic releases (such as non-farm payrolls, central bank announcements) can easily shatter any pivot level. Do not trade pivots around high-impact news. The volatility will be too high.
+
+Trading breakouts without retests
+
+A quick breakout can be a trap. The price often comes back to ‘retest’ the broken level. Wait for the price to break R1, pull back to R1 (now support), and then continue up. This retest is a lower-risk entry.
+
+Advanced tips and best practices
+
+Here are some bonus tips for experienced traders.
+
+Using weekly and monthly levels
+
+Daily pivots are for pivot point day trading. Weekly and monthly pivots are suited for swing trading. They provide much stronger, longer-term support and resistance. They define the bigger picture.
+
+Trading based on historical pivots
+
+Sometimes, a prior week’s R1 acts as support the next week. These historical levels can become important. Mark them on your chart.
+
+Integrating pivot points into a trading plan
+
+Define which pivot type you will use and decide the timeframe to apply it to. Create clear rules for trading, such as:
+
+Rule 1:
+
+only trade breakouts in the direction of the weekly trend.
+
+Rule 2:
+
+only take bounces at S2 or R2 with an RSI confirmation.
+
+A disciplined approach to the pivot point trading strategy is key to long-term success.
+
+Ready to begin your pivot point strategy for trading forex CFDs or other assets?
+
+Open a live account
+
+.
+
+CFDs are complex instruments and come with a high risk of losing money rapidly due to leverage. 85.24% of retail investor accounts lose money when trading CFDs with this provider. You should consider whether you understand how CFDs work and whether you can afford to take the high risk of losing your money.
+
+Create an account
+
+Open a demo account

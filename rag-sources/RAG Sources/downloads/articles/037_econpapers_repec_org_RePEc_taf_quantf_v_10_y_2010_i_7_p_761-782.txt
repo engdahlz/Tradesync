@@ -1,0 +1,187 @@
+KÄLLA: https://econpapers.repec.org/RePEc:taf:quantf:v:10:y:2010:i:7:p:761-782
+TITEL: EconPapers: Statistical arbitrage in the US equities market
+================================================================================
+
+EconPapers: Statistical arbitrage in the US equities market
+
+EconPapers Home
+
+About EconPapers
+
+Working Papers
+
+Journal Articles
+
+Books and Chapters
+
+Software Components
+
+Authors
+
+JEL codes
+
+New Economics Papers
+
+Advanced Search
+
+EconPapers FAQ
+
+Archive maintainers FAQ
+
+Cookies at EconPapers
+
+Format for printing
+
+The RePEc blog
+
+The RePEc plagiarism page
+
+Statistical arbitrage in the US equities market
+
+Marco Avellaneda
+
+and
+
+Jeong-Hyun Lee
+
+Quantitative Finance
+
+, 2010, vol. 10, issue 7, 761-782
+
+Abstract:
+
+We study model-driven statistical arbitrage in US equities. Trading signals are generated in two ways: using Principal Component Analysis (PCA) or regressing stock returns on sector Exchange Traded Funds (ETFs). In both cases, the idiosyncratic returns are modelled as mean-reverting processes, which leads naturally to 'contrarian' strategies. We construct, back-test and compare market-neutral PCA- and ETF-based strategies applied to the broad universe of US equities. After accounting for transaction costs, PCA-based strategies have an average annual Sharpe ratio of 1.44 over the period 1997 to 2007, with stronger performances prior to 2003. During 2003-2007, the average Sharpe ratio of PCA-based strategies was only 0.9. ETF-based strategies had a Sharpe ratio of 1.1 from 1997 to 2007, experiencing a similar degradation since 2002. We also propose signals that account for trading volume, observing significant improvement in performance in the case of ETF-based signals. ETF-strategies with volume information achieved a Sharpe ratio of 1.51 from 2003 to 2007. The paper also relates the performance of mean-reversion statistical arbitrage strategies with the stock market cycle. In particular, we study in detail the performance of the strategies during the liquidity crisis of the summer of 2007, following Khandani and Lo [Social Science Research Network (SSRN) working paper, 2007].
+
+Keywords:
+
+Alternative investments
+
+;
+
+Cointegration
+
+;
+
+Correlation modelling
+
+;
+
+Quantitative trading strategies
+
+(search for similar items in EconPapers)
+
+Date:
+
+2010
+
+References:
+
+View references in EconPapers
+
+View complete reference list from CitEc
+
+Citations:
+
+View citations in EconPapers
+
+(139)
+
+Downloads:
+
+(external link)
+
+http://www.tandfonline.com/doi/abs/10.1080/14697680903124632
+
+(text/html)
+
+Access to full text is restricted to subscribers.
+
+Related works:
+
+This item may be available elsewhere in EconPapers:
+
+Search
+
+for items with the same title.
+
+Export reference:
+
+BibTeX
+
+RIS
+
+(EndNote, ProCite, RefMan)
+
+HTML/Text
+
+Persistent link:
+
+https://EconPapers.repec.org/RePEc:taf:quantf:v:10:y:2010:i:7:p:761-782
+
+Ordering information:
+
+This journal article can be ordered from
+
+http://www.tandfonline.com/pricing/journal/RQUF20
+
+DOI:
+
+10.1080/14697680903124632
+
+Access Statistics
+
+for this article
+
+Quantitative Finance is currently edited by
+
+Michael Dempster
+
+and
+
+Jim Gatheral
+
+More articles
+
+in Quantitative Finance  from
+
+Taylor & Francis Journals
+
+Bibliographic data for series maintained by Chris Longhurst (
+
+).
+
+Share
+
+This site is part of
+
+RePEc
+
+and all the data displayed here is part of the RePEc data set.
+
+Is your work missing from RePEc? Here is how to
+
+contribute
+
+.
+
+Questions or problems? Check the
+
+EconPapers FAQ
+
+or send mail to
+
+.
+
+EconPapers is hosted by the
+
+School of Business
+
+at
+
+Örebro University
+
+.
+
+Page updated 2025-12-25
+
+Handle: RePEc:taf:quantf:v:10:y:2010:i:7:p:761-782
