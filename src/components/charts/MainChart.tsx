@@ -126,12 +126,12 @@ export default function MainChart({ symbol }: MainChartProps) {
         chartRef.current = chart
 
         const candlestickSeries = chart.addCandlestickSeries({
-            upColor: '#137333', // Google Green
-            downColor: '#A50E0E', // Google Red
-            borderUpColor: '#137333',
-            borderDownColor: '#A50E0E',
-            wickUpColor: '#137333',
-            wickDownColor: '#A50E0E',
+            upColor: 'rgb(19, 115, 51)', // Google Green (#137333)
+            downColor: 'rgb(165, 14, 14)', // Google Red (#A50E0E)
+            borderUpColor: 'rgb(19, 115, 51)',
+            borderDownColor: 'rgb(165, 14, 14)',
+            wickUpColor: 'rgb(19, 115, 51)',
+            wickDownColor: 'rgb(165, 14, 14)',
         })
 
         candlestickSeries.setData(candleData)

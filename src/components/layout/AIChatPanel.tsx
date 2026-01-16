@@ -115,7 +115,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
                                 : 'bg-card border border-border text-foreground rounded-tl-none shadow-sm'
                                 }`}
                         >
-                            <div className="prose prose-sm max-w-none dark:prose-invert">
+                            <div className="prose prose-sm max-w-none dark:prose-invert prose-p:text-foreground prose-headings:text-foreground prose-strong:text-foreground">
                                 <ReactMarkdown>
                                     {msg.content}
                                 </ReactMarkdown>

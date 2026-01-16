@@ -85,7 +85,7 @@ export default function Dashboard() {
                                 <h3 className="font-medium mb-2">Bitcoin surges past $46k as ETF volume spikes</h3>
                                 <div className="flex gap-2 mt-3">
                                     <span className="text-xs font-medium text-ts-green bg-ts-green/10 px-2 py-0.5 rounded">BTC</span>
-                                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Market</span>
+                                    <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">Market</span>
                                 </div>
                             </div>
                             <div className="m3-card p-4">
@@ -93,7 +93,7 @@ export default function Dashboard() {
                                 <h3 className="font-medium mb-2">Ethereum Dencun upgrade date confirmed by developers</h3>
                                 <div className="flex gap-2 mt-3">
                                     <span className="text-xs font-medium text-ts-green bg-ts-green/10 px-2 py-0.5 rounded">ETH</span>
-                                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Tech</span>
+                                    <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">Tech</span>
                                 </div>
                             </div>
                         </div>
@@ -133,7 +133,7 @@ export default function Dashboard() {
                         <div className="space-y-3">
                             <div className="flex items-center justify-between p-2 hover:bg-secondary rounded-lg cursor-pointer transition-colors group">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                                         <TrendingUp className="w-4 h-4" />
                                     </div>
                                     <span className="font-medium group-hover:text-primary transition-colors">Market Movers</span>
@@ -142,7 +142,7 @@ export default function Dashboard() {
                             </div>
                             <div className="flex items-center justify-between p-2 hover:bg-secondary rounded-lg cursor-pointer transition-colors group">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                    <div className="w-8 h-8 rounded-full bg-ts-green/10 flex items-center justify-center text-ts-green">
                                         <Activity className="w-4 h-4" />
                                     </div>
                                     <span className="font-medium group-hover:text-primary transition-colors">Crypto Trends</span>
