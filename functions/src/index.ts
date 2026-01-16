@@ -7,6 +7,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { db } from './config.js';
 import { z } from 'zod';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // Schema for scheduled sells in Firestore
 const ScheduledSellSchema = z.object({
@@ -15,6 +16,7 @@ const ScheduledSellSchema = z.object({
     executeAt: z.any(), // Timestamp
     executedAt: z.any().optional(),
     ticker: z.string().optional(),
+    idempotencyKey: z.string().optional(),
 });
 
 type ScheduledSell = z.infer<typeof ScheduledSellSchema>;
@@ -39,7 +41,22 @@ export const checkExpiredTrades = onSchedule('every 5 minutes', async () => {
 
         const trade = result.data;
         console.log(`Executing scheduled sell for order ${trade.orderId}`);
-        await doc.ref.update({ status: 'executed', executedAt: now });
+        
+        // Atomic update to prevent race conditions
+        try {
+            await db.runTransaction(async (transaction) => {
+                const freshDoc = await transaction.get(doc.ref);
+                if (freshDoc.data()?.status !== 'pending') {
+                    throw new Error('Order already processed');
+                }
+                transaction.update(doc.ref, { 
+                    status: 'executed', 
+                    executedAt: FieldValue.serverTimestamp() 
+                });
+            });
+        } catch (e) {
+            console.warn(`Skipping processed/locked order ${trade.orderId}:`, (e as Error).message);
+        }
     }
 
     console.log(`Processed ${expiredTrades.size} expired trades`);

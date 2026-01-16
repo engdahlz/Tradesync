@@ -9,6 +9,7 @@ const https_1 = require("firebase-functions/v2/https");
 const scheduler_1 = require("firebase-functions/v2/scheduler");
 const config_js_1 = require("./config.js");
 const zod_1 = require("zod");
+const firestore_1 = require("firebase-admin/firestore");
 // Schema for scheduled sells in Firestore
 const ScheduledSellSchema = zod_1.z.object({
     orderId: zod_1.z.string(),
@@ -16,6 +17,7 @@ const ScheduledSellSchema = zod_1.z.object({
     executeAt: zod_1.z.any(), // Timestamp
     executedAt: zod_1.z.any().optional(),
     ticker: zod_1.z.string().optional(),
+    idempotencyKey: zod_1.z.string().optional(),
 });
 // Scheduled function to check expired trades
 exports.checkExpiredTrades = (0, scheduler_1.onSchedule)('every 5 minutes', async () => {
@@ -34,7 +36,22 @@ exports.checkExpiredTrades = (0, scheduler_1.onSchedule)('every 5 minutes', asyn
         }
         const trade = result.data;
         console.log(`Executing scheduled sell for order ${trade.orderId}`);
-        await doc.ref.update({ status: 'executed', executedAt: now });
+        // Atomic update to prevent race conditions
+        try {
+            await config_js_1.db.runTransaction(async (transaction) => {
+                const freshDoc = await transaction.get(doc.ref);
+                if (freshDoc.data()?.status !== 'pending') {
+                    throw new Error('Order already processed');
+                }
+                transaction.update(doc.ref, {
+                    status: 'executed',
+                    executedAt: firestore_1.FieldValue.serverTimestamp()
+                });
+            });
+        }
+        catch (e) {
+            console.warn(`Skipping processed/locked order ${trade.orderId}:`, e.message);
+        }
     }
     console.log(`Processed ${expiredTrades.size} expired trades`);
 });

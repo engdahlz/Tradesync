@@ -47,9 +47,21 @@ async function handleExecuteTrade(req, res) {
     }
 }
 async function handleScheduleSell(req, res) {
-    const { userId, orderId, symbol, quantity, sellAfterMinutes } = req.body;
-    if (!userId || !orderId || !symbol || !quantity || !sellAfterMinutes) {
+    const { userId, orderId, symbol, quantity, sellAfterMinutes, idempotencyKey } = req.body;
+    if (!userId || !orderId || !symbol || !quantity || !sellAfterMinutes || !idempotencyKey) {
         res.status(400).json({ error: 'Missing required fields' });
+        return;
+    }
+    // Idempotency check
+    const existing = await config_js_1.db.collection('scheduledSells')
+        .where('idempotencyKey', '==', idempotencyKey).limit(1).get();
+    if (!existing.empty) {
+        res.json({
+            success: true,
+            scheduleId: existing.docs[0].id,
+            message: 'Sell schedule already exists (idempotent)',
+            status: 'duplicate',
+        });
         return;
     }
     const executeAt = new Date(Date.now() + sellAfterMinutes * 60 * 1000);
@@ -57,6 +69,7 @@ async function handleScheduleSell(req, res) {
     try {
         await config_js_1.db.collection('scheduledSells').doc(scheduleId).set({
             scheduleId, userId, orderId, symbol, quantity, executeAt, status: 'pending',
+            idempotencyKey,
             createdAt: firestore_1.FieldValue.serverTimestamp(),
         });
         res.json({
