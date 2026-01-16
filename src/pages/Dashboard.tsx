@@ -47,7 +47,7 @@ export default function Dashboard() {
                         <h2 className="text-xl font-normal text-foreground">Compare Markets</h2>
                         <div className="flex gap-2">
                             {['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y', 'MAX'].map(tf => (
-                                <button key={tf} className={`px-4 py-1.5 rounded-full text-xs font-medium border transition-colors ${tf === '1M' ? 'bg-primary/10 text-primary border-transparent' : 'text-muted-foreground border-border hover:bg-secondary'}`}>
+                                <button key={tf} className={tf === '1M' ? 'google-pill-active' : 'google-pill'}>
                                     {tf}
                                 </button>
                             ))}
@@ -78,10 +78,10 @@ export default function Dashboard() {
                             <h2 className="text-xl font-normal text-foreground">Today's financial news</h2>
                             <button className="text-primary text-sm font-medium hover:underline">Top stories</button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="m3-card p-4 hover:shadow-md transition-shadow cursor-pointer group">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="m3-card p-4 hover:shadow-md transition-shadow cursor-pointer group flex flex-col md:col-span-2">
                                 <div className="text-xs text-muted-foreground mb-2">Reuters • 2 hours ago</div>
-                                <h3 className="font-medium text-base mb-2 group-hover:text-primary transition-colors">Bitcoin surges past $46k as ETF volume spikes</h3>
+                                <h3 className="font-medium text-lg mb-2 group-hover:text-primary transition-colors flex-1">Bitcoin surges past $46k as ETF volume spikes</h3>
                                 <div className="flex gap-2 mt-3">
                                     <span className="text-[10px] font-bold text-ts-green bg-ts-green/10 px-2 py-0.5 rounded uppercase tracking-wider">BTC</span>
                                     <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">Market</span>

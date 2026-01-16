@@ -45,6 +45,11 @@
     --radius: 0.5rem;
     /* 8px for cards, 24px for pills usually manually set */
 
+    /* Google Finance Surface Colors (MD3) */
+    --surface-1: 210 17% 98%; /* #F8F9FA */
+    --surface-2: 210 17% 95%; /* #F1F3F4 */
+    --surface-3: 210 17% 92%; /* #E8EAED */
+
     /* Google-specific Chart Colors */
     --ts-green: 145 74% 33%;
     /* #137333 */
@@ -73,11 +78,25 @@
 
 /* Google-style Pill Button */
 .google-pill {
-  @apply px-4 py-1.5 rounded-full border border-border text-sm font-medium hover:bg-secondary transition-colors;
+  @apply px-4 py-1.5 rounded-full border border-border text-sm font-medium hover:bg-secondary transition-colors text-muted-foreground bg-white shadow-sm hover:shadow-md;
 }
 
 .google-pill-active {
-  @apply px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-transparent text-sm font-medium;
+  @apply px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-sm font-medium shadow-sm;
+}
+
+/* Scrollbar styling for a cleaner look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border/50 rounded-full hover:bg-border;
 }
 
 /* Animations */
