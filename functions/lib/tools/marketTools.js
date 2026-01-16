@@ -84,9 +84,10 @@ exports.strategyTool = genkit_js_1.ai.defineTool({
         };
     }
     catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         return {
             strategy: 'error',
-            analysis: `Failed to analyze ${input.symbol}: ${error.message}`,
+            analysis: `Failed to analyze ${input.symbol}: ${message}`,
             confidence: 0,
             recommendation: 'Check symbol validity.'
         };

@@ -12,7 +12,10 @@ const AlphaVantageNewsItemSchema = z.object({
     overall_sentiment_label: z.string(),
     overall_sentiment_score: z.number().or(z.string().transform(val => parseFloat(val))),
     banner_image: z.string().optional().nullable(),
-    topics: z.array(z.any()).optional()
+    topics: z.array(z.object({
+        topic: z.string(),
+        relevance_score: z.string()
+    })).optional()
 });
 
 const AlphaVantageResponseSchema = z.object({
@@ -22,7 +25,19 @@ const AlphaVantageResponseSchema = z.object({
     "Error Message": z.string().optional()
 });
 
-export async function fetchMarketNews(tickers: string, limit: number = 50, sort: string = 'LATEST') {
+interface NewsItem {
+    title: string;
+    url: string;
+    summary: string;
+    source: string;
+    publishedAt: string;
+    sentiment: string;
+    sentimentScore: number | string;
+    imageUrl?: string | null;
+    topics?: { topic: string; relevance_score: string }[];
+}
+
+export async function fetchMarketNews(tickers: string, limit: number = 50, sort: string = 'LATEST'): Promise<NewsItem[]> {
     // Default to major crypto if no tickers provided for "general" news
     if (!tickers || tickers.trim() === '') {
         tickers = 'CRYPTO:BTC,CRYPTO:ETH';
@@ -32,7 +47,7 @@ export async function fetchMarketNews(tickers: string, limit: number = 50, sort:
     const url = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${tickers}&limit=${limit}&sort=${sort}&apikey=${ALPHA_VANTAGE_API_KEY}`;
 
     const response = await fetch(url);
-    const rawData: any = await response.json();
+    const rawData = await response.json();
 
     const validation = AlphaVantageResponseSchema.safeParse(rawData);
     if (!validation.success) {
@@ -57,7 +72,7 @@ export async function fetchMarketNews(tickers: string, limit: number = 50, sort:
          return [];
     }
 
-    let newsItems: any[] = [];
+    let newsItems: NewsItem[] = [];
     if (data.feed && Array.isArray(data.feed)) {
         newsItems = data.feed.map((item) => ({
             title: item.title,
@@ -96,7 +111,7 @@ export async function handleGetMarketNews(req: Request, res: Response) {
 
         const news = await fetchMarketNews(tickers || '', limit, sort);
         res.json({ news });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('getMarketNews error:', error);
         // Fail gracefully with empty list instead of 500
         res.json({ news: [], error: String(error) });

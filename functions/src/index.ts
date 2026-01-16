@@ -6,6 +6,18 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { db } from './config.js';
+import { z } from 'zod';
+
+// Schema for scheduled sells in Firestore
+const ScheduledSellSchema = z.object({
+    orderId: z.string(),
+    status: z.enum(['pending', 'executed', 'cancelled']),
+    executeAt: z.any(), // Timestamp
+    executedAt: z.any().optional(),
+    ticker: z.string().optional(),
+});
+
+type ScheduledSell = z.infer<typeof ScheduledSellSchema>;
 
 // Scheduled function to check expired trades
 export const checkExpiredTrades = onSchedule('every 5 minutes', async () => {
@@ -17,7 +29,15 @@ export const checkExpiredTrades = onSchedule('every 5 minutes', async () => {
         .get();
 
     for (const doc of expiredTrades.docs) {
-        const trade = doc.data();
+        const rawData = doc.data();
+        const result = ScheduledSellSchema.safeParse(rawData);
+        
+        if (!result.success) {
+            console.error(`Invalid scheduled sell data for doc ${doc.id}:`, result.error.format());
+            continue;
+        }
+
+        const trade = result.data;
         console.log(`Executing scheduled sell for order ${trade.orderId}`);
         await doc.ref.update({ status: 'executed', executedAt: now });
     }

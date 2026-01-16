@@ -1,0 +1,17 @@
+{
+  "plugin": [
+    "opencode-github-auth@1.3.0"
+  ],
+  "provider": {
+    "github-copilot": {
+      "name": "GitHub Copilot",
+      "models": {
+        "github-copilot/gemini-3-flash-preview": {
+          "name": "Gemini 3 Flash (Copilot)",
+          "attachment": true
+        }
+      }
+    }
+  },
+  "$schema": "https://opencode.ai/config.json"
+}

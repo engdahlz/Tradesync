@@ -89,10 +89,11 @@ export const strategyTool = ai.defineTool({
             confidence: result.confidence,
             recommendation: `Strategy says: ${result.action} with ${result.confidence} confidence.`
         };
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         return {
             strategy: 'error',
-            analysis: `Failed to analyze ${input.symbol}: ${error.message}`,
+            analysis: `Failed to analyze ${input.symbol}: ${message}`,
             confidence: 0,
             recommendation: 'Check symbol validity.'
         };

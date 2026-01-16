@@ -30,7 +30,7 @@ async function checkConnectivity() {
         await fetch('https://www.google.com');
         console.log('[MarketScanner] Connectivity Check: OK');
         return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error('[MarketScanner] Connectivity Check FAILED:', e);
         return false;
     }
@@ -55,7 +55,7 @@ async function fetchCoinCapPrices(symbol: string): Promise<number[]> {
         throw new Error(`CoinCap fetch failed for ${id}: ${txt}`);
     }
 
-    const json: any = await response.json();
+    const json = await response.json();
     
     // Validate with Zod
     const validation = CoinCapHistoryResponseSchema.safeParse(json);

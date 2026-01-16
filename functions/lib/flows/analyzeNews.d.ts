@@ -12,13 +12,13 @@ export declare const analyzeNewsFlow: import("genkit").Action<z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     title: string;
     source?: string | undefined;
-    description?: string | undefined;
     content?: string | undefined;
+    description?: string | undefined;
 }, {
     title: string;
     source?: string | undefined;
-    description?: string | undefined;
     content?: string | undefined;
+    description?: string | undefined;
 }>, z.ZodObject<{
     sentiment: z.ZodEnum<["bullish", "bearish", "neutral"]>;
     confidence: z.ZodNumber;

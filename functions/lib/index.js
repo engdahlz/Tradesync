@@ -8,6 +8,15 @@ exports.getMarketNews = exports.ingestKnowledge = exports.searchVideos = exports
 const https_1 = require("firebase-functions/v2/https");
 const scheduler_1 = require("firebase-functions/v2/scheduler");
 const config_js_1 = require("./config.js");
+const zod_1 = require("zod");
+// Schema for scheduled sells in Firestore
+const ScheduledSellSchema = zod_1.z.object({
+    orderId: zod_1.z.string(),
+    status: zod_1.z.enum(['pending', 'executed', 'cancelled']),
+    executeAt: zod_1.z.any(), // Timestamp
+    executedAt: zod_1.z.any().optional(),
+    ticker: zod_1.z.string().optional(),
+});
 // Scheduled function to check expired trades
 exports.checkExpiredTrades = (0, scheduler_1.onSchedule)('every 5 minutes', async () => {
     const now = new Date();
@@ -17,7 +26,13 @@ exports.checkExpiredTrades = (0, scheduler_1.onSchedule)('every 5 minutes', asyn
         .where('executeAt', '<=', now)
         .get();
     for (const doc of expiredTrades.docs) {
-        const trade = doc.data();
+        const rawData = doc.data();
+        const result = ScheduledSellSchema.safeParse(rawData);
+        if (!result.success) {
+            console.error(`Invalid scheduled sell data for doc ${doc.id}:`, result.error.format());
+            continue;
+        }
+        const trade = result.data;
         console.log(`Executing scheduled sell for order ${trade.orderId}`);
         await doc.ref.update({ status: 'executed', executedAt: now });
     }

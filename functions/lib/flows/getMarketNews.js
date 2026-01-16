@@ -13,7 +13,10 @@ const AlphaVantageNewsItemSchema = zod_1.z.object({
     overall_sentiment_label: zod_1.z.string(),
     overall_sentiment_score: zod_1.z.number().or(zod_1.z.string().transform(val => parseFloat(val))),
     banner_image: zod_1.z.string().optional().nullable(),
-    topics: zod_1.z.array(zod_1.z.any()).optional()
+    topics: zod_1.z.array(zod_1.z.object({
+        topic: zod_1.z.string(),
+        relevance_score: zod_1.z.string()
+    })).optional()
 });
 const AlphaVantageResponseSchema = zod_1.z.object({
     feed: zod_1.z.array(AlphaVantageNewsItemSchema).optional(),
