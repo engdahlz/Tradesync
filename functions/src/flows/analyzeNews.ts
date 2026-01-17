@@ -6,7 +6,7 @@
 
 import type { Request, Response } from 'express';
 import { MODEL_FLASH, THINKING_BUDGET_LOW } from '../config.js';
-import { ai } from '../genkit.js';
+import { ai, vertexAI } from '../genkit.js';
 import { z } from 'genkit';
 
 const InputSchema = z.object({
@@ -47,7 +47,7 @@ export const analyzeNewsFlow = ai.defineFlow({
 
     try {
         const result = await ai.generate({
-            model: MODEL_FLASH,
+            model: vertexAI.model(MODEL_FLASH),
             prompt: prompt,
             output: { schema: OutputSchema },
             config: {

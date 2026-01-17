@@ -91,7 +91,7 @@ Return JSON with:
 - keyPoints (3-5 items)`;
     try {
         const result = await genkit_js_1.ai.generate({
-            model: config_js_1.MODEL_FLASH,
+            model: genkit_js_1.vertexAI.model(config_js_1.MODEL_FLASH),
             prompt: prompt,
             output: { schema: AIOutputSchema },
             config: {

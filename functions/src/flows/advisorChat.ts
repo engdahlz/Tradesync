@@ -4,8 +4,8 @@
  */
 
 import type { Request, Response } from 'express';
-import { db, MODEL_PRO, GOOGLE_AI_API_KEY, THINKING_BUDGET_HIGH } from '../config.js';
-import { ai } from '../genkit.js';
+import { db, MODEL_PRO, THINKING_BUDGET_HIGH, GOOGLE_AI_API_KEY } from '../config.js';
+import { ai, vertexAI } from '../genkit.js';
 import { z } from 'genkit';
 import { marketNewsTool, strategyTool } from '../tools/marketTools.js';
 
@@ -172,10 +172,25 @@ ${message}
 
 ## YOUR RESPONSE`;
 
-    // 4. Generate with Genkit
+    // 4. Generate with Genkit + Context Caching
     const result = await ai.generate({
-        model: MODEL_PRO,
-        prompt: prompt,
+        messages: [
+            {
+                role: 'user',
+                content: [{ text: contextSection }],
+            },
+            {
+                role: 'model',
+                content: [{ text: 'I will answer questions based on this trading knowledge base.' }],
+                metadata: {
+                    cache: {
+                        ttlSeconds: 3600,
+                    },
+                },
+            },
+        ],
+        model: vertexAI.model(MODEL_PRO),
+        prompt: `${historyContext ? `## CONVERSATION HISTORY\n${historyContext}\n\n` : ''}## USER QUESTION\n${message}\n\n## YOUR RESPONSE`,
         tools: [marketNewsTool, strategyTool],
         config: {
             temperature: 0.7,
@@ -288,8 +303,23 @@ ${message}
         }
 
         const { stream, response } = ai.generateStream({
-            model: MODEL_PRO,
-            prompt: prompt,
+            messages: [
+                {
+                    role: 'user',
+                    content: [{ text: contextSection }],
+                },
+                {
+                    role: 'model',
+                    content: [{ text: 'I will answer questions based on this trading knowledge base.' }],
+                    metadata: {
+                        cache: {
+                            ttlSeconds: 3600,
+                        },
+                    },
+                },
+            ],
+            model: vertexAI.model(MODEL_PRO),
+            prompt: `${historyContext ? `## CONVERSATION HISTORY\n${historyContext}\n\n` : ''}## USER QUESTION\n${message}\n\n## YOUR RESPONSE`,
             tools: [marketNewsTool, strategyTool],
             config: {
                 temperature: 0.7,

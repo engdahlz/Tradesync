@@ -79,7 +79,7 @@ exports.suggestStrategyFlow = genkit_js_1.ai.defineFlow({
     Suggest stop-loss and take-profit levels based on support/resistance.
     `;
     const result = await genkit_js_1.ai.generate({
-        model: model || config_js_1.MODEL_PRO,
+        model: genkit_js_1.vertexAI.model(model || config_js_1.MODEL_PRO),
         prompt: prompt,
         output: { schema: OutputSchema },
         config: {

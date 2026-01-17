@@ -4,7 +4,7 @@
  */
 
 import type { Request, Response } from 'express';
-import { ai } from '../genkit.js';
+import { ai, vertexAI } from '../genkit.js';
 import { z } from 'genkit';
 import { MODEL_PRO, MODEL_FLASH, THINKING_BUDGET_HIGH } from '../config.js';
 
@@ -82,7 +82,7 @@ export const suggestStrategyFlow = ai.defineFlow({
     `;
 
     const result = await ai.generate({
-        model: model || MODEL_PRO,
+        model: vertexAI.model(model || MODEL_PRO),
         prompt: prompt,
         output: { schema: OutputSchema },
         config: {

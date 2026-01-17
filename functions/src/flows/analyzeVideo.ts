@@ -6,7 +6,7 @@
 
 import type { Request, Response } from 'express';
 import { MODEL_FLASH, THINKING_BUDGET_MEDIUM } from '../config.js';
-import { ai } from '../genkit.js';
+import { ai, vertexAI } from '../genkit.js';
 import { z } from 'genkit';
 import { YoutubeTranscript } from 'youtube-transcript';
 
@@ -99,7 +99,7 @@ Return JSON with:
 
     try {
         const result = await ai.generate({
-            model: MODEL_FLASH,
+            model: vertexAI.model(MODEL_FLASH),
             prompt: prompt,
             output: { schema: AIOutputSchema },
             config: {

@@ -148,10 +148,25 @@ ${historyContext ? `## CONVERSATION HISTORY\n${historyContext}\n` : ''}
 ${message}
 
 ## YOUR RESPONSE`;
-    // 4. Generate with Genkit
+    // 4. Generate with Genkit + Context Caching
     const result = await genkit_js_1.ai.generate({
-        model: config_js_1.MODEL_PRO,
-        prompt: prompt,
+        messages: [
+            {
+                role: 'user',
+                content: [{ text: contextSection }],
+            },
+            {
+                role: 'model',
+                content: [{ text: 'I will answer questions based on this trading knowledge base.' }],
+                metadata: {
+                    cache: {
+                        ttlSeconds: 3600,
+                    },
+                },
+            },
+        ],
+        model: genkit_js_1.vertexAI.model(config_js_1.MODEL_PRO),
+        prompt: `${historyContext ? `## CONVERSATION HISTORY\n${historyContext}\n\n` : ''}## USER QUESTION\n${message}\n\n## YOUR RESPONSE`,
         tools: [marketTools_js_1.marketNewsTool, marketTools_js_1.strategyTool],
         config: {
             temperature: 0.7,
@@ -247,8 +262,23 @@ ${message}
             res.write(`event: sources\ndata: ${JSON.stringify(sources)}\n\n`);
         }
         const { stream, response } = genkit_js_1.ai.generateStream({
-            model: config_js_1.MODEL_PRO,
-            prompt: prompt,
+            messages: [
+                {
+                    role: 'user',
+                    content: [{ text: contextSection }],
+                },
+                {
+                    role: 'model',
+                    content: [{ text: 'I will answer questions based on this trading knowledge base.' }],
+                    metadata: {
+                        cache: {
+                            ttlSeconds: 3600,
+                        },
+                    },
+                },
+            ],
+            model: genkit_js_1.vertexAI.model(config_js_1.MODEL_PRO),
+            prompt: `${historyContext ? `## CONVERSATION HISTORY\n${historyContext}\n\n` : ''}## USER QUESTION\n${message}\n\n## YOUR RESPONSE`,
             tools: [marketTools_js_1.marketNewsTool, marketTools_js_1.strategyTool],
             config: {
                 temperature: 0.7,

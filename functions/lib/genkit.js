@@ -1,13 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ai = void 0;
+exports.vertexAI = exports.ai = void 0;
 const genkit_1 = require("genkit");
-const google_genai_1 = require("@genkit-ai/google-genai");
-const config_1 = require("./config");
+const vertexai_1 = require("@genkit-ai/vertexai");
+Object.defineProperty(exports, "vertexAI", { enumerable: true, get: function () { return vertexai_1.vertexAI; } });
 // enableFirebaseTelemetry();
 exports.ai = (0, genkit_1.genkit)({
     plugins: [
-        (0, google_genai_1.googleAI)({ apiKey: config_1.GOOGLE_AI_API_KEY }),
+        (0, vertexai_1.vertexAI)({
+            projectId: 'tradesync-ai-prod',
+            location: 'europe-west1'
+        }),
     ],
 });
 //# sourceMappingURL=genkit.js.map
