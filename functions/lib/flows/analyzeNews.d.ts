@@ -24,16 +24,19 @@ export declare const analyzeNewsFlow: import("genkit").Action<z.ZodObject<{
     confidence: z.ZodNumber;
     summary: z.ZodString;
     tickers: z.ZodArray<z.ZodString, "many">;
+    groundingSources: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
 }, "strip", z.ZodTypeAny, {
     summary: string;
     tickers: string[];
     confidence: number;
     sentiment: "bullish" | "bearish" | "neutral";
+    groundingSources?: string[] | undefined;
 }, {
     summary: string;
     tickers: string[];
     confidence: number;
     sentiment: "bullish" | "bearish" | "neutral";
+    groundingSources?: string[] | undefined;
 }>, z.ZodTypeAny>;
 export declare function handleAnalyzeNews(req: Request, res: Response): Promise<void>;
 //# sourceMappingURL=analyzeNews.d.ts.map

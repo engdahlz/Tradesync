@@ -93,7 +93,13 @@ Return JSON with:
         const result = await genkit_js_1.ai.generate({
             model: config_js_1.MODEL_FLASH,
             prompt: prompt,
-            output: { schema: AIOutputSchema }
+            output: { schema: AIOutputSchema },
+            config: {
+                temperature: 0.3,
+                thinkingConfig: {
+                    thinkingBudget: config_js_1.THINKING_BUDGET_MEDIUM,
+                }
+            }
         });
         const data = result.output;
         if (!data)

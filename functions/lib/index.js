@@ -4,7 +4,7 @@
  * Trade/Sync AI-Powered Trading Platform
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMarketNews = exports.ingestKnowledge = exports.searchVideos = exports.getOrders = exports.scheduleSellOrder = exports.executeTrade = exports.analyzeNews = exports.analyzeVideo = exports.suggestStrategy = exports.advisorChat = exports.debugScanner = exports.marketScanner = exports.checkExpiredTrades = void 0;
+exports.analyzeDocument = exports.getMarketNews = exports.ingestKnowledge = exports.searchVideos = exports.getOrders = exports.scheduleSellOrder = exports.executeTrade = exports.analyzeNews = exports.analyzeVideo = exports.suggestStrategy = exports.advisorChatStream = exports.advisorChat = exports.debugScanner = exports.marketScanner = exports.checkExpiredTrades = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const scheduler_1 = require("firebase-functions/v2/scheduler");
 const config_js_1 = require("./config.js");
@@ -65,6 +65,7 @@ const getOrders_js_1 = require("./flows/getOrders.js");
 const searchVideos_js_1 = require("./flows/searchVideos.js");
 const ingestKnowledge_js_1 = require("./flows/ingestKnowledge.js");
 const scheduledScanner_js_1 = require("./flows/scheduledScanner.js");
+const analyzeDocument_js_1 = require("./flows/analyzeDocument.js");
 // ... existing imports ...
 const getMarketNews_js_1 = require("./flows/getMarketNews.js");
 // Scheduled Market Scanner (Every hour)
@@ -87,6 +88,7 @@ exports.debugScanner = (0, https_1.onRequest)({ cors: true, memory: '1GiB', time
 });
 // HTTP endpoints (no secrets injection - key is hardcoded in config)
 exports.advisorChat = (0, https_1.onRequest)({ cors: true, memory: '1GiB' }, advisorChat_js_1.handleAdvisorChat);
+exports.advisorChatStream = (0, https_1.onRequest)({ cors: true, memory: '1GiB', timeoutSeconds: 300 }, advisorChat_js_1.handleAdvisorChatStream);
 exports.suggestStrategy = (0, https_1.onRequest)({ cors: true }, suggestStrategy_js_1.handleSuggestStrategy);
 exports.analyzeVideo = (0, https_1.onRequest)({ cors: true }, analyzeVideo_js_1.handleAnalyzeVideo);
 exports.analyzeNews = (0, https_1.onRequest)({ cors: true }, analyzeNews_js_1.handleAnalyzeNews);
@@ -96,4 +98,5 @@ exports.getOrders = (0, https_1.onRequest)({ cors: true }, getOrders_js_1.handle
 exports.searchVideos = (0, https_1.onRequest)({ cors: true }, searchVideos_js_1.handleSearchVideos);
 exports.ingestKnowledge = (0, https_1.onRequest)({ cors: true }, ingestKnowledge_js_1.handleIngestKnowledge);
 exports.getMarketNews = (0, https_1.onRequest)({ cors: true }, getMarketNews_js_1.handleGetMarketNews);
+exports.analyzeDocument = (0, https_1.onRequest)({ cors: true, memory: '1GiB' }, analyzeDocument_js_1.handleAnalyzeDocument);
 //# sourceMappingURL=index.js.map

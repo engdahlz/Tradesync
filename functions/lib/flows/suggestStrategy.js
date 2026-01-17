@@ -31,7 +31,12 @@ const OutputSchema = genkit_1.z.object({
     reasoning: genkit_1.z.string(),
     riskLevel: genkit_1.z.enum(['LOW', 'MEDIUM', 'HIGH']),
     stopLoss: genkit_1.z.number().optional(),
-    takeProfit: genkit_1.z.number().optional()
+    takeProfit: genkit_1.z.number().optional(),
+    technicalIndicators: genkit_1.z.object({
+        rsi: genkit_1.z.number().optional(),
+        macdSignal: genkit_1.z.string().optional(),
+        trend: genkit_1.z.string().optional()
+    }).optional()
 });
 exports.suggestStrategyFlow = genkit_js_1.ai.defineFlow({
     name: 'suggestStrategy',
@@ -63,26 +68,33 @@ exports.suggestStrategyFlow = genkit_js_1.ai.defineFlow({
     }
     prompt += `
     Determine the optimal trading action (BUY, SELL, HOLD) based on technical analysis principles.
+    
+    If you have price history, calculate these indicators:
+    - RSI (14-period): Overbought > 70, Oversold < 30
+    - MACD crossover signal
+    - Overall trend direction
+    
     Explain your reasoning clearly.
-    Assess the risk level.
-    Suggest stop-loss and take-profit levels if applicable.
+    Assess the risk level (LOW, MEDIUM, HIGH).
+    Suggest stop-loss and take-profit levels based on support/resistance.
     `;
     const result = await genkit_js_1.ai.generate({
         model: model || config_js_1.MODEL_PRO,
         prompt: prompt,
+        output: { schema: OutputSchema },
         config: {
-            temperature: 0.2, // Low temperature for consistent strategy
+            temperature: 0.2,
+            thinkingConfig: {
+                thinkingBudget: config_js_1.THINKING_BUDGET_HIGH,
+            },
+            tools: [
+                { codeExecution: {} }
+            ]
         }
     });
-    // Parse JSON from the response text (assuming the model returns JSON as requested by schema, 
-    // but Genkit's outputSchema handling usually ensures structured output if the model supports it.
-    // For now, we rely on Genkit's structured output capability if we had defined it that way, 
-    // but here we are using simple text generation and might need to parse or trust the model.
-    // **Correction**: To enforce JSON, we should rely on Genkit's `output` functionality or instruct the model strictly.
-    // Since we defined outputSchema, Genkit tries to enforce it.
-    // However, the `generate` call above returns a `GenerateResponse`. 
-    // We need to ensure we return the object matching OutputSchema.
-    // For this prototype, we will assume the model output needs to be parsed or is returned as data.
+    if (!result.output) {
+        throw new Error('Strategy generation failed - no structured output');
+    }
     return result.output;
 });
 async function handleSuggestStrategy(req, res) {

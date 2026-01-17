@@ -82,6 +82,19 @@ export declare const suggestStrategyFlow: import("genkit").Action<z.ZodObject<{
     riskLevel: z.ZodEnum<["LOW", "MEDIUM", "HIGH"]>;
     stopLoss: z.ZodOptional<z.ZodNumber>;
     takeProfit: z.ZodOptional<z.ZodNumber>;
+    technicalIndicators: z.ZodOptional<z.ZodObject<{
+        rsi: z.ZodOptional<z.ZodNumber>;
+        macdSignal: z.ZodOptional<z.ZodString>;
+        trend: z.ZodOptional<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        rsi?: number | undefined;
+        macdSignal?: string | undefined;
+        trend?: string | undefined;
+    }, {
+        rsi?: number | undefined;
+        macdSignal?: string | undefined;
+        trend?: string | undefined;
+    }>>;
 }, "strip", z.ZodTypeAny, {
     action: "BUY" | "SELL" | "HOLD";
     confidence: number;
@@ -89,6 +102,11 @@ export declare const suggestStrategyFlow: import("genkit").Action<z.ZodObject<{
     riskLevel: "LOW" | "MEDIUM" | "HIGH";
     stopLoss?: number | undefined;
     takeProfit?: number | undefined;
+    technicalIndicators?: {
+        rsi?: number | undefined;
+        macdSignal?: string | undefined;
+        trend?: string | undefined;
+    } | undefined;
 }, {
     action: "BUY" | "SELL" | "HOLD";
     confidence: number;
@@ -96,6 +114,11 @@ export declare const suggestStrategyFlow: import("genkit").Action<z.ZodObject<{
     riskLevel: "LOW" | "MEDIUM" | "HIGH";
     stopLoss?: number | undefined;
     takeProfit?: number | undefined;
+    technicalIndicators?: {
+        rsi?: number | undefined;
+        macdSignal?: string | undefined;
+        trend?: string | undefined;
+    } | undefined;
 }>, z.ZodTypeAny>;
 export declare function handleSuggestStrategy(req: Request, res: Response): Promise<void>;
 //# sourceMappingURL=suggestStrategy.d.ts.map

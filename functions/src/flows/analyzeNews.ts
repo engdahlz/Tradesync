@@ -5,7 +5,7 @@
  */
 
 import type { Request, Response } from 'express';
-import { MODEL_FLASH } from '../config.js';
+import { MODEL_FLASH, THINKING_BUDGET_LOW } from '../config.js';
 import { ai } from '../genkit.js';
 import { z } from 'genkit';
 
@@ -21,6 +21,7 @@ const OutputSchema = z.object({
     confidence: z.number(),
     summary: z.string(),
     tickers: z.array(z.string()),
+    groundingSources: z.array(z.string()).optional(),
 });
 
 export const analyzeNewsFlow = ai.defineFlow({
@@ -48,14 +49,36 @@ export const analyzeNewsFlow = ai.defineFlow({
         const result = await ai.generate({
             model: MODEL_FLASH,
             prompt: prompt,
-            output: { schema: OutputSchema }
+            output: { schema: OutputSchema },
+            config: {
+                temperature: 0.3,
+                thinkingConfig: {
+                    thinkingBudget: THINKING_BUDGET_LOW,
+                },
+                tools: [
+                    { googleSearch: {} }
+                ]
+            }
         });
 
         if (!result.output) {
             throw new Error('No structured output returned');
         }
 
-        return result.output;
+        const groundingSources: string[] = [];
+        const candidates = (result as unknown as { candidates?: Array<{ groundingMetadata?: { groundingChunks?: Array<{ web?: { uri?: string } }> } }> }).candidates;
+        if (candidates?.[0]?.groundingMetadata?.groundingChunks) {
+            for (const chunk of candidates[0].groundingMetadata.groundingChunks) {
+                if (chunk.web?.uri) {
+                    groundingSources.push(chunk.web.uri);
+                }
+            }
+        }
+
+        return {
+            ...result.output,
+            groundingSources: groundingSources.length > 0 ? groundingSources : undefined
+        };
     } catch (e) {
         // Fallback or rethrow
         console.error("Genkit generation failed", e);

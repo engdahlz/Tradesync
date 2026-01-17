@@ -5,7 +5,7 @@
  */
 
 import type { Request, Response } from 'express';
-import { MODEL_FLASH } from '../config.js';
+import { MODEL_FLASH, THINKING_BUDGET_MEDIUM } from '../config.js';
 import { ai } from '../genkit.js';
 import { z } from 'genkit';
 import { YoutubeTranscript } from 'youtube-transcript';
@@ -101,7 +101,13 @@ Return JSON with:
         const result = await ai.generate({
             model: MODEL_FLASH,
             prompt: prompt,
-            output: { schema: AIOutputSchema }
+            output: { schema: AIOutputSchema },
+            config: {
+                temperature: 0.3,
+                thinkingConfig: {
+                    thinkingBudget: THINKING_BUDGET_MEDIUM,
+                }
+            }
         });
 
         const data = result.output;

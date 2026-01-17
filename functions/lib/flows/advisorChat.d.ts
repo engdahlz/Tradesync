@@ -1,6 +1,5 @@
 /**
  * Financial Advisor RAG Chat Flow
- * Retrieves context from knowledge base and generates responses via Genkit
  */
 import type { Request, Response } from 'express';
 import { z } from 'genkit';
@@ -46,6 +45,17 @@ export declare const advisorChatFlow: import("genkit").Action<z.ZodObject<{
         sourceType: string;
         excerpt: string;
     }>, "many">>;
+    groundingSources: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        url: z.ZodString;
+        title: z.ZodOptional<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        url: string;
+        title?: string | undefined;
+    }, {
+        url: string;
+        title?: string | undefined;
+    }>, "many">>;
+    thinkingUsed: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     response: string;
     sources?: {
@@ -53,6 +63,11 @@ export declare const advisorChatFlow: import("genkit").Action<z.ZodObject<{
         sourceType: string;
         excerpt: string;
     }[] | undefined;
+    groundingSources?: {
+        url: string;
+        title?: string | undefined;
+    }[] | undefined;
+    thinkingUsed?: boolean | undefined;
 }, {
     response: string;
     sources?: {
@@ -60,6 +75,12 @@ export declare const advisorChatFlow: import("genkit").Action<z.ZodObject<{
         sourceType: string;
         excerpt: string;
     }[] | undefined;
+    groundingSources?: {
+        url: string;
+        title?: string | undefined;
+    }[] | undefined;
+    thinkingUsed?: boolean | undefined;
 }>, z.ZodTypeAny>;
 export declare function handleAdvisorChat(req: Request, res: Response): Promise<void>;
+export declare function handleAdvisorChatStream(req: Request, res: Response): Promise<void>;
 //# sourceMappingURL=advisorChat.d.ts.map

@@ -4,7 +4,7 @@
  */
 
 import type { Request, Response } from 'express';
-import { db, MODEL_PRO, GOOGLE_AI_API_KEY } from '../config.js';
+import { db, MODEL_PRO, GOOGLE_AI_API_KEY, THINKING_BUDGET_HIGH } from '../config.js';
 import { ai } from '../genkit.js';
 import { z } from 'genkit';
 import { marketNewsTool, strategyTool } from '../tools/marketTools.js';
@@ -64,7 +64,12 @@ const OutputSchema = z.object({
         title: z.string(),
         sourceType: z.string(),
         excerpt: z.string()
-    })).optional()
+    })).optional(),
+    groundingSources: z.array(z.object({
+        url: z.string(),
+        title: z.string().optional()
+    })).optional(),
+    thinkingUsed: z.boolean().optional()
 });
 
 async function retrieveContext(query: string, topK: number = 5) {
@@ -174,12 +179,37 @@ ${message}
         tools: [marketNewsTool, strategyTool],
         config: {
             temperature: 0.7,
+            thinkingConfig: {
+                thinkingBudget: THINKING_BUDGET_HIGH,
+            },
+            tools: [
+                { googleSearch: {} },
+                { urlContext: {} }
+            ]
         }
     });
+
+    const groundingSources: Array<{ url: string; title?: string }> = [];
+    
+    const rawResponse = result.toJSON?.() as Record<string, unknown> | undefined;
+    const candidates = rawResponse?.candidates as Array<{ groundingMetadata?: { groundingChunks?: Array<{ web?: { uri?: string; title?: string } }> } }> | undefined;
+    
+    if (candidates?.[0]?.groundingMetadata?.groundingChunks) {
+        for (const chunk of candidates[0].groundingMetadata.groundingChunks) {
+            if (chunk.web?.uri) {
+                groundingSources.push({
+                    url: chunk.web.uri,
+                    title: chunk.web.title
+                });
+            }
+        }
+    }
 
     return {
         response: result.text,
         sources: sources.length > 0 ? sources : undefined,
+        groundingSources: groundingSources.length > 0 ? groundingSources : undefined,
+        thinkingUsed: true
     };
 });
 
@@ -194,5 +224,118 @@ export async function handleAdvisorChat(req: Request, res: Response) {
             response: 'I apologize, but I encountered an error. Please try again.',
             error: String(error),
         });
+    }
+}
+
+export async function handleAdvisorChatStream(req: Request, res: Response) {
+    const { message, conversationHistory = [], topK = 5 } = req.body;
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    try {
+        const retrievedChunks = await retrieveContext(message, topK);
+
+        let contextSection = '';
+        const sources: Array<{ title: string; sourceType: string; excerpt: string }> = [];
+
+        if (retrievedChunks.length > 0) {
+            contextSection = `\n## RELEVANT KNOWLEDGE FROM YOUR LIBRARY\n\n${retrievedChunks.map((chunk, i) =>
+                `### Source ${i + 1}: ${chunk.title} (${chunk.sourceType}) [Relevance: ${chunk.score.toFixed(2)}]\n${chunk.content}\n`
+            ).join('\n')}`;
+
+            retrievedChunks.forEach(chunk => {
+                sources.push({
+                    title: chunk.title,
+                    sourceType: chunk.sourceType,
+                    excerpt: chunk.content.slice(0, 150) + '...',
+                });
+            });
+        } else {
+            contextSection = FALLBACK_KNOWLEDGE;
+        }
+
+        const historyContext = conversationHistory
+            .slice(-6)
+            .map((msg: { role: string; content: string }) =>
+                `${msg.role === 'user' ? 'User' : 'Advisor'}: ${msg.content}`
+            )
+            .join('\n');
+
+        const prompt = `You are an expert Financial Advisor AI for Trade/Sync.
+    
+${contextSection}
+
+## YOUR ROLE
+1. Answer questions drawing from the knowledge base
+2. Cite specific sources when making recommendations
+3. Balance technical analysis with psychological insights
+4. Emphasize risk management and discipline
+5. NEVER give specific financial advice for *individual* personal finance situations
+6. Use your tools (marketNews, strategy) to provide REAL-TIME data when asked about specific assets
+
+${historyContext ? `## CONVERSATION HISTORY\n${historyContext}\n` : ''}
+
+## USER QUESTION
+${message}
+
+## YOUR RESPONSE`;
+
+        if (sources.length > 0) {
+            res.write(`event: sources\ndata: ${JSON.stringify(sources)}\n\n`);
+        }
+
+        const { stream, response } = ai.generateStream({
+            model: MODEL_PRO,
+            prompt: prompt,
+            tools: [marketNewsTool, strategyTool],
+            config: {
+                temperature: 0.7,
+                thinkingConfig: {
+                    thinkingBudget: THINKING_BUDGET_HIGH,
+                },
+                tools: [
+                    { googleSearch: {} },
+                    { urlContext: {} }
+                ]
+            }
+        });
+
+        for await (const chunk of stream) {
+            if (chunk.text) {
+                res.write(`event: text\ndata: ${JSON.stringify({ text: chunk.text })}\n\n`);
+            }
+        }
+
+        const finalResponse = await response;
+        
+        const groundingSources: Array<{ url: string; title?: string }> = [];
+        const rawResponse = finalResponse.toJSON?.() as Record<string, unknown> | undefined;
+        const candidates = rawResponse?.candidates as Array<{ groundingMetadata?: { groundingChunks?: Array<{ web?: { uri?: string; title?: string } }> } }> | undefined;
+        
+        if (candidates?.[0]?.groundingMetadata?.groundingChunks) {
+            for (const grChunk of candidates[0].groundingMetadata.groundingChunks) {
+                if (grChunk.web?.uri) {
+                    groundingSources.push({
+                        url: grChunk.web.uri,
+                        title: grChunk.web.title
+                    });
+                }
+            }
+        }
+
+        if (groundingSources.length > 0) {
+            res.write(`event: grounding\ndata: ${JSON.stringify(groundingSources)}\n\n`);
+        }
+
+        res.write(`event: done\ndata: ${JSON.stringify({ thinkingUsed: true })}\n\n`);
+        res.end();
+
+    } catch (error: unknown) {
+        console.error('[advisorChatStream] Error:', error);
+        res.write(`event: error\ndata: ${JSON.stringify({ error: String(error) })}\n\n`);
+        res.end();
     }
 }

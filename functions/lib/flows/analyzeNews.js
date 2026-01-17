@@ -20,6 +20,7 @@ const OutputSchema = genkit_1.z.object({
     confidence: genkit_1.z.number(),
     summary: genkit_1.z.string(),
     tickers: genkit_1.z.array(genkit_1.z.string()),
+    groundingSources: genkit_1.z.array(genkit_1.z.string()).optional(),
 });
 exports.analyzeNewsFlow = genkit_js_1.ai.defineFlow({
     name: 'analyzeNews',
@@ -44,12 +45,33 @@ exports.analyzeNewsFlow = genkit_js_1.ai.defineFlow({
         const result = await genkit_js_1.ai.generate({
             model: config_js_1.MODEL_FLASH,
             prompt: prompt,
-            output: { schema: OutputSchema }
+            output: { schema: OutputSchema },
+            config: {
+                temperature: 0.3,
+                thinkingConfig: {
+                    thinkingBudget: config_js_1.THINKING_BUDGET_LOW,
+                },
+                tools: [
+                    { googleSearch: {} }
+                ]
+            }
         });
         if (!result.output) {
             throw new Error('No structured output returned');
         }
-        return result.output;
+        const groundingSources = [];
+        const candidates = result.candidates;
+        if (candidates?.[0]?.groundingMetadata?.groundingChunks) {
+            for (const chunk of candidates[0].groundingMetadata.groundingChunks) {
+                if (chunk.web?.uri) {
+                    groundingSources.push(chunk.web.uri);
+                }
+            }
+        }
+        return {
+            ...result.output,
+            groundingSources: groundingSources.length > 0 ? groundingSources : undefined
+        };
     }
     catch (e) {
         // Fallback or rethrow

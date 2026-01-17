@@ -63,7 +63,7 @@ export const checkExpiredTrades = onSchedule('every 5 minutes', async () => {
 });
 
 // Import flow handlers
-import { handleAdvisorChat } from './flows/advisorChat.js';
+import { handleAdvisorChat, handleAdvisorChatStream } from './flows/advisorChat.js';
 import { handleSuggestStrategy } from './flows/suggestStrategy.js';
 import { handleAnalyzeVideo } from './flows/analyzeVideo.js';
 import { handleAnalyzeNews } from './flows/analyzeNews.js';
@@ -72,6 +72,7 @@ import { handleGetOrders } from './flows/getOrders.js';
 import { handleSearchVideos } from './flows/searchVideos.js';
 import { handleIngestKnowledge } from './flows/ingestKnowledge.js';
 import { runMarketScan } from './flows/scheduledScanner.js';
+import { handleAnalyzeDocument } from './flows/analyzeDocument.js';
 
 // ... existing imports ...
 import { handleGetMarketNews } from './flows/getMarketNews.js';
@@ -97,6 +98,7 @@ export const debugScanner = onRequest({ cors: true, memory: '1GiB', timeoutSecon
 
 // HTTP endpoints (no secrets injection - key is hardcoded in config)
 export const advisorChat = onRequest({ cors: true, memory: '1GiB' }, handleAdvisorChat);
+export const advisorChatStream = onRequest({ cors: true, memory: '1GiB', timeoutSeconds: 300 }, handleAdvisorChatStream);
 export const suggestStrategy = onRequest({ cors: true }, handleSuggestStrategy);
 export const analyzeVideo = onRequest({ cors: true }, handleAnalyzeVideo);
 export const analyzeNews = onRequest({ cors: true }, handleAnalyzeNews);
@@ -106,3 +108,4 @@ export const getOrders = onRequest({ cors: true }, handleGetOrders);
 export const searchVideos = onRequest({ cors: true }, handleSearchVideos);
 export const ingestKnowledge = onRequest({ cors: true }, handleIngestKnowledge);
 export const getMarketNews = onRequest({ cors: true }, handleGetMarketNews);
+export const analyzeDocument = onRequest({ cors: true, memory: '1GiB' }, handleAnalyzeDocument);
