@@ -1,16 +1,36 @@
 
 /**
  * Financial Advisor RAG Chat Flow
- * Retrieves context from knowledge base and generates responses via Genkit
  */
 
 import type { Request, Response } from 'express';
-import { db, MODEL_NAME, MODEL_PRO, EMBEDDING_MODEL } from '../config.js';
+import { db, MODEL_PRO, GOOGLE_AI_API_KEY } from '../config.js';
 import { ai } from '../genkit.js';
 import { z } from 'genkit';
 import { marketNewsTool, strategyTool } from '../tools/marketTools.js';
 
 const CHUNKS_COLLECTION = 'rag_chunks';
+
+function normalizeEmbedding(embedding: number[]): number[] {
+    const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+    if (norm === 0) return embedding;
+    return embedding.map(val => val / norm);
+}
+
+async function generateQueryEmbedding(query: string): Promise<number[]> {
+    const { GoogleGenAI } = await import('@google/genai');
+    const genAI = new GoogleGenAI({ apiKey: GOOGLE_AI_API_KEY });
+    
+    const response = await genAI.models.embedContent({
+        model: 'gemini-embedding-001',
+        contents: query,
+        config: {
+            taskType: 'RETRIEVAL_QUERY',
+            outputDimensionality: 768,
+        }
+    });
+    return normalizeEmbedding(response.embeddings![0].values!);
+}
 
 const FALLBACK_KNOWLEDGE = `You are grounded in the following authoritative trading literature:
 
@@ -47,64 +67,41 @@ const OutputSchema = z.object({
     })).optional()
 });
 
-function cosineSimilarity(vecA: number[], vecB: number[]): number {
-    let dot = 0;
-    let normA = 0;
-    let normB = 0;
-    for (let i = 0; i < vecA.length; i++) {
-        dot += vecA[i] * vecB[i];
-        normA += vecA[i] * vecA[i];
-        normB += vecB[i] * vecB[i];
-    }
-    return dot / ((Math.sqrt(normA) * Math.sqrt(normB)) || 1);
-}
-
 async function retrieveContext(query: string, topK: number = 5) {
     try {
         console.log(`[advisorChat] Generating embedding for query: "${query}"`);
-        // 1. Generate Query Embedding
-        const embeddingResult = await ai.embed({
-            embedder: EMBEDDING_MODEL,
-            content: query
-        });
+        
+        const queryEmbedding = await generateQueryEmbedding(query);
 
-        // Ensure we have a valid embedding
-        if (!embeddingResult || !embeddingResult[0] || !embeddingResult[0].embedding) {
-            console.error('[advisorChat] Failed to generate embedding');
+        const vectorQuery = db.collection(CHUNKS_COLLECTION)
+            .findNearest('embedding', queryEmbedding, {
+                limit: topK,
+                distanceMeasure: 'COSINE',
+            });
+
+        const snapshot = await vectorQuery.get();
+        
+        if (snapshot.empty) {
+            console.log('[advisorChat] No chunks found in vector search');
             return [];
         }
 
-        const queryEmbedding = embeddingResult[0].embedding;
-
-        // 2. Fetch All Chunks (Small scale optimization)
-        const snapshot = await db.collection(CHUNKS_COLLECTION).get();
-        if (snapshot.empty) return [];
-
-        // 3. Score Chunks
-        const scoredChunks = snapshot.docs.map(doc => {
+        const results = snapshot.docs.map(doc => {
             const data = doc.data();
-            const embedding = data.embedding;
-
-            // Handle missing embeddings gracefully
-            if (!embedding || !Array.isArray(embedding)) return { score: -1, data };
-
-            const score = cosineSimilarity(queryEmbedding, embedding);
-            return { score, data };
+            const distance = data._distance ?? 0;
+            const score = 1 - distance;
+            
+            return {
+                content: data.content,
+                title: data.metadata?.title || 'Unknown',
+                sourceType: data.metadata?.sourceType || 'unknown',
+                score
+            };
         });
 
-        // 4. Sort & filter
-        scoredChunks.sort((a, b) => b.score - a.score);
+        console.log(`[advisorChat] Retrieved ${results.length} chunks via vector search. Top score: ${results[0]?.score?.toFixed(3)}`);
 
-        const topResults = scoredChunks.slice(0, topK);
-
-        console.log(`[advisorChat] Retrieved ${topResults.length} chunks. Top score: ${topResults[0]?.score}`);
-
-        return topResults.map(item => ({
-            content: item.data.content,
-            title: item.data.metadata?.title || 'Unknown',
-            sourceType: item.data.metadata?.sourceType || 'unknown',
-            score: item.score
-        }));
+        return results;
 
     } catch (error) {
         console.error('[advisorChat] RAG Retrieval error:', error);

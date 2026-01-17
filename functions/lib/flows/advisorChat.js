@@ -43,55 +43,42 @@ const OutputSchema = genkit_1.z.object({
         excerpt: genkit_1.z.string()
     })).optional()
 });
-function cosineSimilarity(vecA, vecB) {
-    let dot = 0;
-    let normA = 0;
-    let normB = 0;
-    for (let i = 0; i < vecA.length; i++) {
-        dot += vecA[i] * vecB[i];
-        normA += vecA[i] * vecA[i];
-        normB += vecB[i] * vecB[i];
-    }
-    return dot / ((Math.sqrt(normA) * Math.sqrt(normB)) || 1);
-}
 async function retrieveContext(query, topK = 5) {
     try {
         console.log(`[advisorChat] Generating embedding for query: "${query}"`);
-        // 1. Generate Query Embedding
         const embeddingResult = await genkit_js_1.ai.embed({
             embedder: config_js_1.EMBEDDING_MODEL,
             content: query
         });
-        // Ensure we have a valid embedding
         if (!embeddingResult || !embeddingResult[0] || !embeddingResult[0].embedding) {
             console.error('[advisorChat] Failed to generate embedding');
             return [];
         }
         const queryEmbedding = embeddingResult[0].embedding;
-        // 2. Fetch All Chunks (Small scale optimization)
-        const snapshot = await config_js_1.db.collection(CHUNKS_COLLECTION).get();
-        if (snapshot.empty)
-            return [];
-        // 3. Score Chunks
-        const scoredChunks = snapshot.docs.map(doc => {
-            const data = doc.data();
-            const embedding = data.embedding;
-            // Handle missing embeddings gracefully
-            if (!embedding || !Array.isArray(embedding))
-                return { score: -1, data };
-            const score = cosineSimilarity(queryEmbedding, embedding);
-            return { score, data };
+        // Use Firestore's native vector search (findNearest) for scalability
+        const vectorQuery = config_js_1.db.collection(CHUNKS_COLLECTION)
+            .findNearest('embedding', queryEmbedding, {
+            limit: topK,
+            distanceMeasure: 'COSINE',
         });
-        // 4. Sort & filter
-        scoredChunks.sort((a, b) => b.score - a.score);
-        const topResults = scoredChunks.slice(0, topK);
-        console.log(`[advisorChat] Retrieved ${topResults.length} chunks. Top score: ${topResults[0]?.score}`);
-        return topResults.map(item => ({
-            content: item.data.content,
-            title: item.data.metadata?.title || 'Unknown',
-            sourceType: item.data.metadata?.sourceType || 'unknown',
-            score: item.score
-        }));
+        const snapshot = await vectorQuery.get();
+        if (snapshot.empty) {
+            console.log('[advisorChat] No chunks found in vector search');
+            return [];
+        }
+        const results = snapshot.docs.map(doc => {
+            const data = doc.data();
+            const distance = data._distance ?? 0;
+            const score = 1 - distance;
+            return {
+                content: data.content,
+                title: data.metadata?.title || 'Unknown',
+                sourceType: data.metadata?.sourceType || 'unknown',
+                score
+            };
+        });
+        console.log(`[advisorChat] Retrieved ${results.length} chunks via vector search. Top score: ${results[0]?.score?.toFixed(3)}`);
+        return results;
     }
     catch (error) {
         console.error('[advisorChat] RAG Retrieval error:', error);

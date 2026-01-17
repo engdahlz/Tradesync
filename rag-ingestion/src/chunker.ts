@@ -9,7 +9,7 @@ export interface TextChunk {
     tokenCount: number
     metadata: {
         source: string
-        sourceType: 'book' | 'article' | 'pdf' | 'github'
+        sourceType: 'book' | 'article' | 'pdf' | 'github' | 'books' | 'articles' | 'pdfs'
         title: string
         chunkIndex: number
         totalChunks: number

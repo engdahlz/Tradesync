@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "firebase-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@gannonh/firebase-mcp"
+      ],
+      "env": {
+        "SERVICE_ACCOUNT_KEY_PATH": "/home/engdahlz/.config/opencode/keys/firebase-service-account.json",
+        "FIREBASE_STORAGE_BUCKET": "tradesync-ai-prod.firebasestorage.app"
+      }
+    }
+  }
+}

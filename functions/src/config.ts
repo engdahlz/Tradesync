@@ -16,7 +16,7 @@ export const messaging = getMessaging();
 
 // Hardcoded API key (user provided)
 // Hardcoded API key (user provided)
-export const GOOGLE_AI_API_KEY = "AIzaSyBH0QJ0vDdaOEoY-g4YPUeie9Z9pS4iQDE";
+export const GOOGLE_AI_API_KEY = "AIzaSyAp3-hmTN7xEQeBhiv9Wj6cgPCu1wfzsnU";
 export const YOUTUBE_API_KEY = "AIzaSyDQOCw7zPaxK4034w1ZZBuBoEoHbieC0O0";
 export const ALPHA_VANTAGE_API_KEY = "F84UJC6092ZGTLM8"; // User provided
 
@@ -28,4 +28,4 @@ export const MODEL_PRO = 'googleai/gemini-2.0-pro-exp';
 
 // Default exports for backward compatibility (during migration)
 export const MODEL_NAME = MODEL_FLASH; 
-export const EMBEDDING_MODEL = 'googleai/text-embedding-004';
+export const EMBEDDING_MODEL = 'gemini-embedding-001';
