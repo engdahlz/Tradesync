@@ -81,7 +81,7 @@ export default function NewsCard({ article, analysis, onAnalyze }: NewsCardProps
                         }}
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ts-blue/20 to-ts-purple/20">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ts-blue/20 to-ts-blue/5">
                         <span className="text-4xl font-bold text-white/20">{article.source.charAt(0)}</span>
                     </div>
                 )}

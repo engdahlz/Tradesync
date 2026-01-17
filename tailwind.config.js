@@ -48,10 +48,10 @@ export default {
                     foreground: "hsl(var(--card-foreground))",
                 },
                 // Custom functional colors mapping
-                'ts-green': '#22c55e',
-                'ts-red': '#ef4444',
-                'ts-yellow': '#eab308',
-                'ts-blue': '#3b82f6',
+                'ts-green': 'hsl(var(--ts-green))',
+                'ts-red': 'hsl(var(--ts-red))',
+                'ts-yellow': 'hsl(var(--ts-yellow))',
+                'ts-blue': 'hsl(var(--ts-blue))',
             },
             borderRadius: {
                 lg: "var(--radius)",

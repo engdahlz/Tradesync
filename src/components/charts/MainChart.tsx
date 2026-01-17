@@ -78,14 +78,14 @@ export default function MainChart({ symbol }: MainChartProps) {
                 signals.push({
                     time: data[i].time as Time,
                     text: 'OVERSOLD',
-                    color: 'rgb(19, 115, 51)', // Use TS Green from index.css logic
+                    color: getThemeColor('--ts-green'),
                     position: 'belowBar',
                 })
             } else if (rsi > 70 && !signals.some(s => Math.abs((s.time as number) - data[i].time) < 3600 * 4)) {
                 signals.push({
                     time: data[i].time as Time,
                     text: 'OVERBOUGHT',
-                    color: 'rgb(165, 14, 14)', // Use TS Red from index.css logic
+                    color: getThemeColor('--ts-red'),
                     position: 'aboveBar',
                 })
             }
@@ -99,39 +99,54 @@ export default function MainChart({ symbol }: MainChartProps) {
         loadData()
     }, [symbol])
 
+    // Helper to get CSS variable values
+    const getThemeColor = (variable: string) => {
+        const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim()
+        return `hsl(${value})`
+    }
+
     useEffect(() => {
         if (!chartContainerRef.current || candleData.length === 0) return
+
+        // Get theme colors
+        const backgroundColor = getThemeColor('--background')
+        const textColor = getThemeColor('--foreground')
+        const gridColor = getThemeColor('--secondary')
+        const borderColor = getThemeColor('--border')
+        const crosshairColor = getThemeColor('--primary')
+        const greenColor = getThemeColor('--ts-green')
+        const redColor = getThemeColor('--ts-red')
 
         // Create chart
         const chart = createChart(chartContainerRef.current, {
             layout: {
-                background: { color: '#ffffff' },
-                textColor: '#202124', // --foreground
+                background: { color: backgroundColor },
+                textColor: textColor,
             },
             grid: {
-                vertLines: { color: '#f1f3f4' }, // --secondary
-                horzLines: { color: '#f1f3f4' },
+                vertLines: { color: gridColor },
+                horzLines: { color: gridColor },
             },
             width: chartContainerRef.current.clientWidth,
             height: chartContainerRef.current.clientHeight,
             crosshair: {
                 mode: 1,
-                vertLine: { color: '#dadce0', labelBackgroundColor: '#1a73e8' },
-                horzLine: { color: '#dadce0', labelBackgroundColor: '#1a73e8' },
+                vertLine: { color: borderColor, labelBackgroundColor: crosshairColor },
+                horzLine: { color: borderColor, labelBackgroundColor: crosshairColor },
             },
-            rightPriceScale: { borderColor: '#dadce0' },
-            timeScale: { borderColor: '#dadce0', timeVisible: true, secondsVisible: false },
+            rightPriceScale: { borderColor: borderColor },
+            timeScale: { borderColor: borderColor, timeVisible: true, secondsVisible: false },
         })
 
         chartRef.current = chart
 
         const candlestickSeries = chart.addCandlestickSeries({
-            upColor: 'rgb(19, 115, 51)', // Google Green (#137333)
-            downColor: 'rgb(165, 14, 14)', // Google Red (#A50E0E)
-            borderUpColor: 'rgb(19, 115, 51)',
-            borderDownColor: 'rgb(165, 14, 14)',
-            wickUpColor: 'rgb(19, 115, 51)',
-            wickDownColor: 'rgb(165, 14, 14)',
+            upColor: greenColor,
+            downColor: redColor,
+            borderUpColor: greenColor,
+            borderDownColor: redColor,
+            wickUpColor: greenColor,
+            wickDownColor: redColor,
         })
 
         candlestickSeries.setData(candleData)

@@ -12,30 +12,43 @@ export default function RSIChart({ data = [] }: RSIChartProps) {
     const chartRef = useRef<IChartApi | null>(null)
     const rsiSeriesRef = useRef<any>(null)
 
+    // Helper to get CSS variable values
+    const getThemeColor = (variable: string) => {
+        const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim()
+        return `hsl(${value})`
+    }
+
     useEffect(() => {
         if (!chartContainerRef.current) return
+
+        // Get theme colors
+        const backgroundColor = getThemeColor('--background')
+        const textColor = getThemeColor('--foreground')
+        const gridColor = getThemeColor('--secondary')
+        const borderColor = getThemeColor('--border')
+        const blueColor = getThemeColor('--ts-blue')
 
         // Create chart with synchronized TimeScale styling
         const chart = createChart(chartContainerRef.current, {
             layout: {
-                background: { color: '#ffffff' },
-                textColor: '#202124',
+                background: { color: backgroundColor },
+                textColor: textColor,
             },
             grid: {
-                vertLines: { color: '#f1f3f4' },
-                horzLines: { color: '#f1f3f4' },
+                vertLines: { color: gridColor },
+                horzLines: { color: gridColor },
             },
             width: chartContainerRef.current.clientWidth,
             height: chartContainerRef.current.clientHeight,
             rightPriceScale: {
-                borderColor: '#dadce0',
+                borderColor: borderColor,
                 scaleMargins: {
                     top: 0.1,
                     bottom: 0.1,
                 },
             },
             timeScale: {
-                borderColor: '#dadce0',
+                borderColor: borderColor,
                 visible: false, // Hide time scale for sub-charts per @tradesync-frontend-expert
             },
             crosshair: {
@@ -47,7 +60,7 @@ export default function RSIChart({ data = [] }: RSIChartProps) {
 
         // Add RSI line series
         const rsiSeries = chart.addLineSeries({
-            color: '#1a73e8', // Google Blue
+            color: blueColor,
             lineWidth: 2,
             priceLineVisible: false,
         })
