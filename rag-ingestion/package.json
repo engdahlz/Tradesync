@@ -7,7 +7,8 @@
         "ingest": "tsx src/ingest.ts",
         "ingest:books": "tsx src/ingest.ts --type books",
         "ingest:articles": "tsx src/ingest.ts --type articles",
-        "ingest:pdfs": "tsx src/ingest.ts --type pdfs"
+        "ingest:pdfs": "tsx src/ingest.ts --type pdfs",
+        "test-rag": "tsx src/test-rag.ts"
     },
     "dependencies": {
         "@google-cloud/firestore": "^7.0.0",
