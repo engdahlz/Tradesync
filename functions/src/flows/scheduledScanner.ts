@@ -3,7 +3,6 @@ import { suggestStrategyFlow } from './suggestStrategy.js';
 import { sendTopicNotification } from '../utils/notifications.js';
 import { z } from 'zod';
 import { MODEL_FLASH } from '../config.js';
-import { ai, vertexAI } from '../genkit.js';
 
 const CoinCapHistoryItemSchema = z.object({
     priceUsd: z.string(),

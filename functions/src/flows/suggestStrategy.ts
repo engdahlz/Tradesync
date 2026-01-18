@@ -89,10 +89,7 @@ export const suggestStrategyFlow = ai.defineFlow({
             temperature: 0.2,
             thinkingConfig: {
                 thinkingBudget: THINKING_BUDGET_HIGH,
-            },
-            tools: [
-                { codeExecution: {} }
-            ]
+            }
         }
     });
 

@@ -86,10 +86,7 @@ exports.suggestStrategyFlow = genkit_js_1.ai.defineFlow({
             temperature: 0.2,
             thinkingConfig: {
                 thinkingBudget: config_js_1.THINKING_BUDGET_HIGH,
-            },
-            tools: [
-                { codeExecution: {} }
-            ]
+            }
         }
     });
     if (!result.output) {
