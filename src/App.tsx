@@ -43,8 +43,10 @@ function AppContent() {
         )
     }
 
+    const e2eAuthBypass = import.meta.env.DEV && import.meta.env.VITE_E2E_AUTH_BYPASS === '1'
+
     // Show login page if not authenticated
-    if (!validatedUser) {
+    if (!validatedUser && !e2eAuthBypass) {
         return <LoginPage />
     }
 
