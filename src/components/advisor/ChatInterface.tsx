@@ -87,6 +87,8 @@ export default function ChatInterface() {
                 timestamp: new Date(),
             }
             setMessages((prev) => [...prev, errorMessage])
+
+            ;(window as unknown as { __tradesync_last_advisor_response?: string }).__tradesync_last_advisor_response = errorMessage.content
         } finally {
             setIsLoading(false)
         }
