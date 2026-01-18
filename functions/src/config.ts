@@ -14,11 +14,10 @@ import { getMessaging } from 'firebase-admin/messaging';
 export const db = getFirestore();
 export const messaging = getMessaging();
 
-// Hardcoded API key (user provided)
-// Hardcoded API key (user provided)
-export const GOOGLE_AI_API_KEY = "AIzaSyAp3-hmTN7xEQeBhiv9Wj6cgPCu1wfzsnU";
-export const YOUTUBE_API_KEY = "AIzaSyDQOCw7zPaxK4034w1ZZBuBoEoHbieC0O0";
-export const ALPHA_VANTAGE_API_KEY = "F84UJC6092ZGTLM8"; // User provided
+// API Keys from environment variables
+export const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY || '';
+export const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || '';
+export const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || '';
 
 // Model Allocation Strategy (Strict Compliance) - Updated Jan 2026
 // Vertex AI: Gemini 3 series - state-of-the-art reasoning for financial advice
