@@ -20,11 +20,11 @@ exports.GOOGLE_AI_API_KEY = "AIzaSyAp3-hmTN7xEQeBhiv9Wj6cgPCu1wfzsnU";
 exports.YOUTUBE_API_KEY = "AIzaSyDQOCw7zPaxK4034w1ZZBuBoEoHbieC0O0";
 exports.ALPHA_VANTAGE_API_KEY = "F84UJC6092ZGTLM8"; // User provided
 // Model Allocation Strategy (Strict Compliance) - Updated Jan 2026
-// Vertex AI: gemini-2.5 series with context caching support
+// Vertex AI: Gemini 3 series - state-of-the-art reasoning for financial advice
 // Flash: High-frequency, low-latency (News, Transcription, Scanning)
 // Pro: Deep reasoning, Strategy, RAG, Complex Analysis
-exports.MODEL_FLASH = 'gemini-2.5-flash';
-exports.MODEL_PRO = 'gemini-2.5-pro';
+exports.MODEL_FLASH = 'gemini-3-flash-preview';
+exports.MODEL_PRO = 'gemini-3-pro-preview';
 // Legacy aliases for backward compatibility
 exports.MODEL_NAME = exports.MODEL_FLASH;
 exports.EMBEDDING_MODEL = 'gemini-embedding-001';
