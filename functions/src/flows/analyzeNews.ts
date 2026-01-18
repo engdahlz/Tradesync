@@ -55,9 +55,9 @@ export const analyzeNewsFlow = ai.defineFlow({
                 thinkingConfig: {
                     thinkingBudget: THINKING_BUDGET_LOW,
                 },
-                tools: [
-                    { googleSearch: {} }
-                ]
+                googleSearchRetrieval: {
+                    disableAttribution: false,
+                }
             }
         });
 

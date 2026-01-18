@@ -51,9 +51,9 @@ exports.analyzeNewsFlow = genkit_js_1.ai.defineFlow({
                 thinkingConfig: {
                     thinkingBudget: config_js_1.THINKING_BUDGET_LOW,
                 },
-                tools: [
-                    { googleSearch: {} }
-                ]
+                googleSearchRetrieval: {
+                    disableAttribution: false,
+                }
             }
         });
         if (!result.output) {

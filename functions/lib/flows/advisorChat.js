@@ -173,10 +173,9 @@ ${message}
             thinkingConfig: {
                 thinkingBudget: config_js_1.THINKING_BUDGET_HIGH,
             },
-            tools: [
-                { googleSearch: {} },
-                { urlContext: {} }
-            ]
+            googleSearchRetrieval: {
+                disableAttribution: false,
+            }
         }
     });
     const groundingSources = [];
@@ -285,10 +284,9 @@ ${message}
                 thinkingConfig: {
                     thinkingBudget: config_js_1.THINKING_BUDGET_HIGH,
                 },
-                tools: [
-                    { googleSearch: {} },
-                    { urlContext: {} }
-                ]
+                googleSearchRetrieval: {
+                    disableAttribution: false,
+                }
             }
         });
         for await (const chunk of stream) {

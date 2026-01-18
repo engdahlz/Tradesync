@@ -75,10 +75,9 @@ Be specific and cite exact figures when available.`;
             thinkingConfig: {
                 thinkingBudget: config_js_1.THINKING_BUDGET_MEDIUM,
             },
-            tools: [
-                { urlContext: {} },
-                { googleSearch: {} }
-            ]
+            googleSearchRetrieval: {
+                disableAttribution: false,
+            }
         }
     });
     if (!result.output) {

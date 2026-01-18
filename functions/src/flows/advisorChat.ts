@@ -197,10 +197,9 @@ ${message}
             thinkingConfig: {
                 thinkingBudget: THINKING_BUDGET_HIGH,
             },
-            tools: [
-                { googleSearch: {} },
-                { urlContext: {} }
-            ]
+            googleSearchRetrieval: {
+                disableAttribution: false,
+            }
         }
     });
 
@@ -326,10 +325,9 @@ ${message}
                 thinkingConfig: {
                     thinkingBudget: THINKING_BUDGET_HIGH,
                 },
-                tools: [
-                    { googleSearch: {} },
-                    { urlContext: {} }
-                ]
+                googleSearchRetrieval: {
+                    disableAttribution: false,
+                }
             }
         });
 
