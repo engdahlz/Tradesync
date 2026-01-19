@@ -18,8 +18,17 @@ export default function GoogleLayout({ children }: { children: React.ReactNode }
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
-        // TODO: Implement global search logic
-        console.log('Searching for:', searchQuery)
+        if (!searchQuery.trim()) return
+
+        let symbol = searchQuery.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
+        
+        // Simple heuristic: If it looks like a crypto ticker (3-5 chars) and doesn't have a pair, add USDT
+        // This makes "BTC" -> "BTCUSDT" which works with our backend
+        if (symbol.length >= 2 && symbol.length <= 5 && !symbol.endsWith('USDT')) {
+            symbol += 'USDT'
+        }
+
+        navigate(`/signals?symbol=${symbol}`)
     }
 
     return (

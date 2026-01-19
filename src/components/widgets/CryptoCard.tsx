@@ -72,20 +72,23 @@ export default function CryptoCard({
     priceChangePercent,
     flashDirection,
 }: CryptoCardProps) {
-    const [_isFlashing, setIsFlashing] = useState(false)
+    const [, setIsFlashing] = useState(false)
     const [flashClass, setFlashClass] = useState('')
     const [sparkline, setSparkline] = useState<number[]>([])
 
     // Flash-on-change effect
     useEffect(() => {
         if (flashDirection) {
-            setFlashClass(flashDirection === 'up' ? 'flash-green' : 'flash-red')
-            setIsFlashing(true)
-
             const timer = setTimeout(() => {
-                setIsFlashing(false)
-                setFlashClass('')
-            }, 500)
+                setFlashClass(flashDirection === 'up' ? 'flash-green' : 'flash-red')
+                setIsFlashing(true)
+
+                const resetTimer = setTimeout(() => {
+                    setIsFlashing(false)
+                    setFlashClass('')
+                }, 500)
+                return () => clearTimeout(resetTimer)
+            }, 0)
 
             return () => clearTimeout(timer)
         }
