@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { createChart, IChartApi, Time } from 'lightweight-charts'
+import { createChart, IChartApi, ISeriesApi, Time } from 'lightweight-charts'
 
 interface MACDData {
     time: Time
@@ -17,9 +17,10 @@ interface MACDChartProps {
 export default function MACDChart({ data = [] }: MACDChartProps) {
     const chartContainerRef = useRef<HTMLDivElement>(null)
     const chartRef = useRef<IChartApi | null>(null)
-    const macdSeriesRef = useRef<any>(null)
-    const signalSeriesRef = useRef<any>(null)
-    const histogramSeriesRef = useRef<any>(null)
+    const macdSeriesRef = useRef<ISeriesApi<"Line"> | null>(null)
+    const signalSeriesRef = useRef<ISeriesApi<"Line"> | null>(null)
+    const histogramSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null)
+    const zeroLineRef = useRef<ISeriesApi<"Line"> | null>(null)
 
     // Helper to get CSS variable values
     const getThemeColor = (variable: string) => {
@@ -101,7 +102,8 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
             lineStyle: 2,
             priceLineVisible: false,
         })
-        zeroLine.setData(data.map((d) => ({ time: d.time, value: 0 })))
+        zeroLineRef.current = zeroLine
+        // Data setting moved to data effect
 
         const handleResize = () => {
             if (!chartContainerRef.current) return
@@ -121,7 +123,7 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
 
     // Update data when props change
     useEffect(() => {
-        if (!histogramSeriesRef.current || !macdSeriesRef.current || !signalSeriesRef.current) return
+        if (!histogramSeriesRef.current || !macdSeriesRef.current || !signalSeriesRef.current || !zeroLineRef.current) return
 
         if (data.length > 0) {
             histogramSeriesRef.current.setData(
@@ -133,6 +135,7 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
             )
             macdSeriesRef.current.setData(data.map((d) => ({ time: d.time, value: d.macd })))
             signalSeriesRef.current.setData(data.map((d) => ({ time: d.time, value: d.signal })))
+            zeroLineRef.current.setData(data.map((d) => ({ time: d.time, value: 0 })))
 
             if (chartRef.current) {
                 chartRef.current.timeScale().fitContent()

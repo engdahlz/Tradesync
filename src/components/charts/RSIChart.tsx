@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { createChart, IChartApi, LineData } from 'lightweight-charts'
+import { createChart, IChartApi, LineData, ISeriesApi } from 'lightweight-charts'
 
 
 
@@ -10,7 +10,7 @@ interface RSIChartProps {
 export default function RSIChart({ data = [] }: RSIChartProps) {
     const chartContainerRef = useRef<HTMLDivElement>(null)
     const chartRef = useRef<IChartApi | null>(null)
-    const rsiSeriesRef = useRef<any>(null)
+    const rsiSeriesRef = useRef<ISeriesApi<"Line"> | null>(null)
 
     // Helper to get CSS variable values
     const getThemeColor = (variable: string) => {

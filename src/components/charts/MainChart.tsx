@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { createChart, IChartApi, CandlestickData, Time } from 'lightweight-charts'
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react'
 import { fetchHistoricalData, OHLCV } from '@/services/priceData'
@@ -14,17 +14,55 @@ interface SignalBadge {
     position: 'aboveBar' | 'belowBar'
 }
 
+// Detect signals from real data
+function generateSignalsFromData(data: OHLCV[]): SignalBadge[] {
+    const signals: SignalBadge[] = []
+    const closes = data.map(d => d.close)
+
+    for (let i = 20; i < data.length; i++) {
+        // RSI oversold detection
+        const recentCloses = closes.slice(i - 14, i)
+        let gains = 0, losses = 0
+        for (let j = 1; j < recentCloses.length; j++) {
+            const change = recentCloses[j] - recentCloses[j - 1]
+            if (change > 0) gains += change
+            else losses -= change
+        }
+        const rsi = losses === 0 ? 100 : 100 - (100 / (1 + gains / losses))
+
+        // Add signal if RSI is oversold or overbought
+        if (rsi < 30 && !signals.some(s => Math.abs((s.time as number) - data[i].time) < 3600 * 4)) {
+            signals.push({
+                time: data[i].time as Time,
+                text: 'OVERSOLD',
+                color: 'hsl(var(--ts-green))',
+                position: 'belowBar',
+            })
+        } else if (rsi > 70 && !signals.some(s => Math.abs((s.time as number) - data[i].time) < 3600 * 4)) {
+            signals.push({
+                time: data[i].time as Time,
+                text: 'OVERBOUGHT',
+                color: 'hsl(var(--ts-red))',
+                position: 'aboveBar',
+            })
+        }
+    }
+
+    // Limit to most recent 5 signals
+    return signals.slice(-5)
+}
+
 export default function MainChart({ symbol }: MainChartProps) {
     const chartContainerRef = useRef<HTMLDivElement>(null)
     const chartRef = useRef<IChartApi | null>(null)
-
+    
     const [candleData, setCandleData] = useState<CandlestickData[]>([])
     const [signalBadges, setSignalBadges] = useState<SignalBadge[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
     // Fetch real data from Binance
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setIsLoading(true)
         setError(null)
 
@@ -55,49 +93,11 @@ export default function MainChart({ symbol }: MainChartProps) {
         } finally {
             setIsLoading(false)
         }
-    }
-
-    // Detect signals from real data
-    function generateSignalsFromData(data: OHLCV[]): SignalBadge[] {
-        const signals: SignalBadge[] = []
-        const closes = data.map(d => d.close)
-
-        for (let i = 20; i < data.length; i++) {
-            // RSI oversold detection
-            const recentCloses = closes.slice(i - 14, i)
-            let gains = 0, losses = 0
-            for (let j = 1; j < recentCloses.length; j++) {
-                const change = recentCloses[j] - recentCloses[j - 1]
-                if (change > 0) gains += change
-                else losses -= change
-            }
-            const rsi = losses === 0 ? 100 : 100 - (100 / (1 + gains / losses))
-
-            // Add signal if RSI is oversold or overbought
-            if (rsi < 30 && !signals.some(s => Math.abs((s.time as number) - data[i].time) < 3600 * 4)) {
-                signals.push({
-                    time: data[i].time as Time,
-                    text: 'OVERSOLD',
-                    color: getThemeColor('--ts-green'),
-                    position: 'belowBar',
-                })
-            } else if (rsi > 70 && !signals.some(s => Math.abs((s.time as number) - data[i].time) < 3600 * 4)) {
-                signals.push({
-                    time: data[i].time as Time,
-                    text: 'OVERBOUGHT',
-                    color: getThemeColor('--ts-red'),
-                    position: 'aboveBar',
-                })
-            }
-        }
-
-        // Limit to most recent 5 signals
-        return signals.slice(-5)
-    }
+    }, [symbol])
 
     useEffect(() => {
         loadData()
-    }, [symbol])
+    }, [loadData])
 
     // Helper to get CSS variable values
     const getThemeColor = (variable: string) => {
