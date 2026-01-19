@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
     Wallet,
     TrendingUp,
@@ -13,8 +13,9 @@ import {
     Info,
 } from 'lucide-react'
 import { generateBacktestReport } from '../utils/backtestReport'
-import { fetchCurrentPrice } from '@/services/priceData'
+import { fetchCurrentPrice, fetch24hChange } from '@/services/priceData'
 import { fetchOrders, calculatePositions, calculateStats as calcPositionStats } from '@/services/portfolio'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Holding {
     symbol: string
@@ -55,7 +56,38 @@ const SYMBOL_NAMES: Record<string, string> = {
     LINK: 'Chainlink',
 }
 
+async function calculate24hPortfolioChange(
+    holdings: Holding[]
+): Promise<{ dayChange: number; dayChangePercent: number }> {
+    if (holdings.length === 0) {
+        return { dayChange: 0, dayChangePercent: 0 }
+    }
+
+    let totalDayChange = 0
+    let totalValue = 0
+
+    for (const holding of holdings) {
+        try {
+            const change24h = await fetch24hChange(holding.symbol)
+            const valueYesterday = holding.value / (1 + change24h.priceChangePercent / 100)
+            const dayChangeForHolding = holding.value - valueYesterday
+            totalDayChange += dayChangeForHolding
+            totalValue += holding.value
+        } catch {
+            totalValue += holding.value
+        }
+    }
+
+    const dayChangePercent = totalValue > 0 ? (totalDayChange / (totalValue - totalDayChange)) * 100 : 0
+
+    return {
+        dayChange: totalDayChange,
+        dayChangePercent: isNaN(dayChangePercent) ? 0 : dayChangePercent,
+    }
+}
+
 export default function Portfolio() {
+    const { user } = useAuth()
     const [holdings, setHoldings] = useState<Holding[]>([])
     const [stats, setStats] = useState<PortfolioStats | null>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -64,17 +96,15 @@ export default function Portfolio() {
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
     const [usingDemoData, setUsingDemoData] = useState(false)
 
-    const loadPortfolio = async () => {
+    const loadPortfolio = useCallback(async () => {
         setIsLoading(true)
         setError(null)
 
         try {
-            // Try to fetch real orders from Firestore
-            // Using 'demo-user' for paper trading - in production, use auth user ID
-            const orders = await fetchOrders('demo-user')
+            const userId = user?.uid || 'demo-user'
+            const orders = await fetchOrders(userId)
 
             if (orders.length > 0) {
-                // Use real orders
                 const positions = await calculatePositions(orders)
                 const posStats = calcPositionStats(positions)
 
@@ -90,17 +120,18 @@ export default function Portfolio() {
                     allocation: p.allocation,
                 }))
 
+                const dayChangeData = await calculate24hPortfolioChange(holdingsFromOrders)
+
                 setHoldings(holdingsFromOrders)
                 setStats({
                     totalValue: posStats.totalValue,
                     totalPnl: posStats.totalPnl,
                     totalPnlPercent: posStats.totalPnlPercent,
-                    dayChange: posStats.totalValue * 0.02,
-                    dayChangePercent: 2.0,
+                    dayChange: dayChangeData.dayChange,
+                    dayChangePercent: dayChangeData.dayChangePercent,
                 })
                 setUsingDemoData(false)
             } else {
-                // No orders yet - use demo holdings with live prices
                 const holdingsWithPrices: Holding[] = []
                 let totalValue = 0
                 let totalCost = 0
@@ -136,13 +167,15 @@ export default function Portfolio() {
                 const totalPnl = totalValue - totalCost
                 const totalPnlPercent = (totalPnl / totalCost) * 100
 
+                const dayChangeData = await calculate24hPortfolioChange(holdingsWithPrices)
+
                 setHoldings(holdingsWithPrices.sort((a, b) => b.value - a.value))
                 setStats({
                     totalValue,
                     totalPnl,
                     totalPnlPercent,
-                    dayChange: totalValue * 0.02,
-                    dayChangePercent: 2.0,
+                    dayChange: dayChangeData.dayChange,
+                    dayChangePercent: dayChangeData.dayChangePercent,
                 })
                 setUsingDemoData(true)
             }
@@ -154,14 +187,14 @@ export default function Portfolio() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [user?.uid])
 
     useEffect(() => {
         loadPortfolio()
         // Refresh every 30 seconds
         const interval = setInterval(loadPortfolio, 30000)
         return () => clearInterval(interval)
-    }, [])
+    }, [loadPortfolio])
 
     const handleGenerateReport = async () => {
         if (!stats) return

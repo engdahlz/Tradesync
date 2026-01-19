@@ -1,40 +1,137 @@
-import { useState } from 'react'
-import { TrendingUp, Plus, ArrowRight, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { TrendingUp, Plus, ArrowRight, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react'
 import MainChart from '../components/charts/MainChart'
 import WatchlistGrid from '../components/widgets/WatchlistGrid'
+import { useBinanceWebSocket } from '../hooks/useBinanceWebSocket'
+import { fetchCryptoNews, NewsArticle } from '../services/newsApi'
+import { Activity } from 'lucide-react'
 
-// Helper for index strip
-const MarketIndex = ({ name, value, change, percent }: { name: string, value: string, change: string, percent: string }) => {
-    const isPos = percent.startsWith('+');
+const CRYPTO_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT']
+
+const MarketIndex = ({
+    name,
+    value,
+    change,
+    percent,
+    isLoading = false
+}: {
+    name: string
+    value: string
+    change: string
+    percent: string
+    isLoading?: boolean
+}) => {
+    const isPos = percent.startsWith('+')
     return (
         <div className="flex flex-col min-w-[140px] p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors border-r border-border/50 last:border-0">
             <span className="text-sm font-medium text-foreground">{name}</span>
-            <div className="mt-1 flex items-end gap-2">
-                <span className="text-base font-medium">{value}</span>
-                <span className={`text-xs font-medium flex items-center ${isPos ? 'text-ts-green' : 'text-ts-red'}`}>
-                    {isPos ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownRight className="w-3 h-3 mr-0.5" />}
-                    {percent}
-                </span>
-            </div>
-            <span className={`text-xs ${isPos ? 'text-ts-green' : 'text-ts-red'} opacity-80`}>{change}</span>
+            {isLoading ? (
+                <div className="mt-1 flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Loading...</span>
+                </div>
+            ) : (
+                <>
+                    <div className="mt-1 flex items-end gap-2">
+                        <span className="text-base font-medium">{value}</span>
+                        <span className={`text-xs font-medium flex items-center ${isPos ? 'text-ts-green' : 'text-ts-red'}`}>
+                            {isPos ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownRight className="w-3 h-3 mr-0.5" />}
+                            {percent}
+                        </span>
+                    </div>
+                    <span className={`text-xs ${isPos ? 'text-ts-green' : 'text-ts-red'} opacity-80`}>{change}</span>
+                </>
+            )}
         </div>
     )
 }
 
+function formatPrice(price: number): string {
+    if (price >= 1000) return `$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+    if (price >= 1) return `$${price.toFixed(2)}`
+    return `$${price.toFixed(4)}`
+}
+
+function formatChange(change: number): string {
+    const sign = change >= 0 ? '+' : ''
+    if (Math.abs(change) >= 1000) return `${sign}${change.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+    if (Math.abs(change) >= 1) return `${sign}${change.toFixed(2)}`
+    return `${sign}${change.toFixed(4)}`
+}
+
+function formatPercent(percent: number): string {
+    return `${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`
+}
+
+const SYMBOL_NAMES: Record<string, string> = {
+    BTCUSDT: 'Bitcoin',
+    ETHUSDT: 'Ethereum',
+    SOLUSDT: 'Solana',
+    XRPUSDT: 'Ripple',
+}
+
 export default function Dashboard() {
     const [selectedSymbol] = useState('BTCUSDT')
+    const [news, setNews] = useState<NewsArticle[]>([])
+    const [newsLoading, setNewsLoading] = useState(true)
+
+    const { data: tickerData, isConnected } = useBinanceWebSocket({
+        symbols: CRYPTO_SYMBOLS,
+        throttleMs: 500,
+    })
+
+    useEffect(() => {
+        async function loadNews() {
+            try {
+                setNewsLoading(true)
+                const response = await fetchCryptoNews({ pageSize: 5 })
+                setNews(response.articles.slice(0, 3))
+            } catch (error) {
+                console.error('Failed to fetch news:', error)
+            } finally {
+                setNewsLoading(false)
+            }
+        }
+        loadNews()
+    }, [])
+
+    const btcData = tickerData.get('BTCUSDT')
 
     return (
         <div className="space-y-8">
-            {/* 1. Market Strip (Indices) */}
+            {/* 1. Market Strip (Live Crypto Prices) */}
             <div className="w-full overflow-x-auto pb-2">
                 <div className="flex items-center min-w-max border border-border rounded-xl p-2 bg-card">
-                    <MarketIndex name="S&P 500" value="4,783.45" change="+12.30" percent="+0.26%" />
-                    <MarketIndex name="Nasdaq" value="15,055.65" change="+54.80" percent="+0.37%" />
-                    <MarketIndex name="Dow Jones" value="37,592.98" change="-118.00" percent="-0.31%" />
-                    <MarketIndex name="Bitcoin" value="$46,230.00" change="+1,200.00" percent="+2.65%" />
-                    <MarketIndex name="Ethereum" value="$2,650.00" change="+85.00" percent="+3.31%" />
-                    <MarketIndex name="Gold" value="$2,045.00" change="+15.00" percent="+0.75%" />
+                    {/* TODO: Traditional indices (S&P 500, Nasdaq, Dow Jones, Gold) require
+                        a different API (e.g., Alpha Vantage, Yahoo Finance, or Finnhub).
+                        For now, showing only crypto which we can get from Binance. */}
+                    {CRYPTO_SYMBOLS.map((symbol) => {
+                        const data = tickerData.get(symbol)
+                        const name = SYMBOL_NAMES[symbol] || symbol.replace('USDT', '')
+                        
+                        if (!data) {
+                            return (
+                                <MarketIndex
+                                    key={symbol}
+                                    name={name}
+                                    value="--"
+                                    change="--"
+                                    percent="+0.00%"
+                                    isLoading={!isConnected}
+                                />
+                            )
+                        }
+
+                        return (
+                            <MarketIndex
+                                key={symbol}
+                                name={name}
+                                value={formatPrice(data.price)}
+                                change={formatChange(data.priceChange)}
+                                percent={formatPercent(data.priceChangePercent)}
+                            />
+                        )
+                    })}
                 </div>
             </div>
 
@@ -57,13 +154,24 @@ export default function Dashboard() {
                     {/* Main Chart Card */}
                     <div className="m3-card p-6 h-[400px] relative">
                         <div className="absolute top-6 left-6 z-10">
-                            <h3 className="text-2xl font-normal mb-1">{selectedSymbol === 'BTCUSDT' ? 'Bitcoin' : selectedSymbol}</h3>
+                            <h3 className="text-2xl font-normal mb-1">
+                                {SYMBOL_NAMES[selectedSymbol] || selectedSymbol}
+                            </h3>
                             <div className="flex items-center gap-2">
-                                <span className="text-3xl font-medium">$46,230.00</span>
-                                <span className="flex items-center text-ts-green font-medium">
-                                    <ArrowUpRight className="w-5 h-5" />
-                                    2.65%
-                                </span>
+                                {btcData ? (
+                                    <>
+                                        <span className="text-3xl font-medium">{formatPrice(btcData.price)}</span>
+                                        <span className={`flex items-center font-medium ${btcData.priceChangePercent >= 0 ? 'text-ts-green' : 'text-ts-red'}`}>
+                                            {btcData.priceChangePercent >= 0 ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
+                                            {formatPercent(btcData.priceChangePercent)}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                                        <span className="text-muted-foreground">Loading price...</span>
+                                    </>
+                                )}
                             </div>
                         </div>
                         {/* Chart Placeholder / Component */}
@@ -72,29 +180,68 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* "Today's financial news" (Placeholder for News Section) */}
+                    {/* Today's financial news - Real data from newsApi.ts */}
                     <div>
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-xl font-normal text-foreground">Today's financial news</h2>
                             <button className="text-primary text-sm font-medium hover:underline">Top stories</button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="m3-card p-4 hover:shadow-md transition-shadow cursor-pointer group flex flex-col md:col-span-2">
-                                <div className="text-xs text-muted-foreground mb-2">Reuters • 2 hours ago</div>
-                                <h3 className="font-medium text-lg mb-2 group-hover:text-primary transition-colors flex-1">Bitcoin surges past $46k as ETF volume spikes</h3>
-                                <div className="flex gap-2 mt-3">
-                                    <span className="text-[10px] font-bold text-ts-green bg-ts-green/10 px-2 py-0.5 rounded uppercase tracking-wider">BTC</span>
-                                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">Market</span>
+                            {newsLoading ? (
+                                <>
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className={`m3-card p-4 animate-pulse ${i === 1 ? 'md:col-span-2' : ''}`}>
+                                            <div className="h-3 bg-muted rounded w-24 mb-3" />
+                                            <div className="h-5 bg-muted rounded w-full mb-2" />
+                                            <div className="h-5 bg-muted rounded w-3/4" />
+                                        </div>
+                                    ))}
+                                </>
+                            ) : news.length === 0 ? (
+                                <div className="md:col-span-3 m3-card p-6 text-center text-muted-foreground">
+                                    No news available at the moment
                                 </div>
-                            </div>
-                            <div className="m3-card p-4 hover:shadow-md transition-shadow cursor-pointer group">
-                                <div className="text-xs text-muted-foreground mb-2">CoinDesk • 4 hours ago</div>
-                                <h3 className="font-medium text-base mb-2 group-hover:text-primary transition-colors">Ethereum Dencun upgrade date confirmed by developers</h3>
-                                <div className="flex gap-2 mt-3">
-                                    <span className="text-[10px] font-bold text-ts-green bg-ts-green/10 px-2 py-0.5 rounded uppercase tracking-wider">ETH</span>
-                                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">Tech</span>
-                                </div>
-                            </div>
+                            ) : (
+                                <>
+                                    {news.map((article, index) => (
+                                        <a
+                                            key={article.id}
+                                            href={article.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={`m3-card p-4 hover:shadow-md transition-shadow cursor-pointer group flex flex-col ${index === 0 ? 'md:col-span-2' : ''}`}
+                                        >
+                                            <div className="text-xs text-muted-foreground mb-2">
+                                                {article.source} • {article.relativeTime}
+                                            </div>
+                                            <h3 className={`font-medium ${index === 0 ? 'text-lg' : 'text-base'} mb-2 group-hover:text-primary transition-colors flex-1 line-clamp-2`}>
+                                                {article.title}
+                                            </h3>
+                                            <div className="flex gap-2 mt-3">
+                                                {article.sentiment && (
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                                                        article.sentiment === 'bullish' 
+                                                            ? 'text-ts-green bg-ts-green/10'
+                                                            : article.sentiment === 'bearish'
+                                                            ? 'text-ts-red bg-ts-red/10'
+                                                            : 'text-muted-foreground bg-muted'
+                                                    }`}>
+                                                        {article.sentiment}
+                                                    </span>
+                                                )}
+                                                {article.topics?.slice(0, 1).map((topic) => (
+                                                    <span
+                                                        key={topic.topic}
+                                                        className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider"
+                                                    >
+                                                        {topic.topic.replace('Financial Markets', 'Market').replace('Blockchain', 'Crypto')}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </a>
+                                    ))}
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -155,6 +302,3 @@ export default function Dashboard() {
         </div>
     )
 }
-
-// Re-import missing icon for bottom section
-import { Activity } from 'lucide-react'

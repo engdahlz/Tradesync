@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Zap, TrendingUp, TrendingDown, AlertTriangle, Loader2, Sparkles } from 'lucide-react'
 import { suggestStrategy } from '@/services/api'
 import { fetchHistoricalData } from '@/services/priceData'
@@ -24,10 +25,16 @@ export default function MasterSignals() {
     const [isAnalyzing, setIsAnalyzing] = useState(false)
     const [currentSymbol, setCurrentSymbol] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [searchParams] = useSearchParams()
+    const urlSymbol = searchParams.get('symbol')
     const [symbolsToAnalyze, setSymbolsToAnalyze] = useState<string[]>(['BTCUSDT', 'ETHUSDT', 'SOLUSDT'])
 
     useEffect(() => {
         const loadAssets = async () => {
+            if (urlSymbol) {
+                setSymbolsToAnalyze([urlSymbol])
+                return
+            }
             try {
                 const assets = await fetchTopAssets(3)
                 setSymbolsToAnalyze(assets.map(a => toBinanceSymbol(a.symbol)))
@@ -36,7 +43,7 @@ export default function MasterSignals() {
             }
         }
         loadAssets()
-    }, [])
+    }, [urlSymbol])
 
     const runAnalysis = async () => {
         setIsAnalyzing(true)

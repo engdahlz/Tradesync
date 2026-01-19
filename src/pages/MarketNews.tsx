@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Newspaper, Loader2, AlertCircle, Search } from 'lucide-react'
 import VideoCard from '../components/news/VideoCard'
 import NewsCard from '../components/news/NewsCard'
@@ -18,7 +18,7 @@ export default function MarketNews() {
     const [videoQuery, setVideoQuery] = useState('')
     const [isSearchingVideos, setIsSearchingVideos] = useState(false)
 
-    const loadNews = async () => {
+    const loadNews = useCallback(async () => {
         setIsLoading(true)
         setError(null)
         try {
@@ -35,7 +35,7 @@ export default function MarketNews() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [activeTab]);
 
     const handleVideoSearch = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -71,7 +71,7 @@ export default function MarketNews() {
             };
             initialSearch();
         }
-    }, [activeTab]);
+    }, [activeTab, loadNews, videos.length, isSearchingVideos]);
 
     const handleVideoAnalysisComplete = (videoId: string, analysis: Video['analysis']) => {
         setVideos(prev =>
