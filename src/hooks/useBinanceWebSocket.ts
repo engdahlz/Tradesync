@@ -44,6 +44,8 @@ export function useBinanceWebSocket({
     const lastUpdateRef = useRef<number>(0)
     const throttleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+    const connectRef = useRef<() => void>(() => {})
+
     const connect = useCallback(() => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
             return
@@ -75,7 +77,22 @@ export function useBinanceWebSocket({
                     let hasUpdates = false
                     const now = Date.now()
 
-                    tickerList.forEach((tickerData: any) => {
+interface BinanceMiniTicker {
+    e: string
+    E: number
+    s: string
+    c: string
+    o: string
+    h: string
+    l: string
+    v: string
+    q: string
+}
+
+// ...
+
+                    tickerList.forEach((rawTicker: unknown) => {
+                        const tickerData = rawTicker as BinanceMiniTicker
                         const symbol = tickerData.s
 
                         // Filter: Only process requested symbols
@@ -152,26 +169,27 @@ export function useBinanceWebSocket({
                 // Auto-reconnect
                 setTimeout(() => {
                     if (wsRef.current?.readyState !== WebSocket.OPEN) {
-                        connect()
+                        connectRef.current()
                     }
                 }, 5000)
             }
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Failed to connect'))
         }
-    }, [symbols, throttleMs]) // Re-connect logic doesn't depend on symbols for the socket URL anymore, but filter depends on it
+    }, [symbols, throttleMs]) 
 
-    const reconnect = useCallback(() => {
-        if (wsRef.current) {
-            wsRef.current.close()
-        }
-        connect()
+    useEffect(() => {
+        connectRef.current = connect
     }, [connect])
 
     useEffect(() => {
-        connect()
-
+        // Delay connection to avoid synchronous state updates
+        const timer = setTimeout(() => {
+            connectRef.current()
+        }, 0)
+        
         return () => {
+            clearTimeout(timer)
             if (wsRef.current) {
                 wsRef.current.close()
             }
@@ -179,6 +197,13 @@ export function useBinanceWebSocket({
                 clearTimeout(throttleTimerRef.current)
             }
         }
+    }, []) // Run once on mount
+
+    const reconnect = useCallback(() => {
+        if (wsRef.current) {
+            wsRef.current.close()
+        }
+        connect()
     }, [connect])
 
     return { data, isConnected, error, reconnect }

@@ -12,6 +12,11 @@ const API_URL = 'https://us-central1-tradesync-ai-prod.cloudfunctions.net/getMar
 // ? 'https://us-central1-tradesync-ai-prod.cloudfunctions.net/getMarketNews'
 // : 'http://127.0.0.1:5001/tradesync-ai-prod/us-central1/getMarketNews';
 
+export interface Topic {
+    topic: string;
+    relevance_score: string;
+}
+
 export interface NewsArticle {
     id: string;
     title: string;
@@ -24,8 +29,13 @@ export interface NewsArticle {
     sentiment?: 'bullish' | 'bearish' | 'neutral';
     sentimentScore?: number;
     imageUrl?: string;
-    topics?: any[];
+    topics?: Topic[];
 }
+
+const TopicSchema = z.object({
+    topic: z.string(),
+    relevance_score: z.string()
+});
 
 const NewsArticleSchema = z.object({
     title: z.string(),
@@ -36,7 +46,7 @@ const NewsArticleSchema = z.object({
     sentiment: z.string().optional(),
     sentimentScore: z.number().optional(),
     imageUrl: z.string().nullable().optional(),
-    topics: z.array(z.any()).optional()
+    topics: z.array(TopicSchema).optional()
 });
 
 const GetMarketNewsResponseSchema = z.object({

@@ -216,25 +216,44 @@ function calculateRSI(prices: number[], period: number = 14): number {
 }
 
 function calculateMACD(prices: number[]) {
-    const ema = (data: number[], period: number) => {
-        if (data.length < period) return data[data.length - 1] || 0;
+    const ema = (data: number[], period: number): number[] => {
+        if (data.length < period) return [];
         const mult = 2 / (period + 1);
+        const result: number[] = [];
         let e = data.slice(0, period).reduce((a, b) => a + b, 0) / period;
-        for (let i = period; i < data.length; i++) e = (data[i] - e) * mult + e;
-        return e;
+        result.push(e);
+        for (let i = period; i < data.length; i++) {
+            e = (data[i] - e) * mult + e;
+            result.push(e);
+        }
+        return result;
     };
-    const ema12 = ema(prices, 12);
-    const ema26 = ema(prices, 26);
-    const macdLine = ema12 - ema26;
-    const signal = macdLine * 0.9; // Simplified
+
+    const ema12Series = ema(prices, 12);
+    const ema26Series = ema(prices, 26);
+
+    if (ema12Series.length === 0 || ema26Series.length === 0) {
+        return { value: 0, signal: 0, histogram: 0 };
+    }
+
+    const offset = ema12Series.length - ema26Series.length;
+    const macdSeries: number[] = [];
+    for (let i = 0; i < ema26Series.length; i++) {
+        macdSeries.push(ema12Series[i + offset] - ema26Series[i]);
+    }
+
+    const signalSeries = ema(macdSeries, 9);
+
+    const macdLine = macdSeries[macdSeries.length - 1] || 0;
+    const signal = signalSeries[signalSeries.length - 1] || 0;
+
     return { value: macdLine, signal, histogram: macdLine - signal };
 }
 
-function calculateBollingerBands(prices: number[], period: number = 20) {
+function calculateBollingerBands(prices: number[], period: number = 20): { upper: number; middle: number; lower: number } | null {
     const recent = prices.slice(-period);
     if (recent.length < period) {
-        const price = prices[prices.length - 1] || 0;
-        return { upper: price * 1.02, middle: price, lower: price * 0.98 };
+        return null;
     }
     const middle = recent.reduce((a, b) => a + b, 0) / period;
     const stdDev = Math.sqrt(recent.map(p => Math.pow(p - middle, 2)).reduce((a, b) => a + b, 0) / period);
