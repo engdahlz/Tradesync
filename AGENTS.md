@@ -1,40 +1,61 @@
-# Agent Instructions
+# PROJECT KNOWLEDGE BASE
 
-This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
+**Generated:** 2026-01-18
+**Context:** Trade/Sync (AI-Powered Trading Platform)
 
-## Quick Reference
+## OVERVIEW
+Trade/Sync is a real-time trading dashboard and strategy engine.
+**Stack:** React + Vite + Tailwind (Frontend), Firebase Cloud Functions + Genkit (Backend/AI), Firestore (DB/Vector Store).
 
+## STRUCTURE
+```
+.
+├── src/              # React Frontend (Vite)
+├── functions/src/    # Firebase Functions & Genkit Flows
+├── rag-ingestion/    # Knowledge Base Ingestion Pipeline
+└── rag-sources/      # Raw Data (Books, PDFs, Articles)
+```
+
+## WORKFLOW (ISSUE TRACKING)
+This project uses **bd** (beads) for issue tracking.
 ```bash
 bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
+bd update <id> --status in_progress
 bd close <id>         # Complete work
 bd sync               # Sync with git
 ```
 
-## Landing the Plane (Session Completion)
+## WHERE TO LOOK
+| Task | Location | Notes |
+|------|----------|-------|
+| **Frontend UI** | `src/pages/`, `src/components/` | Tailwind styled |
+| **Business Logic** | `functions/src/flows/` | Genkit AI flows |
+| **API Proxy** | `src/services/` | Proxies to Firebase Functions |
+| **Data Ingestion** | `rag-ingestion/src/` | CLI tools for RAG |
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+## CONVENTIONS
+- **Type Safety**: STRICT Zod validation for all IO (API, DB, Env). No `any`.
+- **Styling**: Tailwind CSS with CSS variables (`index.css`). Google Finance aesthetic.
+- **State**: React Context for Auth, local state for UI. `useBinanceWebSocket` for live data.
+- **AI Models**: 
+  - `gemini-3-pro`: Complex reasoning/strategy.
+  - `gemini-3-flash`: High-frequency/news tasks.
 
-**MANDATORY WORKFLOW:**
+## LANDING THE PLANE (SESSION COMPLETION)
+1. **Quality Gates**: `npm run lint`, `npm run build`, `npm run test:e2e` (Frontend).
+2. **Push**: `git pull --rebase` -> `bd sync` -> `git push`.
+3. **Verify**: Ensure remote is up to date.
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd sync
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
+## COMMANDS
+```bash
+# Frontend
+npm run dev      # Start Vite dev server
+npm run test:e2e # Playwright tests
 
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
+# Backend
+cd functions && npm run build
+npm run serve    # Emulate functions
 
+# RAG
+cd rag-ingestion && npm run ingest
+```

@@ -5,7 +5,6 @@
 
 import { Firestore, FieldValue } from '@google-cloud/firestore'
 import { TextChunk } from './chunker.js'
-import { EMBEDDING_DIMENSION } from './embeddings.js'
 
 // Collection names
 const CHUNKS_COLLECTION = 'rag_chunks'
@@ -118,7 +117,7 @@ export async function querySimilarChunks(
     const db = getFirestore()
 
     // Build query with optional filter
-    let query = db.collection(CHUNKS_COLLECTION)
+    const query = db.collection(CHUNKS_COLLECTION)
         .findNearest('embedding', queryEmbedding, {
             limit,
             distanceMeasure: 'COSINE',

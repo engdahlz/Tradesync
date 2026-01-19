@@ -6,12 +6,12 @@
  */
 
 import { readdir } from 'fs/promises'
-import { join, extname } from 'path'
+import { join } from 'path'
 import { Command } from 'commander'
 import dotenv from 'dotenv'
 
 import { parseDocument } from './parsers.js'
-import { createChunks, cleanText, TextChunk } from './chunker.js'
+import { createChunks, cleanText } from './chunker.js'
 import { generateEmbeddingsBatch } from './embeddings.js'
 import { storeChunksBatch, registerSource, isSourceIngested, getIngestionStats } from './vectorStore.js'
 
