@@ -10,6 +10,14 @@
         "SERVICE_ACCOUNT_KEY_PATH": "/home/engdahlz/.config/opencode/keys/firebase-service-account.json",
         "FIREBASE_STORAGE_BUCKET": "tradesync-ai-prod.firebasestorage.app"
       }
+    },
+    "firebase-tools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "firebase-tools@latest",
+        "mcp"
+      ]
     }
   }
 }
