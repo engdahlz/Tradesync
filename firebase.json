@@ -10,6 +10,20 @@
         "firebase-debug.*.log",
         "*.local"
       ]
+    },
+    {
+      "source": "functions-python",
+      "codebase": "python-backend",
+      "runtime": "python311",
+      "ignore": [
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local",
+        "__pycache__",
+        ".venv",
+        "venv"
+      ]
     }
   ],
   "firestore": {

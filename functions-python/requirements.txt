@@ -1,0 +1,15 @@
+# Avanza Python Backend Dependencies
+# Firebase Cloud Functions (Gen 2)
+functions-framework==3.*
+
+# Avanza API Wrapper (unofficial)
+avanza-api>=2.0.0
+
+# TOTP Authentication
+pyotp>=2.9.0
+
+# HTTP client (for custom requests if needed)
+requests>=2.31.0
+
+# Google Cloud (optional - for Firestore access)
+google-cloud-firestore>=2.11.0
