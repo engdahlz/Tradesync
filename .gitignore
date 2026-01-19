@@ -24,3 +24,15 @@ firebase-debug.log
 
 # OS
 .DS_Store
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Research documents (local reference)
+Research Documents/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
