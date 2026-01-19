@@ -19,8 +19,6 @@ const ScheduledSellSchema = z.object({
     idempotencyKey: z.string().optional(),
 });
 
-type ScheduledSell = z.infer<typeof ScheduledSellSchema>;
-
 // Scheduled function to check expired trades
 export const checkExpiredTrades = onSchedule('every 5 minutes', async () => {
     const now = new Date();

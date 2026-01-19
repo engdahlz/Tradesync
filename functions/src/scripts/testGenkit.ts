@@ -13,9 +13,10 @@ async function main() {
             }
         });
         console.log('Success:', result.text);
-    } catch (e: any) {
-        console.error('Error generating:', e.message);
-        console.error('Full Error:', e);
+    } catch (e: unknown) {
+        const error = e as Error;
+        console.error('Error generating:', error.message);
+        console.error('Full Error:', error);
     }
 }
 

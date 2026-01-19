@@ -6,7 +6,7 @@
 import type { Request, Response } from 'express';
 import { ai, vertexAI } from '../genkit.js';
 import { z } from 'genkit';
-import { MODEL_PRO, MODEL_FLASH, THINKING_BUDGET_HIGH } from '../config.js';
+import { MODEL_PRO, THINKING_BUDGET_HIGH } from '../config.js';
 
 const InputSchema = z.object({
     symbol: z.string(),

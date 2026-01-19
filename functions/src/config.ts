@@ -5,7 +5,7 @@ import { initializeApp } from 'firebase-admin/app';
 // Initialize Firebase Admin once
 try {
     initializeApp();
-} catch (e) {
+} catch {
     // Already initialized
 }
 

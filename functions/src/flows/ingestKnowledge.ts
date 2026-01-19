@@ -101,7 +101,7 @@ export async function handleIngestKnowledge(req: Request, res: Response) {
     try {
         const result = await ingestKnowledgeFlow();
         res.json(result);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Ingestion error:', error);
         res.status(500).json({ error: String(error) });
     }

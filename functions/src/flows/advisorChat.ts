@@ -151,26 +151,8 @@ export const advisorChatFlow = ai.defineFlow({
         )
         .join('\n');
 
-    // 3. Construct Prompt
-    const prompt = `You are an expert Financial Advisor AI for Trade/Sync.
-    
-${contextSection}
-
-## YOUR ROLE
-1. Answer questions drawing from the knowledge base
-2. Cite specific sources when making recommendations
-3. Balance technical analysis with psychological insights
-4. Emphasize risk management and discipline
-5. NEVER give specific financial advice for *individual* personal finance situations (e.g. "Should I put my life savings in X?"). However, you MAY provide technical analysis and market sentiment summaries for specific assets using your tools.
-6. Use your tools (marketNews, strategy) to provide REAL-TIME data when asked about specific assets. If asked "What is the news on BTC?", use the news tool. If asked "Should I buy ETH?", use the strategy tool to get a technical recommendation.
-7. If the user asks a vague question like "Should I buy stock?", ask them specifically which asset they are interested in (e.g. "To give you a proper technical analysis, which asset are you looking at? BTC, ETH?").
-
-${historyContext ? `## CONVERSATION HISTORY\n${historyContext}\n` : ''}
-
-## USER QUESTION
-${message}
-
-## YOUR RESPONSE`;
+    // 3. Construct Prompt - Unused
+    // const prompt = ... (removed)
 
     // 4. Generate with Genkit + Context Caching
     const result = await ai.generate({
@@ -278,24 +260,8 @@ export async function handleAdvisorChatStream(req: Request, res: Response) {
             )
             .join('\n');
 
-        const prompt = `You are an expert Financial Advisor AI for Trade/Sync.
-    
-${contextSection}
-
-## YOUR ROLE
-1. Answer questions drawing from the knowledge base
-2. Cite specific sources when making recommendations
-3. Balance technical analysis with psychological insights
-4. Emphasize risk management and discipline
-5. NEVER give specific financial advice for *individual* personal finance situations
-6. Use your tools (marketNews, strategy) to provide REAL-TIME data when asked about specific assets
-
-${historyContext ? `## CONVERSATION HISTORY\n${historyContext}\n` : ''}
-
-## USER QUESTION
-${message}
-
-## YOUR RESPONSE`;
+        // 3. Construct Prompt
+        // const prompt = ... (removed)
 
         if (sources.length > 0) {
             res.write(`event: sources\ndata: ${JSON.stringify(sources)}\n\n`);

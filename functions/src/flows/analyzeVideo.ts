@@ -72,7 +72,7 @@ export const analyzeVideoFlow = ai.defineFlow({
         const rawData = await YoutubeTranscript.fetchTranscript(videoId);
         const data = YoutubeTranscriptSchema.parse(rawData);
         transcript = data.map(item => item.text).join(' ').slice(0, 10000);
-    } catch (e) {
+    } catch {
         // Fallback to metadata if transcript fails
         if (title || description) {
             console.warn(`Transcript failed for ${videoId}, using metadata fallback.`);
@@ -126,7 +126,7 @@ Return JSON with:
             summary: data.summary,
             keyPoints: data.keyPoints,
         };
-    } catch (e) {
+    } catch {
         // Fallback for AI error
         return {
             transcript: transcript.slice(0, 500) + '...',
