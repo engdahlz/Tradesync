@@ -96,14 +96,14 @@ export default function StrategyPerformance() {
                                 <div className="flex items-center justify-between text-xs">
                                     <div className="flex items-center gap-1 text-slate-400">
                                         <TrendingUp className="w-3 h-3" />
-                                        <span>Score: {signal.score.toFixed(0)}</span>
+                                        <span>Score: {(signal.score ?? 0).toFixed(0)}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <span className="text-slate-400">Confidence:</span>
                                         <span className={`font-medium ${
-                                            signal.confidence > 0.8 ? 'text-ts-green' : 'text-slate-300'
+                                            (signal.confidence ?? 0) > 0.8 ? 'text-ts-green' : 'text-slate-300'
                                         }`}>
-                                            {(signal.confidence * 100).toFixed(0)}%
+                                            {((signal.confidence ?? 0) * 100).toFixed(0)}%
                                         </span>
                                     </div>
                                 </div>
