@@ -1,6 +1,7 @@
 # Avanza Python Backend Dependencies
 # Firebase Cloud Functions (Gen 2)
 functions-framework==3.*
+firebase-functions>=0.1.0
 
 # Avanza API Wrapper (unofficial)
 avanza-api>=2.0.0
