@@ -55,10 +55,31 @@ function calculateMaxDrawdown(equityCurve: number[]): number {
     return maxDrawdown * 100 // Return as percentage
 }
 
+// Calculate trade statistics from history
+function calculateTradeStats(trades: { pnl: number }[]): {
+    winRate: number
+    avgTrade: number
+    bestTrade: number
+    worstTrade: number
+} {
+    if (!trades || trades.length === 0) {
+        return { winRate: 0, avgTrade: 0, bestTrade: 0, worstTrade: 0 }
+    }
+
+    const wins = trades.filter(t => t.pnl > 0).length
+    const winRate = (wins / trades.length) * 100
+    const avgTrade = trades.reduce((sum, t) => sum + t.pnl, 0) / trades.length
+    const bestTrade = Math.max(...trades.map(t => t.pnl))
+    const worstTrade = Math.min(...trades.map(t => t.pnl))
+
+    return { winRate, avgTrade, bestTrade, worstTrade }
+}
+
 export async function generateBacktestReport(
     holdings: Holding[],
     stats: PortfolioStats,
-    equityCurve: number[]
+    equityCurve: number[],
+    tradeHistory?: { pnl: number }[]
 ): Promise<void> {
     const doc = new jsPDF()
 
@@ -75,6 +96,7 @@ export async function generateBacktestReport(
 
     const sharpeRatio = calculateSharpeRatio(dailyReturns)
     const maxDrawdown = calculateMaxDrawdown(equityCurve)
+    const tradeStats = calculateTradeStats(tradeHistory || [])
 
     // Header with gradient effect
     doc.setFillColor(15, 23, 42) // #0f172a
@@ -148,10 +170,10 @@ export async function generateBacktestReport(
         ['Sharpe Ratio', sharpeRatio.toFixed(2)],
         ['Max Drawdown', `${maxDrawdown.toFixed(2)}%`],
         ['Total P&L', `$${stats.totalPnl.toLocaleString()}`],
-        ['Win Rate', '67.3%'],
-        ['Average Trade', '+$892'],
-        ['Best Trade', '+$4,532'],
-        ['Worst Trade', '-$1,245'],
+        ['Win Rate', tradeStats.winRate > 0 ? `${tradeStats.winRate.toFixed(1)}%` : 'N/A'],
+        ['Average Trade', tradeStats.avgTrade !== 0 ? `${tradeStats.avgTrade >= 0 ? '+' : ''}$${tradeStats.avgTrade.toLocaleString()}` : 'N/A'],
+        ['Best Trade', tradeStats.bestTrade !== 0 ? `+$${tradeStats.bestTrade.toLocaleString()}` : 'N/A'],
+        ['Worst Trade', tradeStats.worstTrade !== 0 ? `-$${Math.abs(tradeStats.worstTrade).toLocaleString()}` : 'N/A'],
     ]
 
     const tableY = metricsY + 10
