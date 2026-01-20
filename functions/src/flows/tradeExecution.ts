@@ -10,9 +10,99 @@
  */
 
 import type { Request, Response } from 'express';
-import { db } from '../config.js';
+import { db, MAX_TRADE_AMOUNT_USD } from '../config.js';
 import { FieldValue } from 'firebase-admin/firestore';
 import { BinanceAdapter } from '../services/binanceAdapter.js';
+
+interface TradeParams {
+    userId: string;
+    symbol: string;
+    side: 'buy' | 'sell';
+    quantity: number;
+    price?: number;
+    orderType: string;
+    idempotencyKey: string;
+    isDryRun?: boolean;
+}
+
+export async function executeTradeInternal(params: TradeParams) {
+    const { userId, symbol, side, quantity, price, orderType, idempotencyKey, isDryRun } = params;
+
+    // Idempotency check
+    const existing = await db.collection('orders')
+        .where('idempotencyKey', '==', idempotencyKey).limit(1).get();
+
+    if (!existing.empty) {
+        return {
+            success: true,
+            orderId: existing.docs[0].id,
+            message: 'Order already exists (idempotent)',
+            status: 'duplicate',
+        };
+    }
+
+    const liveTradingEnabled = process.env.LIVE_TRADING_ENABLED === 'true';
+    const executeLive = liveTradingEnabled && isDryRun !== true;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let tradeResult: any;
+    let executionStatus = 'executed'; // Default for paper trading
+
+    if (executeLive) {
+        console.log(`Executing LIVE trade for ${symbol}`);
+        const adapter = new BinanceAdapter();
+
+        // Safety Check: Max Trade Amount
+        let estimatedPrice = price ? Number(price) : 0;
+        if (!estimatedPrice) {
+            const ticker = await adapter.getTicker(symbol);
+            estimatedPrice = ticker.price;
+        }
+
+        const totalValue = Number(quantity) * estimatedPrice;
+        if (totalValue > MAX_TRADE_AMOUNT_USD) {
+            throw new Error(`Safety Limit: Trade value $${totalValue.toFixed(2)} exceeds max of $${MAX_TRADE_AMOUNT_USD}`);
+        }
+
+        tradeResult = await adapter.placeOrder(
+            symbol,
+            side,
+            Number(quantity),
+            orderType === 'limit' ? 'limit' : 'market',
+            price ? Number(price) : undefined
+        );
+        executionStatus = tradeResult.status;
+    }
+
+    // Store in Firestore (both Live and Paper)
+    const orderId = tradeResult?.orderId || `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    await db.collection('orders').doc(orderId).set({
+        orderId,
+        userId,
+        symbol,
+        side,
+        quantity: Number(quantity),
+        price: price ? Number(price) : null,
+        orderType,
+        idempotencyKey,
+        status: executionStatus,
+        mode: executeLive ? 'LIVE' : 'PAPER',
+        exchange: executeLive ? 'Binance' : 'Simulated',
+        executedAt: FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
+        rawResult: tradeResult || null
+    });
+
+    return {
+        success: true,
+        orderId,
+        message: `${executeLive ? 'LIVE' : 'PAPER'} ${side.toUpperCase()} order: ${quantity} ${symbol}`,
+        executedAt: new Date().toISOString(),
+        status: executionStatus,
+        mode: executeLive ? 'LIVE' : 'PAPER'
+    };
+}
 
 export async function handleExecuteTrade(req: Request, res: Response) {
     const { userId, symbol, side, quantity, price, orderType, idempotencyKey, isDryRun } = req.body;
@@ -22,68 +112,11 @@ export async function handleExecuteTrade(req: Request, res: Response) {
         return;
     }
 
-    // Idempotency check
-    const existing = await db.collection('orders')
-        .where('idempotencyKey', '==', idempotencyKey).limit(1).get();
-
-    if (!existing.empty) {
-        res.json({
-            success: true,
-            orderId: existing.docs[0].id,
-            message: 'Order already exists (idempotent)',
-            status: 'duplicate',
-        });
-        return;
-    }
-
-    const liveTradingEnabled = process.env.LIVE_TRADING_ENABLED === 'true';
-    const executeLive = liveTradingEnabled && isDryRun !== true;
-
     try {
-        let tradeResult;
-        let executionStatus = 'executed'; // Default for paper trading
-
-        if (executeLive) {
-            console.log(`Executing LIVE trade for ${symbol}`);
-            const adapter = new BinanceAdapter();
-            tradeResult = await adapter.placeOrder(
-                symbol,
-                side as 'buy' | 'sell',
-                Number(quantity),
-                orderType === 'limit' ? 'limit' : 'market',
-                price ? Number(price) : undefined
-            );
-            executionStatus = tradeResult.status;
-        }
-
-        // Store in Firestore (both Live and Paper)
-        const orderId = tradeResult?.orderId || `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
-        await db.collection('orders').doc(orderId).set({
-            orderId,
-            userId,
-            symbol,
-            side,
-            quantity: Number(quantity),
-            price: price ? Number(price) : null,
-            orderType,
-            idempotencyKey,
-            status: executionStatus,
-            mode: executeLive ? 'LIVE' : 'PAPER',
-            exchange: executeLive ? 'Binance' : 'Simulated',
-            executedAt: FieldValue.serverTimestamp(),
-            createdAt: FieldValue.serverTimestamp(),
-            rawResult: tradeResult || null
+        const result = await executeTradeInternal({
+            userId, symbol, side, quantity, price, orderType, idempotencyKey, isDryRun
         });
-
-        res.json({
-            success: true,
-            orderId,
-            message: `${executeLive ? 'LIVE' : 'PAPER'} ${side.toUpperCase()} order: ${quantity} ${symbol}`,
-            executedAt: new Date().toISOString(),
-            status: executionStatus,
-            mode: executeLive ? 'LIVE' : 'PAPER'
-        });
+        res.json(result);
     } catch (error) {
         console.error('Trade execution failed:', error);
         res.status(500).json({ success: false, message: String(error), status: 'failed' });

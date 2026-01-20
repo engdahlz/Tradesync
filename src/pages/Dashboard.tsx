@@ -153,7 +153,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Main Chart Card */}
-                    <div className="m3-card p-6 h-[400px] relative">
+                    <div className="m3-card p-6 h-[300px] lg:h-[400px] relative">
                         <div className="absolute top-6 left-6 z-10">
                             <h3 className="text-2xl font-normal mb-1">
                                 {SYMBOL_NAMES[selectedSymbol] || selectedSymbol}

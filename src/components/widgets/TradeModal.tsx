@@ -70,6 +70,10 @@ export default function TradeModal({ isOpen, onClose, defaultSymbol = 'BTCUSDT' 
                         </button>
                     </div>
 
+                    <p className="text-xs text-slate-500 text-center">
+                        Safety Cap: $100 per trade active.
+                    </p>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs text-slate-400 mb-1">Symbol</label>

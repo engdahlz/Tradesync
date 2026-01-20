@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import GoogleLayout from './components/layout/GoogleLayout'
 import Dashboard from './pages/Dashboard'
@@ -7,10 +7,13 @@ import FinancialAdvisor from './pages/FinancialAdvisor'
 import MarketNews from './pages/MarketNews'
 import Portfolio from './pages/Portfolio'
 import LoginPage from './pages/LoginPage'
+import PageTransition from './components/layout/PageTransition'
 import { Loader2 } from 'lucide-react'
+import { AnimatePresence } from 'framer-motion'
 
 function AppContent() {
     const { user, loading } = useAuth()
+    const location = useLocation()
 
     if (loading) {
         return (
@@ -31,13 +34,15 @@ function AppContent() {
 
     return (
         <GoogleLayout>
-            <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/signals" element={<MasterSignals />} />
-                <Route path="/advisor" element={<FinancialAdvisor />} />
-                <Route path="/news" element={<MarketNews />} />
-                <Route path="/portfolio" element={<Portfolio />} />
-            </Routes>
+            <AnimatePresence mode="wait">
+                <Routes location={location} key={location.pathname}>
+                    <Route path="/" element={<PageTransition><Dashboard /></PageTransition>} />
+                    <Route path="/signals" element={<PageTransition><MasterSignals /></PageTransition>} />
+                    <Route path="/advisor" element={<PageTransition><FinancialAdvisor /></PageTransition>} />
+                    <Route path="/news" element={<PageTransition><MarketNews /></PageTransition>} />
+                    <Route path="/portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
+                </Routes>
+            </AnimatePresence>
         </GoogleLayout>
     )
 }

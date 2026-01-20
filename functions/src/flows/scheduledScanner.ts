@@ -6,6 +6,8 @@ import { fetchMarketAuxNews } from '../services/marketAuxService.js';
 import { sendTopicNotification } from '../utils/notifications.js';
 import { z } from 'zod';
 import { RSI, MACD } from 'technicalindicators';
+import { db } from '../config.js';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const CoinCapHistoryItemSchema = z.object({
     priceUsd: z.string(),
@@ -129,6 +131,20 @@ export async function runMarketScan() {
                     histogram: currentMacd.histogram || 0
                 },
                 price: prices[prices.length - 1]
+            });
+
+            // Store Signal in Firestore for Frontend Dashboard
+            await db.collection('signals').add({
+                symbol: asset,
+                action: signal.action,
+                confidence: signal.confidence,
+                score: signal.score,
+                reasoning: signal.reasoning,
+                sentimentScore,
+                rsi: currentRsi,
+                macd: currentMacd,
+                price: prices[prices.length - 1],
+                createdAt: FieldValue.serverTimestamp()
             });
 
             console.log(`[MarketScanner] ${asset}: ${signal.action} (${signal.confidence.toFixed(2)}) - Score: ${signal.score}`);

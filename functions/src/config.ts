@@ -36,3 +36,7 @@ export const THINKING_BUDGET_LOW = 1024;      // Quick decisions
 export const THINKING_BUDGET_MEDIUM = 4096;   // Standard analysis
 export const THINKING_BUDGET_HIGH = 8192;     // Complex strategy
 export const THINKING_BUDGET_MAX = 16384;     // Deep reasoning
+
+// Trading Safety Configuration
+export const MAX_TRADE_AMOUNT_USD = 100; // Hard safety cap: $100 per trade
+export const LIVE_TRADING_ENABLED = process.env.LIVE_TRADING_ENABLED === 'true';
