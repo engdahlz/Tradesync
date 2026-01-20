@@ -38,3 +38,15 @@ sudo apt install python3.11 python3.11-venv
 3. **Verify**
    Check the output for the Function URL.
    Update `VITE_AVANZA_BACKEND_URL` in your frontend `.env.local` if needed.
+
+## Troubleshooting
+
+### Error: Error generating the service identity for eventarc.googleapis.com
+
+If you see this error during deployment:
+1. Wait a few minutes and try again (APIs take time to propagate).
+2. If it persists, run this command in your terminal (requires gcloud CLI):
+   ```bash
+   gcloud beta services identity create --service=eventarc.googleapis.com
+   ```
+3. Or check the [Google Cloud Console](https://console.cloud.google.com/) for permission issues.

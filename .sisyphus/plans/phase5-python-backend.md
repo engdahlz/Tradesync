@@ -13,8 +13,9 @@ However, Firebase requires Python 3.11/3.12, and the local environment is 3.13.
 
 ### 2. Prepare for User Deployment
 - [x] Create `functions-python/DEPLOY_INSTRUCTIONS.md`
-- [ ] User installs Python 3.11
-- [ ] User runs deploy
+- [x] User installs Python 3.11
+- [x] User runs deploy
+
 
 ## Success Criteria
 - Codebase is clean (no Heroku artifacts).
