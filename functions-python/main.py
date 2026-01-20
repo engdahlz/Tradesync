@@ -10,8 +10,7 @@ Endpoints:
 
 import os
 import json
-import functions_framework
-from flask import jsonify, Request
+from firebase_functions import https_fn, options
 from avanza_service import AvanzaService
 
 # Initialize service (singleton pattern for session reuse)
@@ -23,21 +22,23 @@ def get_avanza_service() -> AvanzaService:
     global _avanza_service
     if _avanza_service is None:
         _avanza_service = AvanzaService(
-            username=os.environ.get('AVANZA_USERNAME', ''),
-            password=os.environ.get('AVANZA_PASSWORD', ''),
-            totp_secret=os.environ.get('AVANZA_TOTP_SECRET', ''),
+            username=os.environ.get("AVANZA_USERNAME", ""),
+            password=os.environ.get("AVANZA_PASSWORD", ""),
+            totp_secret=os.environ.get("AVANZA_TOTP_SECRET", ""),
         )
     return _avanza_service
 
 
-@functions_framework.http
-def get_stock_quote(request: Request):
+@https_fn.on_request(
+    cors=options.CorsOptions(cors_origins="*", cors_methods=["get", "post"])
+)
+def get_stock_quote(request: https_fn.Request) -> https_fn.Response:
     """
     HTTP Cloud Function for fetching Swedish stock quotes.
-    
+
     Request Body:
         {"symbol": "ERIC-B"}
-    
+
     Response:
         {
             "symbol": "ERIC-B",
@@ -53,38 +54,41 @@ def get_stock_quote(request: Request):
             "timestamp": "2026-01-19T12:34:56.789Z"
         }
     """
-    # Handle CORS preflight
-    if request.method == 'OPTIONS':
-        headers = {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-            'Access-Control-Max-Age': '3600',
-        }
-        return ('', 204, headers)
-
-    # CORS headers for actual response
-    headers = {'Access-Control-Allow-Origin': '*'}
-
     try:
         # Parse request
         request_json = request.get_json(silent=True)
-        if not request_json or 'symbol' not in request_json:
-            return jsonify({'error': 'Missing symbol parameter'}), 400, headers
+        if not request_json or "symbol" not in request_json:
+            return https_fn.Response(
+                json.dumps({"error": "Missing symbol parameter"}),
+                status=400,
+                headers={"Content-Type": "application/json"},
+            )
 
-        symbol = request_json['symbol']
+        symbol = request_json["symbol"]
 
         # Get service and fetch quote
         service = get_avanza_service()
         quote = service.get_quote(symbol)
 
-        return jsonify(quote), 200, headers
+        return https_fn.Response(
+            json.dumps(quote), status=200, headers={"Content-Type": "application/json"}
+        )
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500, headers
+        return https_fn.Response(
+            json.dumps({"error": str(e)}),
+            status=500,
+            headers={"Content-Type": "application/json"},
+        )
 
 
-@functions_framework.http
-def health(request: Request):
+@https_fn.on_request(
+    cors=options.CorsOptions(cors_origins="*", cors_methods=["get", "post"])
+)
+def health(request: https_fn.Request) -> https_fn.Response:
     """Health check endpoint."""
-    return jsonify({'status': 'ok', 'service': 'avanza-backend'}), 200
+    return https_fn.Response(
+        json.dumps({"status": "ok", "service": "avanza-backend"}),
+        status=200,
+        headers={"Content-Type": "application/json"},
+    )
