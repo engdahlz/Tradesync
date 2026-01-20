@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { TrendingUp, Plus, ArrowRight, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react'
 import MainChart from '../components/charts/MainChart'
 import WatchlistGrid from '../components/widgets/WatchlistGrid'
+import StrategyPerformance from '../components/widgets/StrategyPerformance'
 import { useBinanceWebSocket } from '../hooks/useBinanceWebSocket'
 import { fetchCryptoNews, NewsArticle } from '../services/newsApi'
 import { Activity } from 'lucide-react'
@@ -248,6 +249,9 @@ export default function Dashboard() {
 
                 {/* Right Column: Watchlist */}
                 <div className="space-y-6">
+                    {/* Strategy Performance Widget */}
+                    <StrategyPerformance />
+
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-normal text-foreground">Your Watchlist</h2>
                         <button className="p-1.5 hover:bg-secondary rounded-full text-primary">
