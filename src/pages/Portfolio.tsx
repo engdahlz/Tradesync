@@ -13,6 +13,7 @@ import {
     Info,
 } from 'lucide-react'
 import { generateBacktestReport } from '../utils/backtestReport'
+import TradeModal from '../components/widgets/TradeModal'
 import { fetchCurrentPrice, fetch24hChange } from '@/services/priceData'
 import { fetchOrders, calculatePositions, calculateStats as calcPositionStats } from '@/services/portfolio'
 import { useAuth } from '@/contexts/AuthContext'
@@ -95,6 +96,7 @@ export default function Portfolio() {
     const [isGenerating, setIsGenerating] = useState(false)
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
     const [usingDemoData, setUsingDemoData] = useState(false)
+    const [isTradeModalOpen, setIsTradeModalOpen] = useState(false)
 
     const loadPortfolio = useCallback(async () => {
         setIsLoading(true)
@@ -280,12 +282,23 @@ export default function Portfolio() {
                         <Download className="w-4 h-4" />
                         {isGenerating ? 'Generating...' : 'Backtest Report'}
                     </button>
-                    <button className="btn-primary flex items-center gap-2">
+                    <button
+                        onClick={() => setIsTradeModalOpen(true)}
+                        className="btn-primary flex items-center gap-2"
+                    >
                         <Plus className="w-4 h-4" />
-                        Add Position
+                        Execute Trade
                     </button>
                 </div>
             </div>
+
+            <TradeModal
+                isOpen={isTradeModalOpen}
+                onClose={() => {
+                    setIsTradeModalOpen(false)
+                    loadPortfolio() // Refresh after trade
+                }}
+            />
 
             {/* Portfolio Overview */}
             {stats && (
