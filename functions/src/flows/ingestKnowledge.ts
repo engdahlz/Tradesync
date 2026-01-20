@@ -1,14 +1,26 @@
 
 /**
  * Knowledge Base Ingestion Flow
- * Generates embeddings for static knowledge and stores in Firestore
+ * 
+ * @deprecated Use the proper RAG ingestion CLI instead:
+ *   cd rag-ingestion && npm run ingest
+ * 
+ * This flow is kept for demo/bootstrap purposes only.
+ * The hardcoded KNOWLEDGE_BASE below is a small sample.
+ * For production, use the full pipeline in rag-ingestion/ which ingests:
+ * - 12 trading books (PDFs)
+ * - 30+ web articles
+ * - 18 academic papers
+ * - Code examples from GitHub
+ * 
+ * See: rag-ingestion/README.md
  */
 
 import { ai } from '../genkit.js';
 import { db, EMBEDDING_MODEL } from '../config.js';
 import { z } from 'genkit';
 
-// Expanded Knowledge Base
+// Sample knowledge for demo/bootstrap (production uses rag-ingestion CLI)
 const KNOWLEDGE_BASE = [
     {
         title: "Technical Analysis of the Financial Markets (John Murphy)",

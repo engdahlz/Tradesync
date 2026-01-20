@@ -1,6 +1,12 @@
 /**
  * Trade Execution Flows
- * Idempotent order execution and scheduled sells
+ * 
+ * Paper trading / order logging system. Orders are stored in Firestore.
+ * 
+ * NOTE: This is NOT connected to a real exchange (Binance/Alpaca).
+ * Orders are recorded for portfolio tracking, not executed on markets.
+ * 
+ * For real trading integration, implement exchange APIs in a separate module.
  */
 
 import type { Request, Response } from 'express';
