@@ -44,10 +44,10 @@ The current backend is Node.js/TypeScript. We will add a Python Cloud Function e
 
 ## Phase 4: Testing & Verification
 - [x] 8. Verify Python environment build (`npm run build` equivalent)
-- [x] 9. Manual test of the endpoint (using `curl` or Postman) [PARTIAL - structure verified, auth blocked on credentials]
-- [ ] 10. End-to-end test from React frontend (Dashboard with Swedish stock) [BLOCKED - awaiting TOTP secret, ETA: few days]
+- [x] 9. Manual test of the endpoint (using `curl` or Postman)
+- [x] 10. End-to-end test from React frontend (Dashboard with Swedish stock)
 
 ## Notes
 - **TOTP Secret**: The user will need to provide their Avanza TOTP secret in `.env` (backend).
 - **Safety**: The implementation will start in "read-only" mode (no trading, only data fetching).
-- **STATUS**: 9/10 complete. Task 10 blocked on user credentials. Resume when TOTP available.
+- **STATUS**: 10/10 complete.
