@@ -1,8 +1,11 @@
 
-import { suggestStrategyFlow } from './suggestStrategy.js';
+import { analyzeNewsFlow } from './analyzeNews.js';
+import { calculateSignalFlow } from './signalEngine.js';
+import { executeTradeInternal } from './tradeExecution.js';
+import { fetchMarketAuxNews } from '../services/marketAuxService.js';
 import { sendTopicNotification } from '../utils/notifications.js';
 import { z } from 'zod';
-import { MODEL_FLASH } from '../config.js';
+import { RSI, MACD } from 'technicalindicators';
 
 const CoinCapHistoryItemSchema = z.object({
     priceUsd: z.string(),
@@ -82,38 +85,89 @@ export async function runMarketScan() {
         try {
             const prices = await fetchCoinCapPrices(asset);
 
-            // Run AI Strategy Logic (Using Flash for high-volume scanner)
-            const analysis = await suggestStrategyFlow({
+            // 1. Technical Analysis
+            const rsiValues = RSI.calculate({values: prices, period: 14});
+            const currentRsi = rsiValues[rsiValues.length - 1] || 50;
+
+            const macdValues = MACD.calculate({
+                values: prices,
+                fastPeriod: 12,
+                slowPeriod: 26,
+                signalPeriod: 9,
+                SimpleMAOscillator: false,
+                SimpleMASignal: false
+            });
+            const currentMacd = macdValues[macdValues.length - 1] || { MACD: 0, signal: 0, histogram: 0 };
+
+            // 2. News Sentiment (Restricted to major assets to save API quota)
+            let sentimentScore = 0;
+            if (['BTC', 'ETH'].includes(asset)) {
+                try {
+                    const news = await fetchMarketAuxNews({ symbols: [asset], limit: 3 });
+                    if (news.length > 0) {
+                        const content = news.map(n => `${n.title} (${n.source})`).join('. ');
+                        const analysis = await analyzeNewsFlow({
+                            title: `Latest News for ${asset}`,
+                            content: content,
+                            source: 'MarketAux'
+                        });
+                        sentimentScore = analysis.sentimentScore;
+                    }
+                } catch (e) {
+                    console.warn(`[MarketScanner] News fetch failed for ${asset}:`, e);
+                }
+            }
+
+            // 3. Run Signal Engine
+            const signal = await calculateSignalFlow({
                 symbol: asset,
-                prices: prices,
-                interval: '1h',
-                model: MODEL_FLASH
+                sentimentScore,
+                rsi: currentRsi,
+                macd: {
+                    macd: currentMacd.MACD || 0,
+                    signal: currentMacd.signal || 0,
+                    histogram: currentMacd.histogram || 0
+                },
+                price: prices[prices.length - 1]
             });
 
-            // Log result
-            const confidence = analysis.confidence;
-            const signalType = analysis.action;
-            console.log(`[MarketScanner] ${asset}: ${signalType} (${confidence})`);
+            console.log(`[MarketScanner] ${asset}: ${signal.action} (${signal.confidence.toFixed(2)}) - Score: ${signal.score}`);
 
             results.push({
                 asset,
-                signal: signalType,
-                confidence,
-                summary: analysis.reasoning
+                signal: signal.action,
+                confidence: signal.confidence,
+                summary: signal.reasoning,
+                score: signal.score
             });
 
-            // Check for high confidence signal
-            if (confidence >= CONFIDENCE_THRESHOLD) {
-                const title = `🚨 ${asset} Signal: ${signalType.toUpperCase()}`;
-                const body = `High confidence (${(confidence * 100).toFixed(0)}%) signal detected. ${analysis.reasoning}`;
+            // 4. Auto-Trade & Notify
+            if (signal.action !== 'HOLD' && signal.confidence >= CONFIDENCE_THRESHOLD) {
+                // Execute Trade (Paper/Live based on env)
+                try {
+                    const trade = await executeTradeInternal({
+                        userId: 'auto-trader',
+                        symbol: `${asset}USDT`, // Assuming Binance symbol format
+                        side: signal.action === 'BUY' ? 'buy' : 'sell',
+                        quantity: 0.0001, // Safety: Very small fixed amount
+                        orderType: 'market',
+                        idempotencyKey: `auto_${asset}_${Date.now()}`
+                    });
+                    console.log(`[MarketScanner] Auto-Trade executed:`, trade);
+                } catch (e) {
+                    console.error(`[MarketScanner] Auto-Trade failed:`, e);
+                }
+
+                const title = `🚨 ${asset} Signal: ${signal.action}`;
+                const body = `High confidence (${(signal.confidence * 100).toFixed(0)}%) signal. ${signal.reasoning}`;
 
                 await sendTopicNotification('signals', {
                     title,
                     body,
                     data: {
                         asset,
-                        signal: signalType,
-                        confidence: String(confidence)
+                        signal: signal.action,
+                        confidence: String(signal.confidence)
                     }
                 });
             }

@@ -18,6 +18,7 @@ const InputSchema = z.object({
 
 const OutputSchema = z.object({
     sentiment: z.enum(['bullish', 'bearish', 'neutral']),
+    sentimentScore: z.number(), // -1.0 (Very Bearish) to 1.0 (Very Bullish)
     confidence: z.number(),
     summary: z.string(),
     tickers: z.array(z.string()),
@@ -40,7 +41,8 @@ export const analyzeNewsFlow = ai.defineFlow({
 
     Return the analysis with these fields:
     - sentiment: "bullish" | "bearish" | "neutral"
-    - confidence: number (0-1)
+    - sentimentScore: number between -1.0 (Very Bearish) and 1.0 (Very Bullish). 0 is Neutral.
+    - confidence: number (0-1) reflecting how certain you are about the impact
     - summary: One sentence summary of the trading implication
     - tickers: Array of related stock/crypto tickers (e.g. ["BTC", "AAPL"])
     `;
@@ -84,13 +86,13 @@ export const analyzeNewsFlow = ai.defineFlow({
         console.error("Genkit generation failed", e);
         return {
             sentiment: 'neutral' as const,
+            sentimentScore: 0,
             confidence: 0.5,
             summary: 'Analysis unavailable due to error',
             tickers: [] as string[]
         };
     }
 });
-
 
 export async function handleAnalyzeNews(req: Request, res: Response) {
     try {
@@ -101,6 +103,7 @@ export async function handleAnalyzeNews(req: Request, res: Response) {
         // Fail gracefully
         res.json({
             sentiment: 'neutral',
+            sentimentScore: 0,
             confidence: 0,
             summary: 'News analysis unavailable at the moment.',
             tickers: []
