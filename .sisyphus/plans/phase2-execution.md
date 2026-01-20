@@ -15,7 +15,7 @@ We have a deployed "Paper Trading" platform. Now we will integrate **Binance** f
 - [x] Install `ccxt` in `functions/`
 - [x] Create `functions/src/services/exchangeService.ts` (Interface)
 - [x] Implement `BinanceAdapter` using `ccxt`
-- [ ] Configure `BINANCE_API_KEY` and `BINANCE_SECRET` in `.env` (Added to example, awaiting user keys)
+- [ ] Configure `BINANCE_API_KEY` and `BINANCE_SECRET` in `.env` [BLOCKED - Awaiting user keys]
 
 ### 2. Trade Execution Logic
 - [x] Update `executeTrade` flow to support "LIVE" mode
@@ -25,8 +25,8 @@ We have a deployed "Paper Trading" platform. Now we will integrate **Binance** f
 
 ### 3. Safety Mechanisms
 - [x] Create "Kill Switch" flow (`emergencyStop`)
-- [ ] Implement `MAX_TRADE_AMOUNT` limit (hardcoded safety cap)
-- [ ] Add `isDryRun` flag to all trade requests (Done in executeTrade)
+- [x] Implement `MAX_TRADE_AMOUNT` limit (hardcoded safety cap)
+- [x] Add `isDryRun` flag to all trade requests (Done in executeTrade)
 
 ### 4. Frontend Integration
 - [x] Add "Live Trading" toggle in Settings (Added to TradeModal instead)
