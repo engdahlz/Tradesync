@@ -65,7 +65,7 @@ import { handleAdvisorChat, handleAdvisorChatStream } from './flows/advisorChat.
 import { handleSuggestStrategy } from './flows/suggestStrategy.js';
 import { handleAnalyzeVideo } from './flows/analyzeVideo.js';
 import { handleAnalyzeNews } from './flows/analyzeNews.js';
-import { handleExecuteTrade, handleScheduleSell } from './flows/tradeExecution.js';
+import { handleExecuteTrade, handleScheduleSell, handleCancelOrder, handleEmergencyStop, handleGetBalance } from './flows/tradeExecution.js';
 import { handleGetOrders } from './flows/getOrders.js';
 import { handleSearchVideos } from './flows/searchVideos.js';
 import { handleIngestKnowledge } from './flows/ingestKnowledge.js';
@@ -101,6 +101,9 @@ export const suggestStrategy = onRequest({ cors: true }, handleSuggestStrategy);
 export const analyzeVideo = onRequest({ cors: true }, handleAnalyzeVideo);
 export const analyzeNews = onRequest({ cors: true }, handleAnalyzeNews);
 export const executeTrade = onRequest({ cors: true }, handleExecuteTrade);
+export const cancelOrder = onRequest({ cors: true }, handleCancelOrder);
+export const emergencyStop = onRequest({ cors: true }, handleEmergencyStop);
+export const getBalance = onRequest({ cors: true }, handleGetBalance);
 export const scheduleSellOrder = onRequest({ cors: true }, handleScheduleSell);
 export const getOrders = onRequest({ cors: true }, handleGetOrders);
 export const searchVideos = onRequest({ cors: true }, handleSearchVideos);
