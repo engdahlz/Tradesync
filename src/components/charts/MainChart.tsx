@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { createChart, IChartApi, CandlestickData, Time } from 'lightweight-charts'
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react'
 import { fetchHistoricalData, OHLCV } from '@/services/priceData'
+import { hslToHex } from '@/utils/colorUtils'
 
 interface MainChartProps {
     symbol: string
@@ -35,14 +36,14 @@ function generateSignalsFromData(data: OHLCV[]): SignalBadge[] {
             signals.push({
                 time: data[i].time as Time,
                 text: 'OVERSOLD',
-                color: 'hsl(var(--ts-green))',
+                color: 'buy',
                 position: 'belowBar',
             })
         } else if (rsi > 70 && !signals.some(s => Math.abs((s.time as number) - data[i].time) < 3600 * 4)) {
             signals.push({
                 time: data[i].time as Time,
                 text: 'OVERBOUGHT',
-                color: 'hsl(var(--ts-red))',
+                color: 'sell',
                 position: 'aboveBar',
             })
         }
@@ -99,10 +100,10 @@ export default function MainChart({ symbol }: MainChartProps) {
         loadData()
     }, [loadData])
 
-    // Helper to get CSS variable values
+    // Helper to get CSS variable values (converted to Hex)
     const getThemeColor = (variable: string) => {
         const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim()
-        return `hsl(${value})`
+        return hslToHex(value)
     }
 
     useEffect(() => {
@@ -151,13 +152,13 @@ export default function MainChart({ symbol }: MainChartProps) {
 
         candlestickSeries.setData(candleData)
 
-        // Add markers for signals
+        // Add markers for signals (resolve colors for canvas compatibility)
         if (signalBadges.length > 0) {
             const markers = signalBadges.map((badge) => ({
                 time: badge.time,
                 position: badge.position,
-                color: badge.color,
-                shape: 'arrowUp' as const, // Simplified shape
+                color: badge.color === 'buy' ? greenColor : redColor,
+                shape: 'arrowUp' as const,
                 text: badge.text,
             }))
             candlestickSeries.setMarkers(markers)

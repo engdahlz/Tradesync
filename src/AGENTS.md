@@ -1,6 +1,7 @@
 # FRONTEND KNOWLEDGE BASE
 
 **Context:** src/ (React + Vite Client)
+**Generated:** Wed Jan 21 2026
 
 ## OVERVIEW
 The frontend uses **React + Vite** with **Tailwind CSS**. It follows a component-based architecture with separate services for API logic.

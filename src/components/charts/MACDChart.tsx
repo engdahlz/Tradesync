@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { createChart, IChartApi, ISeriesApi, Time } from 'lightweight-charts'
+import { hslToHex } from '@/utils/colorUtils'
 
 interface MACDData {
     time: Time
@@ -22,10 +23,10 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
     const histogramSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null)
     const zeroLineRef = useRef<ISeriesApi<"Line"> | null>(null)
 
-    // Helper to get CSS variable values
+    // Helper to get CSS variable values (converted to Hex)
     const getThemeColor = (variable: string) => {
         const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim()
-        return `hsl(${value})`
+        return hslToHex(value)
     }
 
     useEffect(() => {
@@ -126,11 +127,13 @@ export default function MACDChart({ data = [] }: MACDChartProps) {
         if (!histogramSeriesRef.current || !macdSeriesRef.current || !signalSeriesRef.current || !zeroLineRef.current) return
 
         if (data.length > 0) {
+            const greenColor = getThemeColor('--ts-green')
+            const redColor = getThemeColor('--ts-red')
             histogramSeriesRef.current.setData(
                 data.map((d) => ({
                     time: d.time,
                     value: d.histogram,
-                    color: d.histogram >= 0 ? 'hsl(var(--ts-green) / 0.5)' : 'hsl(var(--ts-red) / 0.5)',
+                    color: d.histogram >= 0 ? greenColor : redColor,
                 }))
             )
             macdSeriesRef.current.setData(data.map((d) => ({ time: d.time, value: d.macd })))

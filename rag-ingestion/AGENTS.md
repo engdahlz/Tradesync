@@ -1,6 +1,7 @@
 # DATA PIPELINE KNOWLEDGE BASE
 
 **Context:** rag-ingestion/ (RAG CLI Tools)
+**Generated:** Wed Jan 21 2026
 
 ## OVERVIEW
 CLI toolset for ingesting trading knowledge (Books, Articles, PDFs) into Firestore Vector Store.

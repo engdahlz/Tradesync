@@ -1,6 +1,6 @@
 {
-  "active_plan": null,
-  "started_at": null,
-  "session_ids": [],
-  "plan_name": null
+  "active_plan": "/home/engdahlz/Work/Tradesync/.sisyphus/plans/genkit-to-adk-migration.md",
+  "started_at": "2026-01-22T12:25:24.322Z",
+  "session_ids": ["ses_41e79484effeKkqwxJezeO1JJk"],
+  "plan_name": "genkit-to-adk-migration"
 }

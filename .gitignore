@@ -36,3 +36,7 @@ Research Documents/
 __pycache__/
 *.pyc
 .venv/
+.ruff_cache/
+
+# Research/reference (local only)
+Research/

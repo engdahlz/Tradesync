@@ -1,32 +1,39 @@
 # BACKEND KNOWLEDGE BASE
 
-**Context:** functions/src/ (Firebase + Genkit AI)
+**Context:** functions/src/ (Firebase + Google ADK)
+**Updated:** Thu Jan 22 2026
 
 ## OVERVIEW
-Serverless backend hosting **Genkit AI flows** and **Firebase Cloud Functions**. Handles business logic, AI reasoning, and scheduled tasks.
+Serverless backend hosting **Google ADK Agents** and **Firebase Cloud Functions**. Handles business logic, AI reasoning, and scheduled tasks via an Agentic Architecture.
 
 ## STRUCTURE
 ```
 functions/src/
-├── flows/            # Genkit AI Flows (Business Logic)
-├── tools/            # Function tools for Agents
-├── scripts/          # Testing & Utilities
+├── adk/
+│   ├── agents/       # ADK Agents (LlmAgent, etc.)
+│   └── tools/        # ADK Tools (AgentTool, FunctionTool)
+├── handlers/         # HTTP Adapters for ADK
+├── flows/            # Helper logic & Scheduled tasks
 └── index.ts          # Entry point (Exported functions)
 ```
 
-## KEY FLOWS
-- **advisorChat**: RAG-enabled Q&A using `MODEL_PRO`.
-- **suggestStrategy**: Technical analysis engine.
-- **analyzeVideo**: YouTube transcript analysis using `MODEL_FLASH`.
+## KEY AGENTS
+- **TradeSyncOrchestrator**: Main entry point. Routes to specialized agents.
+- **AdvisorAgent**: Financial advisor with access to RAG and tools.
+- **StrategyAgent**: Technical analysis specialist.
+- **VideoAnalysisAgent**: YouTube transcript analysis.
+- **NewsAnalysisAgent**: Market news impact analysis.
 
 ## CONVENTIONS
-- **Schema Validation**: MANDATORY **Zod** schemas for all Flow inputs/outputs.
+- **ADK-First**: All AI logic should reside in Agents (`src/adk/agents/`).
+- **Tools**: Wrappers for external APIs (`src/adk/tools/`).
+- **Schema Validation**: MANDATORY **Zod** schemas for all Tool inputs.
 - **Model Selection**: 
-  - `MODEL_PRO` (Gemini Pro): Complex reasoning, Strategy, RAG.
-  - `MODEL_FLASH` (Gemini Flash): High-volume, simple tasks (News, Video).
-- **Idempotency**: Use `idempotencyKey` for trade execution.
+  - `gemini-1.5-flash-001`: High-speed, high-volume (News, Video, Routing).
+  - `gemini-1.5-pro-001`: Deep reasoning, Strategy, RAG.
+- **Statelessness**: Use `Session` state for conversation context, Firestore for persistence.
 
 ## ANTI-PATTERNS (DO NOT DO)
-- ❌ **Global State**: Functions are stateless. Use Firestore.
-- ❌ **Long Sync Tasks**: Offload >60s tasks to Cloud Tasks or async flows.
+- ❌ **Direct LLM Calls**: Do not use `ai.generate` directly in flows. Use an Agent.
+- ❌ **Global State**: Functions are stateless.
 - ❌ **Unvalidated External Data**: Trust nothing. Zod parse everything.

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X, Loader2, AlertCircle } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 import { executeTrade, type TradeResponse } from '../../services/tradeApi'
 
 interface TradeModalProps {
@@ -9,6 +10,7 @@ interface TradeModalProps {
 }
 
 export default function TradeModal({ isOpen, onClose, defaultSymbol = 'BTCUSDT' }: TradeModalProps) {
+    const { user } = useAuth()
     const [symbol, setSymbol] = useState(defaultSymbol)
     const [side, setSide] = useState<'buy' | 'sell'>('buy')
     const [quantity, setQuantity] = useState('')
@@ -27,9 +29,11 @@ export default function TradeModal({ isOpen, onClose, defaultSymbol = 'BTCUSDT' 
 
         try {
             // Basic validation
+            if (!user) throw new Error('You must be logged in to trade')
             if (!symbol || !quantity) throw new Error('Symbol and Quantity are required')
 
             const data = await executeTrade({
+                userId: user.uid,
                 symbol: symbol.toUpperCase(),
                 side,
                 quantity: Number(quantity),

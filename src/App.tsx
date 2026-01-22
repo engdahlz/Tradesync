@@ -6,6 +6,7 @@ import MasterSignals from './pages/MasterSignals'
 import FinancialAdvisor from './pages/FinancialAdvisor'
 import MarketNews from './pages/MarketNews'
 import Portfolio from './pages/Portfolio'
+import GeminiTest from './pages/GeminiTest'
 import LoginPage from './pages/LoginPage'
 import PageTransition from './components/layout/PageTransition'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -43,6 +44,7 @@ function AppContent() {
                         <Route path="/advisor" element={<PageTransition><FinancialAdvisor /></PageTransition>} />
                         <Route path="/news" element={<PageTransition><MarketNews /></PageTransition>} />
                         <Route path="/portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
+                        <Route path="/gemini-test" element={<PageTransition><GeminiTest /></PageTransition>} />
                     </Routes>
                 </AnimatePresence>
             </ErrorBoundary>

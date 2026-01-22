@@ -282,3 +282,27 @@ export async function handleGetBalance(req: Request, res: Response) {
         res.status(500).json({ success: false, message: String(error) });
     }
 }
+
+export async function handleGetOrders(req: Request, res: Response) {
+    try {
+        const { userId, limit = 10 } = req.query;
+        
+        if (!userId) {
+             res.status(400).json({ error: 'Missing userId' });
+             return;
+        }
+
+        const snapshot = await db.collection('orders')
+            .where('userId', '==', userId)
+            .orderBy('createdAt', 'desc')
+            .limit(Number(limit))
+            .get();
+
+        const orders = snapshot.docs.map(doc => doc.data());
+        
+        res.json({ success: true, orders });
+    } catch (error) {
+        console.error('Failed to fetch orders:', error);
+        res.status(500).json({ success: false, message: String(error) });
+    }
+}

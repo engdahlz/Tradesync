@@ -1,16 +1,16 @@
 
 import { genkit } from 'genkit';
-import { vertexAI } from '@genkit-ai/vertexai';
+import { googleAI } from '@genkit-ai/googleai';
+import { GOOGLE_AI_API_KEY } from './config.js';
 
 // enableFirebaseTelemetry();
 
 export const ai = genkit({
     plugins: [
-        vertexAI({ 
-            projectId: 'tradesync-ai-prod',
-            location: 'europe-west1'
+        googleAI({ 
+            apiKey: GOOGLE_AI_API_KEY
         }),
     ],
 });
 
-export { vertexAI };
+export { googleAI as vertexAI }; // Alias for compatibility

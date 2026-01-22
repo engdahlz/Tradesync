@@ -1,61 +1,57 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-01-18
-**Context:** Trade/Sync (AI-Powered Trading Platform)
+**Generated:** Thu Jan 22 2026
+**Context:** Root
 
 ## OVERVIEW
-Trade/Sync is a real-time trading dashboard and strategy engine.
-**Stack:** React + Vite + Tailwind (Frontend), Firebase Cloud Functions + Genkit (Backend/AI), Firestore (DB/Vector Store).
+Trading platform monorepo combining **React+Vite** frontend, **Firebase+ADK** backend, **Python** services, and **RAG** data pipeline.
 
 ## STRUCTURE
 ```
 .
-├── src/              # React Frontend (Vite)
-├── functions/src/    # Firebase Functions & Genkit Flows
-├── rag-ingestion/    # Knowledge Base Ingestion Pipeline
-└── rag-sources/      # Raw Data (Books, PDFs, Articles)
-```
-
-## WORKFLOW (ISSUE TRACKING)
-This project uses **bd** (beads) for issue tracking.
-```bash
-bd ready              # Find available work
-bd update <id> --status in_progress
-bd close <id>         # Complete work
-bd sync               # Sync with git
+├── src/               # Frontend (React, Vite, Tailwind)
+├── functions/src/     # Backend (TypeScript, ADK, Firebase)
+│   └── adk/           # Multi-agent system
+│       ├── agents/    # Specialized AI agents
+│       └── tools/     # Agent tools
+├── functions-python/  # Backend (Python services, Avanza)
+├── rag-ingestion/     # Data Pipeline (CLI, Vector Store)
+└── firebase.json      # Firebase configuration
 ```
 
 ## WHERE TO LOOK
 | Task | Location | Notes |
 |------|----------|-------|
-| **Frontend UI** | `src/pages/`, `src/components/` | Tailwind styled |
-| **Business Logic** | `functions/src/flows/` | Genkit AI flows |
-| **API Proxy** | `src/services/` | Proxies to Firebase Functions |
-| **Data Ingestion** | `rag-ingestion/src/` | CLI tools for RAG |
+| **UI/Components** | `src/components/` | Tailwind styled |
+| **AI Agents** | `functions/src/adk/agents/` | ADK multi-agent system |
+| **Agent Tools** | `functions/src/adk/tools/` | Knowledge, signals, trading |
+| **Trading Logic** | `functions-python/` | Python/Avanza integration |
+| **Data Ingestion** | `rag-ingestion/src/` | Book/Article parsing |
+
+## AGENTS
+- **TradeSyncOrchestrator** - Routes to specialized agents
+- **AdvisorAgent** - Financial advice with RAG + SOP
+- **StrategyAgent** - Technical analysis
+- **NewsAnalysisAgent** - Sentiment analysis
+- **VideoAnalysisAgent** - YouTube content analysis
+- **DocumentAnalysisAgent** - Document parsing
 
 ## CONVENTIONS
-- **Type Safety**: STRICT Zod validation for all IO (API, DB, Env). No `any`.
-- **Styling**: Tailwind CSS with CSS variables (`index.css`). Google Finance aesthetic.
-- **State**: React Context for Auth, local state for UI. `useBinanceWebSocket` for live data.
-- **AI Models**: 
-  - `gemini-3-pro`: Complex reasoning/strategy.
-  - `gemini-3-flash`: High-frequency/news tasks.
-
-## LANDING THE PLANE (SESSION COMPLETION)
-1. **Quality Gates**: `npm run lint`, `npm run build`, `npm run test:e2e` (Frontend).
-2. **Push**: `git pull --rebase` -> `bd sync` -> `git push`.
-3. **Verify**: Ensure remote is up to date.
+- **Monorepo**: Distinct languages/runtimes per directory.
+- **Infrastructure**: Firebase-first (Firestore, Functions, Hosting).
+- **AI**: Gemini 1.5 Pro/Flash via Vertex AI + ADK.
 
 ## COMMANDS
 ```bash
 # Frontend
-npm run dev      # Start Vite dev server
-npm run test:e2e # Playwright tests
+npm run dev
 
-# Backend
-cd functions && npm run build
-npm run serve    # Emulate functions
+# Backend (TS)
+npm run build --prefix functions
 
-# RAG
-cd rag-ingestion && npm run ingest
+# RAG Ingestion
+npm run ingest --prefix rag-ingestion
+
+# Deployment
+firebase deploy
 ```

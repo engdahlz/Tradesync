@@ -5,7 +5,7 @@
 
 import { z } from 'zod';
 
-const API_BASE = 'https://us-central1-tradesync-ai-prod.cloudfunctions.net';
+export const API_BASE = 'https://us-central1-tradesync-ai-prod.cloudfunctions.net';
 
 export interface AdvisorChatResponse {
     response: string;

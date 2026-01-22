@@ -8,6 +8,7 @@ function getUrl(functionName: string) {
 }
 
 export interface TradeRequest {
+    userId: string;
     symbol: string;
     side: 'buy' | 'sell';
     quantity: number;
@@ -28,10 +29,8 @@ export async function executeTrade(request: TradeRequest): Promise<TradeResponse
     // In dev, use local emulator. In prod, use deployed URL.
     // We assume executeTrade endpoint is at /executeTrade
     
-    // Get user ID (mock for now, should come from auth)
     const payload = {
         ...request,
-        userId: 'user_123',
         idempotencyKey: `trade_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     };
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { X, Send, Sparkles, Loader2 } from 'lucide-react'
-import { advisorChat } from '@/services/api'
+import { API_BASE } from '@/services/api'
 import ReactMarkdown from 'react-markdown'
 
 interface AIChatPanelProps {
@@ -27,6 +27,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
     ])
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [status, setStatus] = useState<string | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
     const scrollToBottom = () => {
@@ -51,34 +52,82 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
         setMessages(prev => [...prev, userMsg])
         setInput('')
         setIsLoading(true)
+        setStatus('Thinking...')
+
+        const aiMsgId = (Date.now() + 1).toString()
+        // Add an empty AI message that we'll stream into
+        setMessages(prev => [...prev, {
+            id: aiMsgId,
+            role: 'assistant',
+            content: '',
+            timestamp: new Date()
+        }])
 
         try {
-            // Prepare history for API
-            const history = messages.map(m => ({
-                role: m.role,
-                content: m.content
-            }))
+            const response = await fetch(`${API_BASE}/advisorChatStream`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    userId: 'user', 
+                    message: input, 
+                    sessionId: 'current-session' 
+                }),
+            })
 
-            const result = await advisorChat(userMsg.content, history)
+            if (!response.ok) throw new Error('Failed to connect to stream')
 
-            const aiMsg: Message = {
-                id: (Date.now() + 1).toString(),
-                role: 'assistant',
-                content: result.response,
-                timestamp: new Date(),
-                sources: result.sources
+            const reader = response.body?.getReader()
+            if (!reader) throw new Error('No reader available')
+
+            const decoder = new TextDecoder()
+            let accumulatedContent = ''
+            let currentEvent = ''
+
+            while (true) {
+                const { done, value } = await reader.read()
+                if (done) break
+
+                const chunk = decoder.decode(value, { stream: true })
+                const lines = chunk.split('\n')
+
+                for (const line of lines) {
+                    if (line.startsWith('event: ')) {
+                        currentEvent = line.slice(7).trim()
+                        if (currentEvent === 'function_call') {
+                            setStatus('Using tool...')
+                        }
+                    } else if (line.startsWith('data: ')) {
+                        const dataStr = line.slice(6).trim()
+                        
+                        if (currentEvent === 'text') {
+                            try {
+                                // Backend might send JSON string or raw text
+                                const content = dataStr.startsWith('"') ? JSON.parse(dataStr) : dataStr
+                                accumulatedContent += content
+                                setMessages(prev => prev.map(m => 
+                                    m.id === aiMsgId ? { ...m, content: accumulatedContent } : m
+                                ))
+                                setStatus(null) // Clear "Thinking..." once we get text
+                            } catch (e) {
+                                console.warn('Failed to parse stream data:', dataStr)
+                            }
+                        } else if (currentEvent === 'done') {
+                            setIsLoading(false)
+                            setStatus(null)
+                        }
+                    }
+                }
             }
-            setMessages(prev => [...prev, aiMsg])
         } catch (error) {
             console.error('Chat error:', error)
-            setMessages(prev => [...prev, {
-                id: Date.now().toString(),
-                role: 'assistant',
-                content: "I'm having trouble connecting right now. Please try again.",
-                timestamp: new Date()
-            }])
+            setMessages(prev => prev.map(m => 
+                m.id === aiMsgId 
+                    ? { ...m, content: "I'm having trouble connecting right now. Please try again." } 
+                    : m
+            ))
         } finally {
             setIsLoading(false)
+            setStatus(null)
         }
     }
 
@@ -146,11 +195,11 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
                         </div>
                     </div>
                 ))}
-                {isLoading && (
+                {(isLoading || status) && (
                     <div className="flex justify-start">
                         <div className="bg-card border border-border rounded-2xl rounded-tl-none px-4 py-3 shadow-sm flex items-center gap-3">
                             <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                            <span className="text-xs text-muted-foreground">Thinking...</span>
+                            <span className="text-xs text-muted-foreground">{status || 'Thinking...'}</span>
                         </div>
                     </div>
                 )}

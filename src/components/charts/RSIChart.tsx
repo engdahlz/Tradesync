@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { createChart, IChartApi, LineData, ISeriesApi } from 'lightweight-charts'
-
-
+import { hslToHex } from '@/utils/colorUtils'
 
 interface RSIChartProps {
     data?: LineData[]
@@ -12,10 +11,10 @@ export default function RSIChart({ data = [] }: RSIChartProps) {
     const chartRef = useRef<IChartApi | null>(null)
     const rsiSeriesRef = useRef<ISeriesApi<"Line"> | null>(null)
 
-    // Helper to get CSS variable values
+    // Helper to get CSS variable values (converted to Hex)
     const getThemeColor = (variable: string) => {
         const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim()
-        return `hsl(${value})`
+        return hslToHex(value)
     }
 
     useEffect(() => {

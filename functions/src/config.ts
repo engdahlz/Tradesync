@@ -1,6 +1,7 @@
 // Trade/Sync Backend Configuration
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
+import { z } from 'zod';
 
 // Initialize Firebase Admin once
 try {
@@ -13,6 +14,17 @@ import { getMessaging } from 'firebase-admin/messaging';
 
 export const db = getFirestore();
 export const messaging = getMessaging();
+export { FieldValue };
+
+// Schema for scheduled sells
+export const ScheduledSellSchema = z.object({
+    orderId: z.string(),
+    status: z.enum(['pending', 'executed', 'cancelled']),
+    executeAt: z.any(),
+    executedAt: z.any().optional(),
+    ticker: z.string().optional(),
+    idempotencyKey: z.string().optional(),
+});
 
 // API Keys from environment variables
 export const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY || '';
@@ -20,15 +32,15 @@ export const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || '';
 export const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || '';
 
 // Model Allocation Strategy (Strict Compliance) - Updated Jan 2026
-// Vertex AI: Gemini 3 series - state-of-the-art reasoning for financial advice
+// Google AI Studio: Gemini 2.0 (Experimental) - Updated Jan 2026
 // Flash: High-frequency, low-latency (News, Transcription, Scanning)
 // Pro: Deep reasoning, Strategy, RAG, Complex Analysis
-export const MODEL_FLASH = 'gemini-3-flash-preview';
-export const MODEL_PRO = 'gemini-3-pro-preview';
+export const MODEL_FLASH = 'gemini-1.5-flash-001';
+export const MODEL_PRO = 'gemini-1.5-pro-001';
 
 // Legacy aliases for backward compatibility
 export const MODEL_NAME = MODEL_FLASH;
-export const EMBEDDING_MODEL = 'gemini-embedding-001';
+export const EMBEDDING_MODEL = 'text-embedding-004';
 
 // Thinking Budget Configuration (0-32768 tokens)
 // Higher = more reasoning depth, higher cost

@@ -1,23 +1,43 @@
 /**
  * Firebase Functions entry point
  * Trade/Sync AI-Powered Trading Platform
+ * 
+ * Migrated from Genkit to Google Agent Development Kit (ADK)
  */
 
 import { onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { db } from './config.js';
+import { db, ScheduledSellSchema, FieldValue } from './config.js';
 import { z } from 'zod';
-import { FieldValue } from 'firebase-admin/firestore';
 
-// Schema for scheduled sells in Firestore
-const ScheduledSellSchema = z.object({
-    orderId: z.string(),
-    status: z.enum(['pending', 'executed', 'cancelled']),
-    executeAt: z.any(), // Timestamp
-    executedAt: z.any().optional(),
-    ticker: z.string().optional(),
-    idempotencyKey: z.string().optional(),
-});
+import {
+    handleAdvisorChat,
+    handleAdvisorChatStream,
+    handleSuggestStrategy,
+    handleAnalyzeVideo,
+    handleAnalyzeDocument,
+    handleAnalyzeNews,
+} from './handlers/adkHandlers.js';
+import {
+    handleExecuteTrade,
+    handleScheduleSell,
+    handleCancelOrder,
+    handleEmergencyStop,
+    handleGetBalance,
+    handleGetOrders,
+} from './flows/tradeExecution.js';
+import {
+    handleSearchVideos,
+} from './flows/searchVideos.js';
+import {
+    handleIngestKnowledge,
+} from './flows/ingestKnowledge.js';
+import {
+    handleGetMarketNews,
+} from './flows/getMarketNews.js';
+import {
+    runMarketScan,
+} from './flows/scheduledScanner.js';
 
 // Scheduled function to check expired trades
 export const checkExpiredTrades = onSchedule('every 5 minutes', async () => {
@@ -60,32 +80,21 @@ export const checkExpiredTrades = onSchedule('every 5 minutes', async () => {
     console.log(`Processed ${expiredTrades.size} expired trades`);
 });
 
-// Import flow handlers
-import { handleAdvisorChat, handleAdvisorChatStream } from './flows/advisorChat.js';
-import { handleSuggestStrategy } from './flows/suggestStrategy.js';
-import { handleAnalyzeVideo } from './flows/analyzeVideo.js';
-import { handleAnalyzeNews } from './flows/analyzeNews.js';
-import { handleExecuteTrade, handleScheduleSell, handleCancelOrder, handleEmergencyStop, handleGetBalance } from './flows/tradeExecution.js';
-import { handleGetOrders } from './flows/getOrders.js';
-import { handleSearchVideos } from './flows/searchVideos.js';
-import { handleIngestKnowledge } from './flows/ingestKnowledge.js';
-import { runMarketScan } from './flows/scheduledScanner.js';
-import { handleAnalyzeDocument } from './flows/analyzeDocument.js';
-
-// ... existing imports ...
-import { handleGetMarketNews } from './flows/getMarketNews.js';
-
 // Scheduled Market Scanner (Every hour)
 export const marketScanner = onSchedule({
     schedule: 'every 60 minutes',
-    memory: '1GiB', // Genkit needs memory
-    timeoutSeconds: 300 // Scanning takes time
+    memory: '1GiB',
+    timeoutSeconds: 300,
 }, async () => {
     await runMarketScan();
 });
 
 // Debug Endpoint for Scanner (Manual Trigger)
-export const debugScanner = onRequest({ cors: true, memory: '1GiB', timeoutSeconds: 300 }, async (req, res) => {
+export const debugScanner = onRequest({ 
+    cors: true, 
+    memory: '1GiB', 
+    timeoutSeconds: 300 
+}, async (req, res) => {
     try {
         const result = await runMarketScan();
         res.json(result);
@@ -94,12 +103,13 @@ export const debugScanner = onRequest({ cors: true, memory: '1GiB', timeoutSecon
     }
 });
 
-// HTTP endpoints (no secrets injection - key is hardcoded in config)
+// HTTP endpoints (ADK-based)
 export const advisorChat = onRequest({ cors: true, memory: '1GiB' }, handleAdvisorChat);
 export const advisorChatStream = onRequest({ cors: true, memory: '1GiB', timeoutSeconds: 300 }, handleAdvisorChatStream);
 export const suggestStrategy = onRequest({ cors: true }, handleSuggestStrategy);
 export const analyzeVideo = onRequest({ cors: true }, handleAnalyzeVideo);
 export const analyzeNews = onRequest({ cors: true }, handleAnalyzeNews);
+export const analyzeDocument = onRequest({ cors: true, memory: '1GiB' }, handleAnalyzeDocument);
 export const executeTrade = onRequest({ cors: true }, handleExecuteTrade);
 export const cancelOrder = onRequest({ cors: true }, handleCancelOrder);
 export const emergencyStop = onRequest({ cors: true }, handleEmergencyStop);
@@ -109,4 +119,3 @@ export const getOrders = onRequest({ cors: true }, handleGetOrders);
 export const searchVideos = onRequest({ cors: true }, handleSearchVideos);
 export const ingestKnowledge = onRequest({ cors: true }, handleIngestKnowledge);
 export const getMarketNews = onRequest({ cors: true }, handleGetMarketNews);
-export const analyzeDocument = onRequest({ cors: true, memory: '1GiB' }, handleAnalyzeDocument);
