@@ -1,7 +1,8 @@
 
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import yahooFinance from 'yahoo-finance2';
+import YahooFinance from 'yahoo-finance2';
+const yahooFinance = new YahooFinance();
 
 export interface NewsItem {
     title: string;

@@ -21,10 +21,24 @@ export const knowledgeTool = new FunctionTool({
 
         return {
             found: true,
-            chunks: results.map(r => ({
-                content: r.content,
-                source: r.metadata?.title || 'Unknown Source'
-            }))
+            chunks: results.map(r => {
+                const chunk: any = {
+                    content: r.content,
+                    source: r.metadata?.title || 'Unknown Source'
+                };
+                
+                // Check both snake_case and camelCase just in case
+                const page = r.metadata?.page_number ?? r.metadata?.pageNumber;
+                if (page !== undefined) {
+                    chunk.page = page;
+                }
+                
+                if (r.similarity !== 0) {
+                    chunk.score = r.similarity;
+                }
+                
+                return chunk;
+            })
         };
     },
 });

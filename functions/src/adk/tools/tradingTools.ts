@@ -10,6 +10,7 @@ interface NewsItem {
     summary: string;
     sentiment: string;
     source: string;
+    time_published: string;
 }
 
 const BinanceKlineSchema = z.array(z.array(z.union([z.number(), z.string()])));
@@ -37,10 +38,11 @@ export const marketNewsTool = new FunctionTool({
     execute: async ({ tickers }) => {
         const news = await fetchMarketNews(tickers, 5);
         return news.map((n: NewsItem) => ({
-            title: n.title,
+            title: `${n.title} (${n.source}) - [${n.time_published}]`,
             summary: n.summary.slice(0, 200) + '...',
             sentiment: n.sentiment,
-            source: n.source
+            source: n.source,
+            time_published: n.time_published
         }));
     },
 });

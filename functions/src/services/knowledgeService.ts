@@ -31,14 +31,12 @@ export async function searchKnowledge(query: string, limit: number = 5): Promise
         const results: ChunkResult[] = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            // distanceMeasure COSINE returns distance (smaller is better/closer? No, cosine distance).
-            // Usually we want similarity. If findNearest returns distance, similarity = 1 - distance (approx).
-            // However, verify SDK behavior. Usually it creates a FieldValue or similar.
-            // Let's assume standard behavior.
+            // In some SDK versions, distance is automatically populated in doc.data() 
+            // when using findNearest.
             results.push({
                 content: data.content,
                 metadata: data.metadata,
-                similarity: 0 // Placeholder as distance isn't always easily accessible in snapshot data directly without helper
+                similarity: data.distance ? 1 - data.distance : 0
             });
         });
 
