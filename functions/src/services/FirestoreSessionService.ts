@@ -106,11 +106,14 @@ export class FirestoreSessionService extends BaseSessionService {
         
         session.lastUpdateTime = Date.now();
         
+        // Clean events to remove undefined values (Firestore doesn't allow them)
+        const cleanEvents = session.events.map(e => JSON.parse(JSON.stringify(e)));
+        
         // Update Firestore
         await this.db.collection('sessions').doc(session.id).update({
-            events: session.events,
+            events: cleanEvents,
             lastUpdateTime: Timestamp.fromMillis(session.lastUpdateTime),
-            state: session.state,
+            state: session.state || {},
         });
 
         return event;
