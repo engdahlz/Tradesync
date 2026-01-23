@@ -29,7 +29,7 @@ export const ScheduledSellSchema = z.object({
 // API Keys from environment variables
 export const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY || '';
 export const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || '';
-export const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || '';
+// export const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || '';
 
 // Trade/Sync Backend Configuration
 // Updated Jan 22, 2026 - Gemini 3.0 (us-central1)

@@ -58,7 +58,10 @@ const GetMarketNewsResponseSchema = z.object({
  * Parse Alpha Vantage Date Format "YYYYMMDDTHHMMSS" -> Date object
  */
 function parseAVDate(dateStr: string): Date {
-    if (!dateStr || dateStr.length < 15) return new Date();
+    if (!dateStr) return new Date();
+    // If it looks like an ISO date or already has separators, use standard constructor
+    if (dateStr.includes('-') || dateStr.includes(':')) return new Date(dateStr);
+    if (dateStr.length < 15) return new Date();
     const year = parseInt(dateStr.slice(0, 4));
     const month = parseInt(dateStr.slice(4, 6)) - 1; // Months are 0-indexed
     const day = parseInt(dateStr.slice(6, 8));

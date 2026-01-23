@@ -1,94 +1,68 @@
 
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { ALPHA_VANTAGE_API_KEY } from '../config.js';
+import yahooFinance from 'yahoo-finance2';
 
-const AlphaVantageNewsItemSchema = z.object({
-    title: z.string(),
-    url: z.string(),
-    summary: z.string().optional(),
-    source: z.string(),
-    time_published: z.string(),
-    overall_sentiment_label: z.string(),
-    overall_sentiment_score: z.number().or(z.string().transform(val => parseFloat(val))),
-    banner_image: z.string().optional().nullable(),
-    topics: z.array(z.object({
-        topic: z.string(),
-        relevance_score: z.string()
-    })).optional()
-});
-
-const AlphaVantageResponseSchema = z.object({
-    feed: z.array(AlphaVantageNewsItemSchema).optional(),
-    Information: z.string().optional(),
-    Note: z.string().optional(),
-    "Error Message": z.string().optional()
-});
-
-interface NewsItem {
+export interface NewsItem {
     title: string;
     url: string;
     summary: string;
     source: string;
-    publishedAt: string;
+    time_published: string;
+    publishedAt: string; // Alias for frontend compatibility
+    authors?: string[];
     sentiment: string;
-    sentimentScore: number | string;
+    sentiment_score: number;
+    sentimentScore: number; // Alias for frontend compatibility
     imageUrl?: string | null;
-    topics?: { topic: string; relevance_score: string }[];
 }
 
 export async function fetchMarketNews(tickers: string, limit: number = 50, sort: string = 'LATEST'): Promise<NewsItem[]> {
-    // Default to major crypto if no tickers provided for "general" news
+    // Default to major crypto if no tickers provided
     if (!tickers || tickers.trim() === '') {
-        tickers = 'CRYPTO:BTC,CRYPTO:ETH';
+        tickers = 'BTC,ETH';
     }
 
     console.log(`Fetching market news for: ${tickers}`);
-    const url = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${tickers}&limit=${limit}&sort=${sort}&apikey=${ALPHA_VANTAGE_API_KEY}`;
+    const tickerList = tickers.split(',').map(t => t.trim());
+    let allNews: NewsItem[] = [];
 
-    const response = await fetch(url);
-    const rawData = await response.json();
-
-    const validation = AlphaVantageResponseSchema.safeParse(rawData);
-    if (!validation.success) {
-        console.error('Alpha Vantage Schema Validation Error:', validation.error);
-        return [];
+    for (const ticker of tickerList) {
+        // Yahoo Finance expects clean symbols like "BTC-USD" or just "BTC"
+        const cleanTicker = ticker.replace('CRYPTO:', '');
+        
+        try {
+            const results: any = await yahooFinance.search(cleanTicker, { newsCount: 10 });
+            if (results.news && Array.isArray(results.news)) {
+                const mapped: NewsItem[] = results.news.map((item: any) => {
+                    const publishTime = item.providerPublishTime ? new Date(item.providerPublishTime).toISOString() : new Date().toISOString();
+                    return {
+                        title: item.title,
+                        url: item.link,
+                        summary: item.title, // Yahoo search news often lacks summary, use title
+                        source: 'Yahoo Finance',
+                        time_published: publishTime,
+                        publishedAt: publishTime, // Alias for compatibility
+                        authors: item.publisher ? [item.publisher] : [],
+                        sentiment: 'Neutral',
+                        sentiment_score: 0,
+                        sentimentScore: 0, // Alias for compatibility
+                        imageUrl: null
+                    };
+                });
+                allNews = [...allNews, ...mapped];
+            }
+        } catch (error) {
+            console.error(`Yahoo Finance search error for ${ticker}:`, error);
+        }
     }
 
-    const data = validation.data;
-
-    if (data.Information) {
-        console.warn('Alpha Vantage API Information:', data.Information);
-        return [];
+    // Sort by time_published descending (latest first) if sort is 'LATEST'
+    if (sort === 'LATEST') {
+        allNews.sort((a, b) => new Date(b.time_published).getTime() - new Date(a.time_published).getTime());
     }
 
-    if (data.Note) {
-        console.warn('Alpha Vantage API Note:', data.Note);
-        throw new Error(`API Limit: ${data.Note}`);
-    }
-
-    if (data["Error Message"]) {
-         console.warn('Alpha Vantage API Error:', data["Error Message"]);
-         return [];
-    }
-
-    let newsItems: NewsItem[] = [];
-    if (data.feed && Array.isArray(data.feed)) {
-        newsItems = data.feed.map((item) => ({
-            title: item.title,
-            url: item.url,
-            summary: item.summary || '',
-            source: item.source,
-            publishedAt: item.time_published,
-            sentiment: item.overall_sentiment_label,
-            sentimentScore: item.overall_sentiment_score,
-            imageUrl: item.banner_image,
-            topics: item.topics
-        }));
-    } else {
-        console.warn('Unexpected API response structure:', JSON.stringify(data));
-    }
-    return newsItems;
+    return allNews.slice(0, limit);
 }
 
 const GetMarketNewsInputSchema = z.object({
