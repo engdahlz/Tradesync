@@ -30,11 +30,11 @@ async function fetchBinancePrices(symbol: string): Promise<number[]> {
 }
 
 export const marketNewsTool = new FunctionTool({
-    name: 'get_market_news',
-    description: 'Fetches latest financial news and sentiment for crypto tickers (e.g. "CRYPTO:BTC"). Returns article summaries and sentiment.',
-    parameters: z.object({
-        tickers: z.string().describe('Comma separated tickers, e.g. "CRYPTO:BTC" or "CRYPTO:ETH"'),
-    }),
+     name: 'get_market_news',
+     description: 'Fetches news for global assets (Stocks, Crypto, Forex). Returns article summaries and sentiment.',
+     parameters: z.object({
+         tickers: z.string().describe('Comma separated tickers, e.g. "BTC" or "AAPL"'),
+     }),
     execute: async ({ tickers }) => {
         const news = await fetchMarketNews(tickers, 5);
         return news.map((n: NewsItem) => ({
@@ -48,11 +48,11 @@ export const marketNewsTool = new FunctionTool({
 });
 
 export const technicalAnalysisTool = new FunctionTool({
-    name: 'technical_analysis',
-    description: 'Runs technical analysis (price trend, volatility) on a crypto asset. Returns price data for strategy evaluation.',
-    parameters: z.object({
-        symbol: z.string().describe('Crypto symbol to analyze, e.g. "BTC" or "ETH"'),
-    }),
+     name: 'technical_analysis',
+     description: 'Runs technical analysis on any asset (price trend, volatility). Returns price data for strategy evaluation.',
+     parameters: z.object({
+         symbol: z.string().describe('Symbol to analyze, e.g. "BTC" or "AAPL"'),
+     }),
     execute: async ({ symbol }) => {
         try {
             const prices = await fetchBinancePrices(symbol);

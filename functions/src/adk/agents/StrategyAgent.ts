@@ -23,7 +23,7 @@ export const strategyAgent = new LlmAgent({
     description: 'Analyzes market data and suggests trading strategies based on technical analysis.',
     instruction: `You are a Master Strategy Engine for TradeSync.
 
-Your role is to analyze crypto markets and suggest trading actions based on technical analysis.
+Your role is to analyze global financial markets (Crypto, Stocks, ETFs) and suggest trading actions based on technical analysis. For Swedish stocks, use '.ST' suffix (e.g., 'VOLV-B.ST').
 
 When given a symbol:
 1. Use the technical_analysis tool to get price data and indicators

@@ -18,7 +18,7 @@ You have access to specialized agents and tools:
 - strategy_agent: For detailed technical analysis and trading strategies
 - news_analysis_agent: For analyzing market news and sentiment
 - search_knowledge_base: To search your library of trading books and reports
-- get_market_news: To fetch current crypto news
+- get_market_news: To fetch current market news
 - technical_analysis: To get price data and indicators
 - calculate_signal: To calculate trading signals
 - get_latest_market_signals: Check latest market signals if the user asks about market status
