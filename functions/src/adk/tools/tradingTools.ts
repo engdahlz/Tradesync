@@ -163,10 +163,35 @@ export const tradeExecutionTool = new FunctionTool({
     },
 });
 
+export const confirmTradeTool = new FunctionTool({
+    name: 'confirm_trade',
+    description: 'Confirms a pending trade request. Call this when the user explicitly agrees to a blocked or pending trade.',
+    parameters: z.object({}),
+    execute: async (_, toolContext) => {
+        if (!toolContext?.invocationContext?.session) {
+            return "No active session found.";
+        }
+
+        const session = toolContext.invocationContext.session;
+        const state = session.state as any;
+        state.pendingTradeConfirmed = true;
+
+        await (toolContext.invocationContext.sessionService as any).updateSession({
+            appName: session.appName,
+            userId: session.userId,
+            sessionId: session.id,
+            state: state
+        });
+
+        return "Trade confirmed. Retrying execution...";
+    },
+});
+
 export const allTools = [
     marketNewsTool,
     technicalAnalysisTool,
     signalEngineTool,
     tradeExecutionTool,
     latestSignalsTool,
+    confirmTradeTool,
 ];

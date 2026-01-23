@@ -121,13 +121,63 @@ export class TradeSyncPlugin extends BasePlugin {
         tool,
         toolArgs,
         toolContext,
+        invocationContext,
     }: {
         tool: BaseTool;
         toolArgs: Record<string, unknown>;
         toolContext: ToolContext;
+        invocationContext: InvocationContext;
     }): Promise<Record<string, unknown> | undefined> {
         this.metrics.toolCalls++;
         console.log(`[TradeSync] Tool: ${tool.name} (${JSON.stringify(toolArgs).slice(0, 100)})`);
+
+        if (tool.name === 'execute_trade') {
+            const state = invocationContext.session?.state as any;
+            if (!state?.pendingTradeConfirmed) {
+                console.log(`[TradeSync] 🛑 Intercepting high-risk tool: execute_trade`);
+                
+                // Store pending trade and set awaiting confirmation
+                if (invocationContext.session && invocationContext.sessionService) {
+                    invocationContext.session.state = {
+                        ...invocationContext.session.state,
+                        pendingTrade: toolArgs,
+                        awaitingConfirmation: true
+                    };
+                    
+                    await (invocationContext.sessionService as any).updateSession({
+                        appName: invocationContext.session.appName,
+                        userId: invocationContext.session.userId,
+                        sessionId: invocationContext.session.id,
+                        state: invocationContext.session.state,
+                    });
+                }
+
+                return {
+                    blocked: true,
+                    message: `⚠️ CONFIRM TRADE: Please confirm the execution of ${toolArgs.side} ${toolArgs.quantity} ${toolArgs.symbol} @ ${toolArgs.price || 'market'}. Respond with "CONFIRM" to proceed.`,
+                };
+            } else {
+                console.log(`[TradeSync] ✅ execute_trade confirmed, allowing execution`);
+                
+                // Reset confirmation flags
+                if (invocationContext.session && invocationContext.sessionService) {
+                    const newState = { ...invocationContext.session.state };
+                    delete newState.pendingTradeConfirmed;
+                    delete newState.pendingTrade;
+                    delete newState.awaitingConfirmation;
+                    invocationContext.session.state = newState;
+
+                    await (invocationContext.sessionService as any).updateSession({
+                        appName: invocationContext.session.appName,
+                        userId: invocationContext.session.userId,
+                        sessionId: invocationContext.session.id,
+                        state: invocationContext.session.state,
+                    });
+                }
+                return undefined;
+            }
+        }
+
         return undefined;
     }
 

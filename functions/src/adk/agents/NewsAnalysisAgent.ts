@@ -3,10 +3,19 @@ import { MODEL_FLASH } from '../../config.js';
 import { z } from 'zod';
 import { marketNewsTool } from '../tools/tradingTools.js';
 
+const NewsAnalysisOutputSchema = z.object({
+    sentiment: z.enum(['bullish', 'bearish', 'neutral']),
+    sentimentScore: z.number().min(-1.0).max(1.0),
+    confidence: z.number().min(0).max(1),
+    summary: z.string(),
+    tickers: z.array(z.string()),
+});
+
 export const newsAnalysisAgent = new LlmAgent({
     name: 'news_analysis_agent',
     model: MODEL_FLASH,
     description: 'Analyzes financial news articles for market impact and sentiment.',
+    outputSchema: NewsAnalysisOutputSchema as any,
     instruction: `You are a financial news analyst specializing in crypto markets.
 
 Your job is to:
@@ -25,6 +34,6 @@ When given news content, return structured analysis with:
 Use the get_market_news tool to fetch current news when needed.`,
     tools: [marketNewsTool],
     generateContentConfig: {
-        temperature: 1.0,
+        temperature: 0.3,
     },
 });

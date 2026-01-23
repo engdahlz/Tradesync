@@ -118,4 +118,11 @@ export class FirestoreSessionService extends BaseSessionService {
 
         return event;
     }
+
+    async updateSession(request: { appName: string; userId: string; sessionId: string; state: any }): Promise<void> {
+        await this.db.collection('sessions').doc(request.sessionId).update({
+            state: request.state,
+            lastUpdateTime: Timestamp.now(),
+        });
+    }
 }

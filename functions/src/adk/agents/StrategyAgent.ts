@@ -1,6 +1,21 @@
 import { LlmAgent } from '@google/adk';
+import { z } from 'zod';
 import { MODEL_PRO } from '../../config.js';
 import { technicalAnalysisTool, signalEngineTool } from '../tools/tradingTools.js';
+
+const StrategyOutputSchema = z.object({
+    action: z.enum(['BUY', 'SELL', 'HOLD']),
+    confidence: z.number(),
+    reasoning: z.string(),
+    riskLevel: z.enum(['LOW', 'MEDIUM', 'HIGH']),
+    technicals: z.object({
+        rsi: z.number().optional(),
+        macd: z.string().optional(),
+        trend: z.string().optional(),
+    }).optional(),
+    stopLoss: z.number().optional(),
+    takeProfit: z.number().optional(),
+});
 
 export const strategyAgent = new LlmAgent({
     name: 'strategy_agent',
@@ -25,7 +40,8 @@ After analysis, provide:
 
 Be conservative. When in doubt, recommend HOLD.`,
     tools: [technicalAnalysisTool, signalEngineTool],
+    outputSchema: StrategyOutputSchema as any,
     generateContentConfig: {
-        temperature: 1.0,
+        temperature: 0.3,
     },
 });

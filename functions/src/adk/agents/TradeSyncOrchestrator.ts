@@ -3,7 +3,7 @@ import { MODEL_FLASH } from '../../config.js';
 import { advisorAgent } from './AdvisorAgent.js';
 import { videoAnalysisAgent } from './VideoAnalysisAgent.js';
 import { documentAnalysisAgent } from './DocumentAnalysisAgent.js';
-import { tradeExecutionTool } from '../tools/tradingTools.js';
+import { tradeExecutionTool, confirmTradeTool } from '../tools/tradingTools.js';
 
 const advisorTool = new AgentTool({ agent: advisorAgent });
 const videoTool = new AgentTool({ agent: videoAnalysisAgent });
@@ -23,12 +23,14 @@ You route requests to specialized agents:
 - video_analysis_agent: Analyze YouTube trading videos
 - document_analysis_agent: Analyze financial documents (SEC filings, reports)
 - execute_trade: Place paper trading orders
+- confirm_trade: Confirms a pending trade request
 
 Routing Guidelines:
 1. General trading questions, analysis requests ("What about BTC?") → advisor_agent
 2. "Analyze this video" → video_analysis_agent
 3. "Analyze this document/URL" → document_analysis_agent
 4. "Buy/Sell X" or trade requests → Confirm with user, then execute_trade
+5. If the user says 'Yes' or 'Confirm' to a pending trade request, call the confirm_trade tool first, then retry the trade execution.
 
 For simple greetings or clarifications, respond directly without delegating.
 
@@ -41,8 +43,9 @@ Safety Rules:
         videoTool,
         documentTool,
         tradeExecutionTool,
+        confirmTradeTool,
     ],
     generateContentConfig: {
-        temperature: 1.0,
+        temperature: 0.7,
     },
 });

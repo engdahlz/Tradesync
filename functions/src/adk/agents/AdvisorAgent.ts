@@ -52,6 +52,6 @@ Your goal is to provide a holistic answer grounded in ALL available data points.
         latestSignalsTool,
     ],
     generateContentConfig: {
-        temperature: 1.0,
+        temperature: 0.4,
     },
 });
