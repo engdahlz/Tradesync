@@ -40,7 +40,6 @@ After analysis, provide:
 
 Be conservative. When in doubt, recommend HOLD.`,
     tools: [technicalAnalysisTool, signalEngineTool],
-    outputSchema: StrategyOutputSchema as any,
     generateContentConfig: {
         temperature: 0.3,
     },

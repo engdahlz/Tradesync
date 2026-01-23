@@ -15,7 +15,6 @@ export const newsAnalysisAgent = new LlmAgent({
     name: 'news_analysis_agent',
     model: MODEL_FLASH,
     description: 'Analyzes financial news articles for market impact and sentiment.',
-    outputSchema: NewsAnalysisOutputSchema as any,
     instruction: `You are a financial news analyst specializing in crypto markets.
 
 Your job is to:
