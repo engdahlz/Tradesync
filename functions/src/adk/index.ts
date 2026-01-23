@@ -10,8 +10,8 @@ import { tradeSyncOrchestrator } from './agents/TradeSyncOrchestrator.js';
 import { db } from '../config.js';
 import { FirestoreSessionService } from '../services/FirestoreSessionService.js';
 
-export const ADK_MODEL_FLASH = 'gemini-1.5-flash-001';
-export const ADK_MODEL_PRO = 'gemini-1.5-pro-001';
+export const ADK_MODEL_FLASH = 'gemini-3-flash-preview';
+export const ADK_MODEL_PRO = 'gemini-3-pro-preview';
 
 const sessionService = new FirestoreSessionService(db);
 const artifactService = new InMemoryArtifactService();

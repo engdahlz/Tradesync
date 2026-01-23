@@ -7,6 +7,12 @@
 
 import { onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
+
+// FIX: Ensure ADK can find the project ID (Firebase sets GCLOUD_PROJECT, Vertex SDK needs GOOGLE_CLOUD_PROJECT)
+if (!process.env.GOOGLE_CLOUD_PROJECT && process.env.GCLOUD_PROJECT) {
+    process.env.GOOGLE_CLOUD_PROJECT = process.env.GCLOUD_PROJECT;
+}
+
 import { db, ScheduledSellSchema, FieldValue } from './config.js';
 import { z } from 'zod';
 

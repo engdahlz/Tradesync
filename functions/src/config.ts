@@ -31,12 +31,15 @@ export const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY || '';
 export const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || '';
 export const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || '';
 
-// Model Allocation Strategy (Strict Compliance) - Updated Jan 2026
-// Google AI Studio: Gemini 2.0 (Experimental) - Updated Jan 2026
-// Flash: High-frequency, low-latency (News, Transcription, Scanning)
-// Pro: Deep reasoning, Strategy, RAG, Complex Analysis
-export const MODEL_FLASH = 'gemini-1.5-flash-001';
-export const MODEL_PRO = 'gemini-1.5-pro-001';
+// Trade/Sync Backend Configuration
+// Updated Jan 22, 2026 - Gemini 3.0 (us-central1)
+
+// Flash: High-frequency agentic loops
+export const MODEL_FLASH = 'gemini-3-flash-preview';
+
+// Pro: Deep reasoning ("vibe-coding")
+export const MODEL_PRO = 'gemini-3-pro-preview';
+
 
 // Legacy aliases for backward compatibility
 export const MODEL_NAME = MODEL_FLASH;
