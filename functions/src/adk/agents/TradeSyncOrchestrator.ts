@@ -1,16 +1,12 @@
-import { LlmAgent, AgentTool } from '@google/adk';
+import { LlmAgent } from '@google/adk';
 import { MODEL_FLASH } from '../../config.js';
 import { getSafetySettings, getTemperatureForModel, getThinkingConfig } from '../../services/genaiClient.js';
-import { advisorAgent } from './AdvisorAgent.js';
+import { advisorWorkflowAgent } from './AdvisorWorkflowAgent.js';
 import { strategyAgent } from './StrategyAgent.js';
 import { videoAnalysisAgent } from './VideoAnalysisAgent.js';
 import { documentAnalysisAgent } from './DocumentAnalysisAgent.js';
 import { tradeExecutionTool, confirmTradeTool } from '../tools/tradingTools.js';
 
-const advisorTool = new AgentTool({ agent: advisorAgent });
-const strategyTool = new AgentTool({ agent: strategyAgent });
-const videoTool = new AgentTool({ agent: videoAnalysisAgent });
-const documentTool = new AgentTool({ agent: documentAnalysisAgent });
 const thinkingConfig = getThinkingConfig(MODEL_FLASH);
 
 export const tradeSyncOrchestrator = new LlmAgent({
@@ -23,7 +19,7 @@ Be concise, professional, and data-driven. Always prioritize user safety and ris
     instruction: `You are the TradeSync Orchestrator - the main entry point for all trading queries.
 
 You route requests to specialized agents:
-- advisor_agent: Head of Research. Handles detailed analysis, strategy synthesis, and Q&A.
+- advisor_workflow_agent: Head of Research. Runs parallel research and delivers the final synthesis.
 - strategy_agent: Market Strategy Engine. Specialized in technical analysis and chart patterns.
 - video_analysis_agent: Analyze YouTube trading videos
 - document_analysis_agent: Analyze financial documents (SEC filings, reports)
@@ -31,7 +27,7 @@ You route requests to specialized agents:
 - confirm_trade: Confirms a pending trade request
 
 Routing Guidelines:
- 1. General trading questions, analysis requests ("What about BTC?", "Analyze Apple") → advisor_agent
+ 1. General trading questions, analysis requests ("What about BTC?", "Analyze Apple") → advisor_workflow_agent
 2. "Analyze this video" → video_analysis_agent
 3. "Analyze this document/URL" → document_analysis_agent
 4. "Show me a chart of Tesla" or chart requests → strategy_agent
@@ -44,14 +40,13 @@ Safety Rules:
 - Never recommend all-in positions
 - Always mention risk when discussing trades
 - Encourage paper trading before real trading`,
-    tools: [
-        advisorTool,
-        strategyTool,
-        videoTool,
-        documentTool,
-        tradeExecutionTool,
-        confirmTradeTool,
+    subAgents: [
+        advisorWorkflowAgent,
+        strategyAgent,
+        videoAnalysisAgent,
+        documentAnalysisAgent,
     ],
+    tools: [tradeExecutionTool, confirmTradeTool],
     generateContentConfig: {
         temperature: getTemperatureForModel(MODEL_FLASH, 0.7),
         safetySettings: getSafetySettings(),

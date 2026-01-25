@@ -3,6 +3,8 @@ import { MODEL_PRO } from '../../config.js';
 import { getSafetySettings, getTemperatureForModel, getThinkingConfig } from '../../services/genaiClient.js';
 import { marketNewsTool, technicalAnalysisTool, signalEngineTool, latestSignalsTool } from '../tools/tradingTools.js';
 import { knowledgeTool } from '../tools/knowledgeTool.js';
+import { memorySearchTool } from '../tools/memoryTool.js';
+import { vertexSearchTool, vertexRagTool } from '../tools/vertexTools.js';
 import { strategyAgent } from './StrategyAgent.js';
 import { newsAnalysisAgent } from './NewsAnalysisAgent.js';
 
@@ -20,10 +22,13 @@ You have access to specialized agents and tools:
 - strategy_agent: For detailed technical analysis and trading strategies
 - news_analysis_agent: For analyzing market news and sentiment
 - search_knowledge_base: To search your library of trading books and reports
+- search_memory: To recall user preferences and constraints
 - get_market_news: To fetch current market news
 - technical_analysis: To get price data and indicators
 - calculate_signal: To calculate trading signals
 - get_latest_market_signals: Check latest market signals if the user asks about market status
+- vertex_ai_search: Private search datastore for fresh sources
+- vertex_ai_rag_retrieval: Retrieve grounded context from Vertex AI RAG
 
 STANDARD OPERATING PROCEDURE for Asset Analysis (e.g., "What about BTC?", "Should I buy?"):
 1. RESEARCH PHASE (Mandatory):
@@ -31,6 +36,8 @@ STANDARD OPERATING PROCEDURE for Asset Analysis (e.g., "What about BTC?", "Shoul
    - Call 'strategy_agent' to get technical analysis, trends, and buy/sell signals.
    - Call 'news_analysis_agent' (or 'get_market_news') to understand current market sentiment and headlines.
    - Call 'search_knowledge_base' if the user asks about concepts, patterns, or specific reports.
+   - Call 'search_memory' when user preferences or constraints might apply.
+   - Call 'vertex_ai_search' or 'vertex_ai_rag_retrieval' if configured for fresh/private sources.
    
 2. SYNTHESIS PHASE:
    - Compare Technicals (Strategy) vs Fundamentals (News).
@@ -49,6 +56,9 @@ Your goal is to provide a holistic answer grounded in ALL available data points.
         strategyAgentTool,
         newsAgentTool,
         knowledgeTool,
+        memorySearchTool,
+        vertexSearchTool,
+        vertexRagTool,
         marketNewsTool,
         technicalAnalysisTool,
         signalEngineTool,

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, FormEvent } from 'react'
 import { Send, Bot, User, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
-import { advisorChat } from '@/services/api'
+import { API_BASE } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface Message {
@@ -34,6 +34,7 @@ export default function ChatInterface() {
     const [messages, setMessages] = useState<Message[]>(initialMessages)
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [status, setStatus] = useState<string | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const { user } = useAuth()
     const sessionIdRef = useRef<string | null>(null)
@@ -65,43 +66,154 @@ export default function ChatInterface() {
         const userInput = input
         setInput('')
         setIsLoading(true)
+        setStatus('Thinking...')
+
+        const aiMsgId = (Date.now() + 1).toString()
+        setMessages((prev) => [
+            ...prev,
+            {
+                id: aiMsgId,
+                role: 'assistant',
+                content: '',
+                timestamp: new Date(),
+            },
+        ])
+
+        const history = messages
+            .filter(m => m.id !== '1')
+            .map(m => ({ role: m.role, content: m.content }))
+
+        const statusForTool = (name: string) => {
+            switch (name) {
+                case 'get_latest_market_signals':
+                    return 'Checking market signals...'
+                case 'technical_analysis':
+                    return 'Running technical analysis...'
+                case 'get_market_news':
+                    return 'Fetching market news...'
+                case 'search_knowledge_base':
+                    return 'Searching knowledge base...'
+                case 'search_memory':
+                    return 'Looking up preferences...'
+                case 'vertex_ai_search':
+                    return 'Searching private sources...'
+                case 'vertex_ai_rag_retrieval':
+                    return 'Retrieving grounded context...'
+                case 'fetch_youtube_transcript':
+                    return 'Fetching transcript...'
+                case 'get_chart':
+                    return 'Generating chart...'
+                default:
+                    return 'Using tool...'
+            }
+        }
 
         try {
-            // Build conversation history for context
-            const history = messages
-                .filter(m => m.id !== '1') // Exclude initial message
-                .map(m => ({ role: m.role, content: m.content }))
-
-            // Call the real RAG API
-            const response = await advisorChat(userInput, history, {
-                userId: user?.uid || 'anonymous',
-                sessionId: sessionIdRef.current || undefined,
+            const response = await fetch(`${API_BASE}/advisorChatStream`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user?.uid || 'anonymous',
+                    message: userInput,
+                    conversationHistory: history,
+                    sessionId: sessionIdRef.current || undefined,
+                }),
             })
 
-            const assistantMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                role: 'assistant',
-                content: response.response,
-                timestamp: new Date(),
-                sources: response.sources,
+            if (!response.ok) {
+                throw new Error(`Stream error: ${response.status}`)
             }
 
-            setMessages((prev) => [...prev, assistantMessage])
+            const reader = response.body?.getReader()
+            if (!reader) {
+                throw new Error('No stream reader available')
+            }
 
-            ;(window as unknown as { __tradesync_last_advisor_response?: string }).__tradesync_last_advisor_response = response.response
+            const decoder = new TextDecoder()
+            let accumulatedContent = ''
+            let currentEvent = 'message'
+            let currentData = ''
+            let buffer = ''
+
+            const handleEvent = (eventName: string, data: string) => {
+                if (!eventName) return
+
+                if (eventName === 'text') {
+                    try {
+                        const content = data.trim().startsWith('"') ? JSON.parse(data) : data
+                        accumulatedContent += content
+                        setMessages(prev => prev.map(m =>
+                            m.id === aiMsgId ? { ...m, content: accumulatedContent } : m
+                        ))
+                        setStatus(null)
+                    } catch {
+                        console.warn('Failed to parse stream data:', data)
+                    }
+                } else if (eventName === 'sources') {
+                    try {
+                        const parsed = JSON.parse(data)
+                        setMessages(prev => prev.map(m =>
+                            m.id === aiMsgId ? { ...m, sources: parsed } : m
+                        ))
+                    } catch {
+                        console.warn('Failed to parse sources data:', data)
+                    }
+                } else if (eventName === 'function_call') {
+                    try {
+                        const parsed = JSON.parse(data)
+                        const toolName = parsed?.name as string | undefined
+                        setStatus(toolName ? statusForTool(toolName) : 'Using tool...')
+                    } catch {
+                        setStatus('Using tool...')
+                    }
+                } else if (eventName === 'done') {
+                    setIsLoading(false)
+                    setStatus(null)
+                }
+            }
+
+            while (true) {
+                const { done, value } = await reader.read()
+                if (done) break
+
+                buffer += decoder.decode(value, { stream: true })
+
+                while (buffer.includes('\n')) {
+                    const lineEnd = buffer.indexOf('\n')
+                    const line = buffer.slice(0, lineEnd).replace(/\r$/, '')
+                    buffer = buffer.slice(lineEnd + 1)
+
+                    if (line.startsWith('event:')) {
+                        currentEvent = line.slice(6).trim()
+                    } else if (line.startsWith('data:')) {
+                        const dataPart = line.slice(5).trim()
+                        currentData = currentData ? `${currentData}\n${dataPart}` : dataPart
+                    } else if (line === '') {
+                        handleEvent(currentEvent, currentData)
+                        currentData = ''
+                    }
+                }
+            }
+            if (currentData) {
+                handleEvent(currentEvent, currentData)
+            }
+
+            ;(window as unknown as { __tradesync_last_advisor_response?: string }).__tradesync_last_advisor_response =
+                accumulatedContent
         } catch (error) {
             console.error('Chat error:', error)
             const errorMessage: Message = {
-                id: (Date.now() + 1).toString(),
+                id: aiMsgId,
                 role: 'assistant',
                 content: 'I apologize, but I encountered an error connecting to the knowledge base. Please try again.',
                 timestamp: new Date(),
             }
-            setMessages((prev) => [...prev, errorMessage])
+            setMessages((prev) => prev.map(m => (m.id === aiMsgId ? errorMessage : m)))
 
             ;(window as unknown as { __tradesync_last_advisor_response?: string }).__tradesync_last_advisor_response = errorMessage.content
         } finally {
             setIsLoading(false)
+            setStatus(null)
         }
     }
 
@@ -172,7 +284,7 @@ export default function ChatInterface() {
                         <div className="bg-muted text-muted-foreground p-3 rounded-xl">
                             <div className="flex items-center gap-2">
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                <span className="text-sm">Consulting knowledge base...</span>
+                                <span className="text-sm">{status || 'Consulting knowledge base...'}</span>
                             </div>
                         </div>
                     </div>

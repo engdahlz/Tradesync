@@ -10,6 +10,7 @@ import {
     type Event,
 } from '@google/adk';
 import type { Content } from '@google/genai';
+import { RESEARCH_STATE_KEYS, MEMORY_EVENT_COUNT_KEY } from '../agents/advisorWorkflowState.js';
 
 interface PluginMetrics {
     agentInvocations: number;
@@ -51,6 +52,29 @@ export class TradeSyncPlugin extends BasePlugin {
         invocationContext: InvocationContext;
     }): Promise<Content | undefined> {
         console.log(`[TradeSync] Run started - Session: ${invocationContext.session?.id}`);
+        const session = invocationContext.session;
+        if (session) {
+            session.state = {
+                ...session.state,
+                [RESEARCH_STATE_KEYS.signals]: '',
+                [RESEARCH_STATE_KEYS.technical]: '',
+                [RESEARCH_STATE_KEYS.news]: '',
+                [RESEARCH_STATE_KEYS.rag]: '',
+                [RESEARCH_STATE_KEYS.memory]: '',
+                [RESEARCH_STATE_KEYS.search]: '',
+                [RESEARCH_STATE_KEYS.vertexSearch]: '',
+                [RESEARCH_STATE_KEYS.vertexRag]: '',
+            };
+
+            if (invocationContext.sessionService) {
+                await (invocationContext.sessionService as any).updateSession({
+                    appName: session.appName,
+                    userId: session.userId,
+                    sessionId: session.id,
+                    state: session.state,
+                });
+            }
+        }
         return undefined;
     }
 
@@ -228,6 +252,38 @@ export class TradeSyncPlugin extends BasePlugin {
         invocationContext: InvocationContext;
     }): Promise<void> {
         console.log(`[TradeSync] Run done - Agents: ${this.metrics.agentInvocations}, Models: ${this.metrics.modelCalls}, Tools: ${this.metrics.toolCalls}`);
+
+        const session = invocationContext.session;
+        const memoryService = invocationContext.memoryService;
+        const memoryEvery = Number(process.env.MEMORY_SAVE_EVERY_EVENTS ?? 6);
+
+        if (!session || !memoryService || memoryEvery <= 0) {
+            return;
+        }
+
+        const eventCount = session.events?.length ?? 0;
+        const lastCountRaw = session.state?.[MEMORY_EVENT_COUNT_KEY];
+        const lastCount = typeof lastCountRaw === 'number' ? lastCountRaw : Number(lastCountRaw ?? 0);
+
+        if (eventCount >= lastCount + memoryEvery) {
+            try {
+                await memoryService.addSessionToMemory(session);
+                session.state = {
+                    ...session.state,
+                    [MEMORY_EVENT_COUNT_KEY]: eventCount,
+                };
+                if (invocationContext.sessionService) {
+                    await (invocationContext.sessionService as any).updateSession({
+                        appName: session.appName,
+                        userId: session.userId,
+                        sessionId: session.id,
+                        state: session.state,
+                    });
+                }
+            } catch (error) {
+                console.warn('[TradeSync] Memory save failed:', error);
+            }
+        }
     }
 
     getMetrics(): PluginMetrics {

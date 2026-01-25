@@ -1,8 +1,10 @@
 import { FunctionTool } from '@google/adk';
 import { z } from 'zod';
+import { RSI, MACD } from 'technicalindicators';
 import { fetchMarketNews } from '../../flows/getMarketNews.js';
 import { executeTradeInternal } from '../../flows/tradeExecution.js';
 import { latestSignalsTool } from './latestSignalsTool.js';
+import { fetchPriceSeries } from '../../services/priceService.js';
 
 export { latestSignalsTool };
 
@@ -12,22 +14,6 @@ interface NewsItem {
     sentiment: string;
     source: string;
     time_published: string;
-}
-
-const BinanceKlineSchema = z.array(z.array(z.union([z.number(), z.string()])));
-
-async function fetchBinancePrices(symbol: string): Promise<number[]> {
-    const s = symbol.toUpperCase().replace('CRYPTO:', '').replace('USDT', '');
-    const pair = `${s}USDT`;
-    const url = `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=1h&limit=30`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Binance fetch failed for ${pair}`);
-    const rawData = await response.json();
-    const validation = BinanceKlineSchema.safeParse(rawData);
-    if (!validation.success) {
-        throw new Error(`Invalid Binance data: ${validation.error.message}`);
-    }
-    return validation.data.map((d) => parseFloat(d[4] as string));
 }
 
 export const marketNewsTool = new FunctionTool({
@@ -50,26 +36,47 @@ export const marketNewsTool = new FunctionTool({
 
 export const technicalAnalysisTool = new FunctionTool({
      name: 'technical_analysis',
-     description: 'Runs technical analysis on any asset (price trend, volatility). Returns price data for strategy evaluation.',
+     description: 'Runs technical analysis on any asset (price trend, volatility, RSI, MACD). Returns price data for strategy evaluation.',
      parameters: z.object({
          symbol: z.string().describe('Symbol to analyze, e.g. "BTC" or "AAPL"'),
      }),
     execute: async ({ symbol }) => {
         try {
-            const prices = await fetchBinancePrices(symbol);
-            const currentPrice = prices[prices.length - 1];
-            const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+            const series = await fetchPriceSeries(symbol);
+            const closes = series.closes;
+            const currentPrice = closes[closes.length - 1];
+            const avgPrice = closes.reduce((a, b) => a + b, 0) / closes.length;
             const trend = currentPrice > avgPrice ? 'bullish' : currentPrice < avgPrice ? 'bearish' : 'neutral';
-            const volatility = Math.max(...prices) - Math.min(...prices);
+            const volatility = Math.max(...closes) - Math.min(...closes);
+
+            const rsiSeries = RSI.calculate({ values: closes, period: 14 });
+            const rsi = rsiSeries[rsiSeries.length - 1] ?? 50;
+
+            const macdSeries = MACD.calculate({
+                values: closes,
+                fastPeriod: 12,
+                slowPeriod: 26,
+                signalPeriod: 9,
+                SimpleMAOscillator: false,
+                SimpleMASignal: false,
+            });
+            const macd = macdSeries[macdSeries.length - 1] || { MACD: 0, signal: 0, histogram: 0 };
             
             return {
                 symbol,
+                source: series.source,
+                interval: series.interval,
                 currentPrice,
                 avgPrice: avgPrice.toFixed(2),
                 trend,
                 volatility: volatility.toFixed(2),
-                priceCount: prices.length,
-                prices: prices.slice(-5),
+                priceCount: closes.length,
+                prices: closes.slice(-10),
+                highs: series.highs.slice(-10),
+                lows: series.lows.slice(-10),
+                closes: closes.slice(-10),
+                rsi,
+                macd,
             };
         } catch (error) {
             return {

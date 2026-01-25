@@ -8,8 +8,22 @@ import {
     AppendEventRequest,
     type Session,
     type Event,
+    isFinalResponse,
 } from '@google/adk';
 import { Firestore, Timestamp } from 'firebase-admin/firestore';
+import { summarizeConversation } from './summaryService.js';
+import { SUMMARY_EVENT_COUNT_KEY, SUMMARY_STATE_KEY } from '../adk/agents/advisorWorkflowState.js';
+
+const SUMMARY_SKIP_AUTHORS = new Set([
+    'signals_research_agent',
+    'technical_research_agent',
+    'news_research_agent',
+    'rag_research_agent',
+    'memory_research_agent',
+    'search_research_agent',
+    'vertex_search_agent',
+    'vertex_rag_agent',
+]);
 
 export class FirestoreSessionService extends BaseSessionService {
     constructor(private db: Firestore) {
@@ -106,6 +120,8 @@ export class FirestoreSessionService extends BaseSessionService {
         
         session.lastUpdateTime = Date.now();
 
+        await this.maybeSummarizeSession(session, event);
+
         const limitRaw = Number(process.env.SESSION_EVENT_LIMIT);
         const maxEvents = Number.isFinite(limitRaw) ? limitRaw : 50;
         if (maxEvents > 0 && session.events.length > maxEvents) {
@@ -123,6 +139,57 @@ export class FirestoreSessionService extends BaseSessionService {
         });
 
         return event;
+    }
+
+    private async maybeSummarizeSession(session: Session, event: Event): Promise<void> {
+        if (!event.author || event.author === 'user') {
+            return;
+        }
+        if (SUMMARY_SKIP_AUTHORS.has(event.author)) {
+            return;
+        }
+        if (!isFinalResponse(event)) {
+            return;
+        }
+
+        const triggerRaw = Number(process.env.SESSION_SUMMARY_TRIGGER);
+        const keepRaw = Number(process.env.SESSION_SUMMARY_KEEP);
+        const cooldownRaw = Number(process.env.SESSION_SUMMARY_COOLDOWN);
+
+        const trigger = Number.isFinite(triggerRaw) ? triggerRaw : 40;
+        const keep = Number.isFinite(keepRaw) ? keepRaw : 12;
+        const cooldown = Number.isFinite(cooldownRaw) ? cooldownRaw : 20;
+
+        if (trigger <= 0 || keep <= 0 || session.events.length <= trigger) {
+            return;
+        }
+
+        const lastCountRaw = session.state?.[SUMMARY_EVENT_COUNT_KEY];
+        const lastCount = typeof lastCountRaw === 'number' ? lastCountRaw : Number(lastCountRaw ?? 0);
+        if (session.events.length < lastCount + cooldown) {
+            return;
+        }
+
+        const summaryEvents = session.events.slice(0, Math.max(0, session.events.length - keep));
+        const existingSummary = typeof session.state?.[SUMMARY_STATE_KEY] === 'string'
+            ? session.state[SUMMARY_STATE_KEY]
+            : '';
+
+        const summary = await summarizeConversation({
+            events: summaryEvents,
+            existingSummary,
+        });
+
+        if (!summary) {
+            return;
+        }
+
+        session.state = {
+            ...session.state,
+            [SUMMARY_STATE_KEY]: summary,
+            [SUMMARY_EVENT_COUNT_KEY]: session.events.length,
+        };
+        session.events = session.events.slice(-keep);
     }
 
     async updateSession(request: { appName: string; userId: string; sessionId: string; state: any }): Promise<void> {

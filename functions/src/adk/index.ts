@@ -1,7 +1,6 @@
 import {
     Runner,
     InMemoryArtifactService,
-    InMemoryMemoryService,
     type Session,
 } from '@google/adk';
 
@@ -9,10 +8,11 @@ import { TradeSyncPlugin } from './plugins/TradeSyncPlugin.js';
 import { tradeSyncOrchestrator } from './agents/TradeSyncOrchestrator.js';
 import { db } from '../config.js';
 import { FirestoreSessionService } from '../services/FirestoreSessionService.js';
+import { FirestoreMemoryService } from '../services/FirestoreMemoryService.js';
 
 const sessionService = new FirestoreSessionService(db);
 const artifactService = new InMemoryArtifactService();
-const memoryService = new InMemoryMemoryService();
+const memoryService = new FirestoreMemoryService(db);
 
 export const tradeSyncRunner = new Runner({
     agent: tradeSyncOrchestrator,
@@ -67,6 +67,7 @@ export async function* runAgent(
 export { sessionService, artifactService, memoryService };
 export { tradeSyncOrchestrator } from './agents/TradeSyncOrchestrator.js';
 export { advisorAgent } from './agents/AdvisorAgent.js';
+export { advisorWorkflowAgent } from './agents/AdvisorWorkflowAgent.js';
 export { strategyAgent } from './agents/StrategyAgent.js';
 export { newsAnalysisAgent } from './agents/NewsAnalysisAgent.js';
 export { videoAnalysisAgent } from './agents/VideoAnalysisAgent.js';

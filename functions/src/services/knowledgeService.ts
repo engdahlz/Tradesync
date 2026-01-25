@@ -1,11 +1,16 @@
 import { db, EMBEDDING_DIMENSION, EMBEDDING_MODEL } from '../config.js';
 import { getGenAiClient } from './genaiClient.js';
+import { TtlCache } from './cache.js';
 
 export interface ChunkResult {
     content: string;
     metadata: any;
     similarity: number;
 }
+
+const ragCacheTtl = Number(process.env.RAG_CACHE_TTL_SECONDS ?? 600) * 1000;
+const ragCacheMax = Number(process.env.RAG_CACHE_MAX ?? 200);
+const ragCache = new TtlCache<ChunkResult[]>({ maxSize: ragCacheMax, ttlMs: ragCacheTtl });
 
 function normalizeEmbedding(embedding: number[]): number[] {
     const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
@@ -30,6 +35,11 @@ export async function generateEmbedding(text: string, taskType: 'RETRIEVAL_QUERY
 
 export async function searchKnowledge(query: string, limit: number = 5): Promise<ChunkResult[]> {
     try {
+        const normalizedQuery = query.trim().toLowerCase();
+        const cacheKey = `${normalizedQuery}:${limit}`;
+        const cached = ragCache.get(cacheKey);
+        if (cached) return cached;
+
         // 1. Generate embedding for the query
         const vector = await generateEmbedding(query, 'RETRIEVAL_QUERY');
 
@@ -56,6 +66,7 @@ export async function searchKnowledge(query: string, limit: number = 5): Promise
             });
         });
 
+        ragCache.set(cacheKey, results);
         return results;
 
     } catch (error) {

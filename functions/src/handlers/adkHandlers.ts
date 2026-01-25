@@ -28,26 +28,57 @@ type AdvisorSource = {
 };
 
 function extractSourcesFromResponse(response: FunctionResponse): AdvisorSource[] {
-    if (response.name !== 'search_knowledge_base') return [];
-
     const raw = (response.response as Record<string, unknown> | undefined) ?? {};
     const payload = (raw as { output?: Record<string, unknown> }).output ?? raw;
-    const chunks = Array.isArray((payload as { chunks?: unknown }).chunks)
-        ? (payload as { chunks: Array<Record<string, unknown>> }).chunks
-        : [];
 
-    return chunks
-        .map((chunk) => {
-            const content = typeof chunk.content === 'string' ? chunk.content : '';
-            return {
-                title: typeof chunk.source === 'string' ? chunk.source : 'Unknown Source',
-                sourceType: typeof chunk.sourceType === 'string' ? chunk.sourceType : 'rag',
-                excerpt: content.slice(0, 240),
+    if (response.name === 'search_knowledge_base') {
+        const chunks = Array.isArray((payload as { chunks?: unknown }).chunks)
+            ? (payload as { chunks: Array<Record<string, unknown>> }).chunks
+            : [];
+
+        return chunks
+            .map((chunk) => {
+                const content = typeof chunk.content === 'string' ? chunk.content : '';
+                return {
+                    title: typeof chunk.source === 'string' ? chunk.source : 'Unknown Source',
+                    sourceType: typeof chunk.sourceType === 'string' ? chunk.sourceType : 'rag',
+                    excerpt: content.slice(0, 240),
+                    score: typeof chunk.score === 'number' ? chunk.score : undefined,
+                    page: typeof chunk.page === 'number' ? chunk.page : undefined,
+                };
+            })
+            .filter((item) => item.excerpt.length > 0);
+    }
+
+    if (response.name === 'vertex_ai_search') {
+        const results = Array.isArray((payload as { results?: unknown }).results)
+            ? (payload as { results: Array<Record<string, unknown>> }).results
+            : [];
+        return results
+            .map((item) => ({
+                title: typeof item.title === 'string' ? item.title : 'Vertex Search Result',
+                sourceType: 'vertex_search',
+                excerpt: typeof item.snippet === 'string' ? item.snippet.slice(0, 240) : '',
+                score: typeof item.score === 'number' ? item.score : undefined,
+            }))
+            .filter((item) => item.excerpt.length > 0);
+    }
+
+    if (response.name === 'vertex_ai_rag_retrieval') {
+        const chunks = Array.isArray((payload as { chunks?: unknown }).chunks)
+            ? (payload as { chunks: Array<Record<string, unknown>> }).chunks
+            : [];
+        return chunks
+            .map((chunk) => ({
+                title: typeof chunk.source === 'string' ? chunk.source : 'Vertex RAG',
+                sourceType: 'vertex_rag',
+                excerpt: typeof chunk.content === 'string' ? chunk.content.slice(0, 240) : '',
                 score: typeof chunk.score === 'number' ? chunk.score : undefined,
-                page: typeof chunk.page === 'number' ? chunk.page : undefined,
-            };
-        })
-        .filter((item) => item.excerpt.length > 0);
+            }))
+            .filter((item) => item.excerpt.length > 0);
+    }
+
+    return [];
 }
 
 function dedupeSources(sources: AdvisorSource[], limit: number = 5): AdvisorSource[] {

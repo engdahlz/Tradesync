@@ -97,6 +97,31 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
             let currentData = ''
             let buffer = ''
 
+            const statusForTool = (name: string) => {
+                switch (name) {
+                    case 'get_latest_market_signals':
+                        return 'Checking market signals...'
+                    case 'technical_analysis':
+                        return 'Running technical analysis...'
+                    case 'get_market_news':
+                        return 'Fetching market news...'
+                    case 'search_knowledge_base':
+                        return 'Searching knowledge base...'
+                    case 'search_memory':
+                        return 'Looking up preferences...'
+                    case 'vertex_ai_search':
+                        return 'Searching private sources...'
+                    case 'vertex_ai_rag_retrieval':
+                        return 'Retrieving grounded context...'
+                    case 'fetch_youtube_transcript':
+                        return 'Fetching transcript...'
+                    case 'get_chart':
+                        return 'Generating chart...'
+                    default:
+                        return 'Using tool...'
+                }
+            }
+
             const handleEvent = (eventName: string, data: string) => {
                 if (!eventName) return
 
@@ -121,7 +146,13 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
                         console.warn('Failed to parse sources data:', data)
                     }
                 } else if (eventName === 'function_call') {
-                    setStatus('Using tool...')
+                    try {
+                        const parsed = JSON.parse(data)
+                        const toolName = parsed?.name as string | undefined
+                        setStatus(toolName ? statusForTool(toolName) : 'Using tool...')
+                    } catch {
+                        setStatus('Using tool...')
+                    }
                 } else if (eventName === 'done') {
                     setIsLoading(false)
                     setStatus(null)
