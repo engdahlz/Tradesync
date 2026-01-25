@@ -10,6 +10,15 @@ export class BinanceAdapter implements ExchangeService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private exchange: any;
 
+    private normalizeSymbol(symbol: string): string {
+        const trimmed = symbol.trim().toUpperCase();
+        if (trimmed.includes('/')) return trimmed;
+        if (trimmed.endsWith('USDT')) {
+            return `${trimmed.slice(0, -4)}/USDT`;
+        }
+        return `${trimmed}/USDT`;
+    }
+
     constructor() {
         const apiKey = process.env.BINANCE_API_KEY;
         const secret = process.env.BINANCE_SECRET;
@@ -18,6 +27,7 @@ export class BinanceAdapter implements ExchangeService {
         this.exchange = new ccxt.binance({
             apiKey,
             secret,
+            enableRateLimit: true,
             options: {
                 defaultType: 'spot',
             },
@@ -51,7 +61,7 @@ export class BinanceAdapter implements ExchangeService {
     }
 
     async getTicker(symbol: string): Promise<Ticker> {
-        const ticker = await this.exchange.fetchTicker(symbol);
+        const ticker = await this.exchange.fetchTicker(this.normalizeSymbol(symbol));
         return {
             symbol: ticker.symbol,
             price: ticker.last || 0,
@@ -68,7 +78,7 @@ export class BinanceAdapter implements ExchangeService {
         type: 'market' | 'limit',
         price?: number
     ): Promise<TradeResult> {
-        const order = await this.exchange.createOrder(symbol, type, side, quantity, price);
+        const order = await this.exchange.createOrder(this.normalizeSymbol(symbol), type, side, quantity, price);
         
         return {
             orderId: order.id,
@@ -84,7 +94,7 @@ export class BinanceAdapter implements ExchangeService {
 
     async cancelOrder(orderId: string, symbol: string): Promise<boolean> {
         try {
-            await this.exchange.cancelOrder(orderId, symbol);
+            await this.exchange.cancelOrder(orderId, this.normalizeSymbol(symbol));
             return true;
         } catch (error) {
             console.error('Failed to cancel order:', error);
@@ -101,7 +111,7 @@ export class BinanceAdapter implements ExchangeService {
         }
 
         try {
-            const result = await this.exchange.cancelAllOrders(symbol);
+            const result = await this.exchange.cancelAllOrders(this.normalizeSymbol(symbol));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return result.map((order: any) => order.id);
         } catch (error) {

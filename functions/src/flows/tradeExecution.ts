@@ -13,6 +13,7 @@ import type { Request, Response } from 'express';
 import { db, MAX_TRADE_AMOUNT_USD } from '../config.js';
 import { FieldValue } from 'firebase-admin/firestore';
 import { BinanceAdapter } from '../services/binanceAdapter.js';
+import { z } from 'zod';
 
 interface TradeParams {
     userId: string;
@@ -25,8 +26,40 @@ interface TradeParams {
     isDryRun?: boolean;
 }
 
+const TradeRequestSchema = z.object({
+    userId: z.string().min(1),
+    symbol: z.string().min(1),
+    side: z.enum(['buy', 'sell']),
+    quantity: z.coerce.number().positive(),
+    orderType: z.enum(['market', 'limit']).default('market'),
+    price: z.coerce.number().optional(),
+    idempotencyKey: z.string().min(1),
+    isDryRun: z.boolean().optional(),
+});
+
+function normalizeSymbol(symbol: string): string {
+    const trimmed = symbol.trim().toUpperCase();
+    if (trimmed.includes('/')) return trimmed.replace('/', '');
+    if (trimmed.endsWith('USDT')) return trimmed;
+    return `${trimmed}USDT`;
+}
+
+async function fetchPublicBinancePrice(symbol: string): Promise<number | null> {
+    try {
+        const pair = normalizeSymbol(symbol);
+        const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${pair}`);
+        if (!response.ok) return null;
+        const data = await response.json() as { price?: string };
+        if (!data.price) return null;
+        return Number.parseFloat(data.price);
+    } catch {
+        return null;
+    }
+}
+
 export async function executeTradeInternal(params: TradeParams) {
     const { userId, symbol, side, quantity, price, orderType, idempotencyKey, isDryRun } = params;
+    const normalizedSymbol = normalizeSymbol(symbol);
 
     // Idempotency check
     const existing = await db.collection('orders')
@@ -47,15 +80,16 @@ export async function executeTradeInternal(params: TradeParams) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let tradeResult: any;
     let executionStatus = 'executed'; // Default for paper trading
+    let executionPrice = price ? Number(price) : null;
 
     if (executeLive) {
-        console.log(`Executing LIVE trade for ${symbol}`);
+        console.log(`Executing LIVE trade for ${normalizedSymbol}`);
         const adapter = new BinanceAdapter();
 
         // Safety Check: Max Trade Amount
-        let estimatedPrice = price ? Number(price) : 0;
+        let estimatedPrice = executionPrice || 0;
         if (!estimatedPrice) {
-            const ticker = await adapter.getTicker(symbol);
+            const ticker = await adapter.getTicker(normalizedSymbol);
             estimatedPrice = ticker.price;
         }
 
@@ -65,13 +99,16 @@ export async function executeTradeInternal(params: TradeParams) {
         }
 
         tradeResult = await adapter.placeOrder(
-            symbol,
+            normalizedSymbol,
             side,
             Number(quantity),
             orderType === 'limit' ? 'limit' : 'market',
-            price ? Number(price) : undefined
+            executionPrice ?? undefined
         );
         executionStatus = tradeResult.status;
+        executionPrice = tradeResult.price || executionPrice;
+    } else if (!executionPrice) {
+        executionPrice = await fetchPublicBinancePrice(normalizedSymbol);
     }
 
     // Store in Firestore (both Live and Paper)
@@ -80,10 +117,10 @@ export async function executeTradeInternal(params: TradeParams) {
     await db.collection('orders').doc(orderId).set({
         orderId,
         userId,
-        symbol,
+        symbol: normalizedSymbol,
         side,
         quantity: Number(quantity),
-        price: price ? Number(price) : null,
+        price: executionPrice ?? null,
         orderType,
         idempotencyKey,
         status: executionStatus,
@@ -97,7 +134,7 @@ export async function executeTradeInternal(params: TradeParams) {
     return {
         success: true,
         orderId,
-        message: `${executeLive ? 'LIVE' : 'PAPER'} ${side.toUpperCase()} order: ${quantity} ${symbol}`,
+        message: `${executeLive ? 'LIVE' : 'PAPER'} ${side.toUpperCase()} order: ${quantity} ${normalizedSymbol}`,
         executedAt: new Date().toISOString(),
         status: executionStatus,
         mode: executeLive ? 'LIVE' : 'PAPER'
@@ -105,16 +142,20 @@ export async function executeTradeInternal(params: TradeParams) {
 }
 
 export async function handleExecuteTrade(req: Request, res: Response) {
-    const { userId, symbol, side, quantity, price, orderType, idempotencyKey, isDryRun } = req.body;
-
-    if (!userId || !symbol || !side || !quantity || !idempotencyKey) {
-        res.status(400).json({ error: 'Missing required fields' });
-        return;
-    }
-
     try {
+        const parsed = TradeRequestSchema.safeParse(req.body);
+        if (!parsed.success) {
+            res.status(400).json({ error: 'Invalid trade payload' });
+            return;
+        }
+
+        if (parsed.data.orderType === 'limit' && !parsed.data.price) {
+            res.status(400).json({ error: 'Limit orders require a price' });
+            return;
+        }
+
         const result = await executeTradeInternal({
-            userId, symbol, side, quantity, price, orderType, idempotencyKey, isDryRun
+            ...parsed.data,
         });
         res.json(result);
     } catch (error) {
@@ -145,11 +186,12 @@ export async function handleScheduleSell(req: Request, res: Response) {
     }
 
     const executeAt = new Date(Date.now() + sellAfterMinutes * 60 * 1000);
+    const normalizedSymbol = normalizeSymbol(symbol);
     const scheduleId = `schedule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     try {
         await db.collection('scheduledSells').doc(scheduleId).set({
-            scheduleId, userId, orderId, symbol, quantity, executeAt, status: 'pending',
+            scheduleId, userId, orderId, symbol: normalizedSymbol, quantity, executeAt, status: 'pending',
             idempotencyKey,
             createdAt: FieldValue.serverTimestamp(),
         });
@@ -285,12 +327,18 @@ export async function handleGetBalance(req: Request, res: Response) {
 
 export async function handleGetOrders(req: Request, res: Response) {
     try {
-        const { userId, limit = 10 } = req.query;
-        
-        if (!userId) {
-             res.status(400).json({ error: 'Missing userId' });
-             return;
+        const payload = req.method === 'POST' ? req.body : req.query;
+        const parsed = z.object({
+            userId: z.string().min(1),
+            limit: z.coerce.number().optional(),
+        }).safeParse(payload);
+
+        if (!parsed.success) {
+            res.status(400).json({ error: 'Missing userId' });
+            return;
         }
+
+        const { userId, limit = 10 } = parsed.data;
 
         const snapshot = await db.collection('orders')
             .where('userId', '==', userId)

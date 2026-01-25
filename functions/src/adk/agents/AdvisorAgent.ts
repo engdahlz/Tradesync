@@ -1,5 +1,6 @@
 import { LlmAgent, AgentTool } from '@google/adk';
 import { MODEL_PRO } from '../../config.js';
+import { getSafetySettings, getTemperatureForModel, getThinkingConfig } from '../../services/genaiClient.js';
 import { marketNewsTool, technicalAnalysisTool, signalEngineTool, latestSignalsTool } from '../tools/tradingTools.js';
 import { knowledgeTool } from '../tools/knowledgeTool.js';
 import { strategyAgent } from './StrategyAgent.js';
@@ -7,6 +8,7 @@ import { newsAnalysisAgent } from './NewsAnalysisAgent.js';
 
 const strategyAgentTool = new AgentTool({ agent: strategyAgent });
 const newsAgentTool = new AgentTool({ agent: newsAnalysisAgent });
+const thinkingConfig = getThinkingConfig(MODEL_PRO);
 
 export const advisorAgent = new LlmAgent({
     name: 'advisor_agent',
@@ -39,6 +41,7 @@ STANDARD OPERATING PROCEDURE for Asset Analysis (e.g., "What about BTC?", "Shoul
    - **Recommendation**: Clear Buy/Sell/Hold leaning (with confidence).
    - **Technical View**: Key levels and indicators (from Strategy).
    - **Fundamental View**: Key news drivers (from News).
+   - **Sources**: If you used search_knowledge_base, cite the document titles (and page numbers when available).
    - **Risk Warning**: Always remind the user of risk.
 
 Your goal is to provide a holistic answer grounded in ALL available data points. Do not guess; use your agents.`,
@@ -52,6 +55,8 @@ Your goal is to provide a holistic answer grounded in ALL available data points.
         latestSignalsTool,
     ],
     generateContentConfig: {
-        temperature: 0.4,
+        temperature: getTemperatureForModel(MODEL_PRO, 0.4),
+        safetySettings: getSafetySettings(),
+        ...(thinkingConfig ? { thinkingConfig } : {}),
     },
 });

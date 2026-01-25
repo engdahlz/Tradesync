@@ -12,7 +12,6 @@ import {
     RefreshCw,
     Info,
 } from 'lucide-react'
-import { generateBacktestReport } from '../utils/backtestReport'
 import TradeModal from '../components/widgets/TradeModal'
 import { fetchCurrentPrice, fetch24hChange } from '@/services/priceData'
 import { fetchOrders, calculatePositions, calculateStats as calcPositionStats } from '@/services/portfolio'
@@ -202,6 +201,7 @@ export default function Portfolio() {
         if (!stats) return
         setIsGenerating(true)
         try {
+            const { generateBacktestReport } = await import('../utils/backtestReport')
             await generateBacktestReport(holdings, stats, [])
         } finally {
             setIsGenerating(false)

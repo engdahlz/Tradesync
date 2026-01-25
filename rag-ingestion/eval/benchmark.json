@@ -1,0 +1,22 @@
+[
+    {
+        "query": "What is value investing and margin of safety?",
+        "expect": ["intelligent investor", "security analysis"]
+    },
+    {
+        "query": "How to manage emotions when trading?",
+        "expect": ["trading in the zone", "market wizards"]
+    },
+    {
+        "query": "What is momentum trading strategy?",
+        "expect": ["trading systems", "quantitative trading", "momentum"]
+    },
+    {
+        "query": "What does Benjamin Graham say about stock selection?",
+        "expect": ["benjamin graham", "intelligent investor"]
+    },
+    {
+        "query": "Trading psychology and discipline",
+        "expect": ["trading in the zone", "market wizards"]
+    }
+]

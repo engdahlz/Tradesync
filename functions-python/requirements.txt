@@ -2,6 +2,12 @@
 # Firebase Cloud Functions (Gen 2)
 functions-framework==3.*
 firebase-functions>=0.1.0
+firebase-admin>=6.2.0
+
+# Market Data
+yfinance>=0.2.36
+mplfinance>=0.12.10b0
+pandas>=2.1.0
 
 # Avanza API Wrapper (unofficial)
 avanza-api>=2.0.0

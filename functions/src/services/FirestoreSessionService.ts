@@ -105,6 +105,12 @@ export class FirestoreSessionService extends BaseSessionService {
         const event = await super.appendEvent(request);
         
         session.lastUpdateTime = Date.now();
+
+        const limitRaw = Number(process.env.SESSION_EVENT_LIMIT);
+        const maxEvents = Number.isFinite(limitRaw) ? limitRaw : 50;
+        if (maxEvents > 0 && session.events.length > maxEvents) {
+            session.events = session.events.slice(-maxEvents);
+        }
         
         // Clean events to remove undefined values (Firestore doesn't allow them)
         const cleanEvents = session.events.map(e => JSON.parse(JSON.stringify(e)));

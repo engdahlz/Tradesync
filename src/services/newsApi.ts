@@ -1,5 +1,6 @@
 
 import { z } from 'zod';
+import { API_BASE } from './apiBase';
 
 /**
  * Market News Service
@@ -8,7 +9,7 @@ import { z } from 'zod';
 
 // Backend Function URL
 // In development, we use the local emulator port 5001 with project ID 'tradesync-ai-prod'
-const API_URL = 'https://us-central1-tradesync-ai-prod.cloudfunctions.net/getMarketNews';
+const API_URL = `${API_BASE}/getMarketNews`;
 // ? 'https://us-central1-tradesync-ai-prod.cloudfunctions.net/getMarketNews'
 // : 'http://127.0.0.1:5001/tradesync-ai-prod/us-central1/getMarketNews';
 

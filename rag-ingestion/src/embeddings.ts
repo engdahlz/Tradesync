@@ -1,6 +1,6 @@
 /**
- * Embedding generation using gemini-embedding-001 (latest)
- * - 768 dimensions via outputDimensionality (matches Firestore index)
+ * Embedding generation using EMBEDDING_MODEL (default gemini-embedding-001)
+ * - Dimensions via EMBEDDING_DIMENSION (default 768, matches Firestore index)
  * - Task types: RETRIEVAL_DOCUMENT for ingestion, RETRIEVAL_QUERY for search
  * - L2 normalization required for non-3072 dimensions per Gemini docs
  */
@@ -9,19 +9,38 @@ import { GoogleGenAI } from '@google/genai'
 
 let client: GoogleGenAI | null = null
 
+function parseNumber(value: string | undefined, fallback: number): number {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : fallback
+}
+
+const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'gemini-embedding-001'
+const EMBEDDING_DIMENSION = parseNumber(process.env.EMBEDDING_DIMENSION, 768)
+
 function getClient(): GoogleGenAI {
     if (!client) {
+        const useVertex = process.env.GOOGLE_GENAI_USE_VERTEXAI === 'true'
         const apiKey = process.env.GOOGLE_AI_API_KEY
-        if (!apiKey) {
-            throw new Error('GOOGLE_AI_API_KEY environment variable is required')
+
+        if (useVertex) {
+            const project = process.env.GOOGLE_CLOUD_PROJECT
+            const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1'
+            if (!project) {
+                throw new Error('GOOGLE_CLOUD_PROJECT environment variable is required for Vertex AI')
+            }
+            client = new GoogleGenAI({ vertexai: true, project, location })
+        } else {
+            if (!apiKey) {
+                throw new Error('GOOGLE_AI_API_KEY environment variable is required')
+            }
+            client = new GoogleGenAI({ apiKey, vertexai: false })
         }
-        client = new GoogleGenAI({ apiKey })
     }
     return client
 }
 
 /**
- * L2 normalization - required for 768-dim embeddings
+ * L2 normalization - required for non-3072 dimensions
  * Without this, similarity is based on magnitude not direction
  */
 function normalizeEmbedding(embedding: number[]): number[] {
@@ -32,13 +51,14 @@ function normalizeEmbedding(embedding: number[]): number[] {
 
 export async function generateEmbedding(text: string): Promise<number[]> {
     const ai = getClient()
-    
+    const outputDimensionality = EMBEDDING_DIMENSION > 0 ? EMBEDDING_DIMENSION : undefined
+
     const response = await ai.models.embedContent({
-        model: 'gemini-embedding-001',
+        model: EMBEDDING_MODEL,
         contents: text,
         config: {
             taskType: 'RETRIEVAL_DOCUMENT',
-            outputDimensionality: 768,
+            ...(outputDimensionality ? { outputDimensionality } : {}),
         }
     })
     
@@ -47,13 +67,14 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 
 export async function generateQueryEmbedding(text: string): Promise<number[]> {
     const ai = getClient()
-    
+    const outputDimensionality = EMBEDDING_DIMENSION > 0 ? EMBEDDING_DIMENSION : undefined
+
     const response = await ai.models.embedContent({
-        model: 'gemini-embedding-001',
+        model: EMBEDDING_MODEL,
         contents: text,
         config: {
             taskType: 'RETRIEVAL_QUERY',
-            outputDimensionality: 768,
+            ...(outputDimensionality ? { outputDimensionality } : {}),
         }
     })
     
@@ -86,8 +107,6 @@ export async function generateEmbeddingsBatch(
 
     return embeddings
 }
-
-export const EMBEDDING_DIMENSION = 768
 
 export function validateEmbeddingDimension(embedding: number[]): boolean {
     return embedding.length === EMBEDDING_DIMENSION

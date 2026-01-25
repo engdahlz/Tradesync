@@ -4,8 +4,7 @@
  */
 
 import { z } from 'zod';
-
-const API_BASE = 'https://us-central1-tradesync-ai-prod.cloudfunctions.net';
+import { API_BASE } from './apiBase';
 
 export interface Video {
     id: string;

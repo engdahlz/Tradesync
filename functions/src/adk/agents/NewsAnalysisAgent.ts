@@ -1,15 +1,9 @@
 import { LlmAgent } from '@google/adk';
 import { MODEL_FLASH } from '../../config.js';
-import { z } from 'zod';
+import { getSafetySettings, getTemperatureForModel, getThinkingConfig } from '../../services/genaiClient.js';
 import { marketNewsTool } from '../tools/tradingTools.js';
 
-const NewsAnalysisOutputSchema = z.object({
-    sentiment: z.enum(['bullish', 'bearish', 'neutral']),
-    sentimentScore: z.number().min(-1.0).max(1.0),
-    confidence: z.number().min(0).max(1),
-    summary: z.string(),
-    tickers: z.array(z.string()),
-});
+const thinkingConfig = getThinkingConfig(MODEL_FLASH);
 
 export const newsAnalysisAgent = new LlmAgent({
     name: 'news_analysis_agent',
@@ -33,6 +27,8 @@ export const newsAnalysisAgent = new LlmAgent({
 Use the get_market_news tool to fetch current news when needed.`,
     tools: [marketNewsTool],
     generateContentConfig: {
-        temperature: 0.3,
+        temperature: getTemperatureForModel(MODEL_FLASH, 0.3),
+        safetySettings: getSafetySettings(),
+        ...(thinkingConfig ? { thinkingConfig } : {}),
     },
 });

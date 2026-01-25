@@ -35,22 +35,19 @@ export const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || '';
 // Updated Jan 22, 2026 - Gemini 3.0 (us-central1)
 
 // Flash: High-frequency agentic loops
-export const MODEL_FLASH = 'gemini-3-flash-preview';
+export const MODEL_FLASH = process.env.MODEL_FLASH || process.env.GEMINI_FLASH_MODEL || 'gemini-3-flash-preview';
 
 // Pro: Deep reasoning ("vibe-coding")
-export const MODEL_PRO = 'gemini-3-pro-preview';
+export const MODEL_PRO = process.env.MODEL_PRO || process.env.GEMINI_PRO_MODEL || 'gemini-3-pro-preview';
 
+export const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'gemini-embedding-001';
 
-// Legacy aliases for backward compatibility
-export const MODEL_NAME = MODEL_FLASH;
-export const EMBEDDING_MODEL = 'text-embedding-004';
+function parseNumber(value: string | undefined, fallback: number): number {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+}
 
-// Thinking Budget Configuration (0-32768 tokens)
-// Higher = more reasoning depth, higher cost
-export const THINKING_BUDGET_LOW = 1024;      // Quick decisions
-export const THINKING_BUDGET_MEDIUM = 4096;   // Standard analysis
-export const THINKING_BUDGET_HIGH = 8192;     // Complex strategy
-export const THINKING_BUDGET_MAX = 16384;     // Deep reasoning
+export const EMBEDDING_DIMENSION = parseNumber(process.env.EMBEDDING_DIMENSION, 768);
 
 // Trading Safety Configuration
 export const MAX_TRADE_AMOUNT_USD = 100; // Hard safety cap: $100 per trade

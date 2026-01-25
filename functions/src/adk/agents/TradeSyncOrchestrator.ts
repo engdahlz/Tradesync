@@ -1,13 +1,17 @@
 import { LlmAgent, AgentTool } from '@google/adk';
 import { MODEL_FLASH } from '../../config.js';
+import { getSafetySettings, getTemperatureForModel, getThinkingConfig } from '../../services/genaiClient.js';
 import { advisorAgent } from './AdvisorAgent.js';
+import { strategyAgent } from './StrategyAgent.js';
 import { videoAnalysisAgent } from './VideoAnalysisAgent.js';
 import { documentAnalysisAgent } from './DocumentAnalysisAgent.js';
 import { tradeExecutionTool, confirmTradeTool } from '../tools/tradingTools.js';
 
 const advisorTool = new AgentTool({ agent: advisorAgent });
+const strategyTool = new AgentTool({ agent: strategyAgent });
 const videoTool = new AgentTool({ agent: videoAnalysisAgent });
 const documentTool = new AgentTool({ agent: documentAnalysisAgent });
+const thinkingConfig = getThinkingConfig(MODEL_FLASH);
 
 export const tradeSyncOrchestrator = new LlmAgent({
     name: 'tradesync_orchestrator',
@@ -20,6 +24,7 @@ Be concise, professional, and data-driven. Always prioritize user safety and ris
 
 You route requests to specialized agents:
 - advisor_agent: Head of Research. Handles detailed analysis, strategy synthesis, and Q&A.
+- strategy_agent: Market Strategy Engine. Specialized in technical analysis and chart patterns.
 - video_analysis_agent: Analyze YouTube trading videos
 - document_analysis_agent: Analyze financial documents (SEC filings, reports)
 - execute_trade: Place paper trading orders
@@ -29,8 +34,9 @@ Routing Guidelines:
  1. General trading questions, analysis requests ("What about BTC?", "Analyze Apple") → advisor_agent
 2. "Analyze this video" → video_analysis_agent
 3. "Analyze this document/URL" → document_analysis_agent
-4. "Buy/Sell X" or trade requests → Always attempt to call execute_trade first. The system will handle blocking and confirmation if needed.
-5. If the user says 'Yes' or 'Confirm' to a pending trade request, call the confirm_trade tool first, and then immediately call execute_trade to complete the transaction.
+4. "Show me a chart of Tesla" or chart requests → strategy_agent
+5. "Buy/Sell X" or trade requests → Always attempt to call execute_trade first. The system will handle blocking and confirmation if needed.
+6. If the user says 'Yes' or 'Confirm' to a pending trade request, call the confirm_trade tool first, and then immediately call execute_trade to complete the transaction.
 
 For simple greetings or clarifications, respond directly without delegating.
 
@@ -40,12 +46,15 @@ Safety Rules:
 - Encourage paper trading before real trading`,
     tools: [
         advisorTool,
+        strategyTool,
         videoTool,
         documentTool,
         tradeExecutionTool,
         confirmTradeTool,
     ],
     generateContentConfig: {
-        temperature: 0.7,
+        temperature: getTemperatureForModel(MODEL_FLASH, 0.7),
+        safetySettings: getSafetySettings(),
+        ...(thinkingConfig ? { thinkingConfig } : {}),
     },
 });

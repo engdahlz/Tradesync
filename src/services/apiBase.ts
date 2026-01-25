@@ -1,0 +1,7 @@
+const PROJECT_ID = 'tradesync-ai-prod';
+const REGION = 'us-central1';
+
+const DEV_BASE = `http://127.0.0.1:5001/${PROJECT_ID}/${REGION}`;
+const PROD_BASE = `https://${REGION}-${PROJECT_ID}.cloudfunctions.net`;
+
+export const API_BASE = import.meta.env.VITE_FUNCTIONS_BASE_URL || (import.meta.env.DEV ? DEV_BASE : PROD_BASE);

@@ -1,5 +1,8 @@
 import { LlmAgent, GOOGLE_SEARCH } from '@google/adk';
 import { MODEL_PRO } from '../../config.js';
+import { getSafetySettings, getTemperatureForModel, getThinkingConfig } from '../../services/genaiClient.js';
+
+const thinkingConfig = getThinkingConfig(MODEL_PRO);
 
 export const documentAnalysisAgent = new LlmAgent({
     name: 'document_analysis_agent',
@@ -29,6 +32,8 @@ Provide analysis with:
 Be specific and cite exact figures when available.`,
     tools: [GOOGLE_SEARCH],
     generateContentConfig: {
-        temperature: 1.0,
+        temperature: getTemperatureForModel(MODEL_PRO, 1.0),
+        safetySettings: getSafetySettings(),
+        ...(thinkingConfig ? { thinkingConfig } : {}),
     },
 });

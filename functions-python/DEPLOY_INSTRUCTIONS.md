@@ -54,6 +54,14 @@ sudo apt install python3.11 python3.11-venv
    Check the output for the Function URL.
    Update `VITE_AVANZA_BACKEND_URL` in your frontend `.env.local` if needed.
 
+## Optional: Keep-Alive Scheduler
+
+If you want the Avanza session to stay warm for faster first quotes, set
+`AVANZA_KEEP_ALIVE_URL` in `functions/.env` (or rely on auto‑build using
+`AVANZA_KEEP_ALIVE_REGION` + `AVANZA_KEEP_ALIVE_FUNCTION`). The TypeScript
+functions include a scheduled ping (`avanzaKeepAlive`) every ~8 minutes with
+jitter. This is optional and only helps when the function instance stays warm.
+
 ## Troubleshooting
 
 ### Error: Error generating the service identity for eventarc.googleapis.com

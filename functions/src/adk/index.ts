@@ -10,9 +10,6 @@ import { tradeSyncOrchestrator } from './agents/TradeSyncOrchestrator.js';
 import { db } from '../config.js';
 import { FirestoreSessionService } from '../services/FirestoreSessionService.js';
 
-export const ADK_MODEL_FLASH = 'gemini-3-flash-preview';
-export const ADK_MODEL_PRO = 'gemini-3-pro-preview';
-
 const sessionService = new FirestoreSessionService(db);
 const artifactService = new InMemoryArtifactService();
 const memoryService = new InMemoryMemoryService();
@@ -26,7 +23,10 @@ export const tradeSyncRunner = new Runner({
     memoryService,
 });
 
-export async function getOrCreateSession(userId: string, sessionId?: string): Promise<Session> {
+export async function getOrCreateSession(
+    userId: string,
+    sessionId?: string
+): Promise<{ session: Session; isNew: boolean }> {
     const sid = sessionId || `session_${userId}_${Date.now()}`;
     
     const existing = await sessionService.getSession({
@@ -35,13 +35,14 @@ export async function getOrCreateSession(userId: string, sessionId?: string): Pr
         sessionId: sid,
     });
     
-    if (existing) return existing;
+    if (existing) return { session: existing, isNew: false };
     
-    return await sessionService.createSession({
+    const session = await sessionService.createSession({
         appName: 'TradeSync',
         userId,
         sessionId: sid,
     });
+    return { session, isNew: true };
 }
 
 export async function* runAgent(

@@ -42,6 +42,23 @@ async function checkConnectivity() {
     }
 }
 
+async function collectAgentText(userId: string, sessionId: string, message: string): Promise<string> {
+    let fullResponse = '';
+    for await (const event of tradeSyncRunner.runAsync({
+        userId,
+        sessionId,
+        newMessage: { role: 'user', parts: [{ text: message }] },
+    })) {
+        if (event.content?.parts?.[0]) {
+            const part = event.content.parts[0];
+            if ('text' in part && part.text) {
+                fullResponse += part.text;
+            }
+        }
+    }
+    return fullResponse;
+}
+
 // Helper to fetch prices from CoinCap (Binance often blocks Cloud Functions)
 async function fetchCoinCapPrices(symbol: string): Promise<number[]> {
     const id = ASSET_MAP[symbol];
@@ -114,22 +131,12 @@ export async function runMarketScan() {
                         const session = await sessionService.createSession({ appName: 'TradeSync', userId });
                         const prompt = `Analyze this news for ${asset} and return ONLY a sentiment score between -1.0 and 1.0. News: ${content}`;
                         
-                        const result = await tradeSyncRunner.runAsync({
-                            userId,
-                            sessionId: session.id,
-                            newMessage: { role: 'user', parts: [{ text: prompt }] }
-                        }).next();
-
-                        if (result.value && result.value.content?.parts?.[0]) {
-                             const text = (result.value.content.parts[0] as any).text;
-                             // Basic parsing of the score from text (Agent might be chatty, ideally we use structured output or tool)
-                             // For now, let's assume the agent is instructed well or we parse a number.
-                             const match = text.match(/-?\d+(\.\d+)?/);
-                             if (match) {
-                                sentimentScore = parseFloat(match[0]);
-                                // Clamp
-                                sentimentScore = Math.max(-1, Math.min(1, sentimentScore));
-                             }
+                        const text = await collectAgentText(userId, session.id, prompt);
+                        const match = text.match(/-?\d+(\.\d+)?/);
+                        if (match) {
+                            sentimentScore = parseFloat(match[0]);
+                            // Clamp
+                            sentimentScore = Math.max(-1, Math.min(1, sentimentScore));
                         }
                     }
                 } catch (e) {

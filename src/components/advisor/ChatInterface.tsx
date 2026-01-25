@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect, FormEvent } from 'react'
 import { Send, Bot, User, Loader2 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 import { advisorChat } from '@/services/api'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Message {
     id: string
     role: 'user' | 'assistant'
     content: string
     timestamp: Date
-    sources?: Array<{ title: string; sourceType: string; excerpt: string }>
+    sources?: Array<{ title: string; sourceType: string; excerpt: string; page?: number; score?: number }>
 }
 
 const initialMessages: Message[] = [
@@ -33,6 +35,12 @@ export default function ChatInterface() {
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
+    const { user } = useAuth()
+    const sessionIdRef = useRef<string | null>(null)
+
+    if (!sessionIdRef.current) {
+        sessionIdRef.current = `web_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    }
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -65,7 +73,10 @@ export default function ChatInterface() {
                 .map(m => ({ role: m.role, content: m.content }))
 
             // Call the real RAG API
-            const response = await advisorChat(userInput, history)
+            const response = await advisorChat(userInput, history, {
+                userId: user?.uid || 'anonymous',
+                sessionId: sessionIdRef.current || undefined,
+            })
 
             const assistantMessage: Message = {
                 id: (Date.now() + 1).toString(),
@@ -122,18 +133,33 @@ export default function ChatInterface() {
                                 : 'bg-muted text-foreground'
                                 }`}
                         >
-                            <div
-                                className="text-sm whitespace-pre-wrap prose prose-sm max-w-none prose-headings:text-current prose-p:text-current prose-strong:text-current prose-ul:text-current"
-                                dangerouslySetInnerHTML={{
-                                    __html: message.content
-                                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                                        .replace(/\n/g, '<br />'),
-                                }}
-                            />
+                            <div className="text-sm prose prose-sm max-w-none prose-headings:text-current prose-p:text-current prose-strong:text-current prose-ul:text-current">
+                                <ReactMarkdown>
+                                    {message.content.replace(/\n/g, '  \n')}
+                                </ReactMarkdown>
+                            </div>
                             <p className="text-[10px] opacity-70 mt-2">
                                 {message.timestamp.toLocaleTimeString()}
                             </p>
+                            {message.sources && message.sources.length > 0 && (
+                                <div className="mt-3 border-t border-primary-foreground/20 pt-2">
+                                    <p className="text-[10px] uppercase tracking-wider opacity-80">Sources</p>
+                                    <div className="mt-2 space-y-2 text-[11px] opacity-90">
+                                        {message.sources.map((source, index) => (
+                                            <div key={`${message.id}-source-${index}`}>
+                                                <div className="font-semibold">
+                                                    {source.title}
+                                                    {source.page !== undefined ? ` (p. ${source.page})` : ''}
+                                                </div>
+                                                {source.excerpt && <div className="opacity-80">{source.excerpt}</div>}
+                                                {source.score !== undefined && (
+                                                    <div className="opacity-70">Score: {source.score.toFixed(2)}</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}

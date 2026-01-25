@@ -1,21 +1,9 @@
 import { LlmAgent } from '@google/adk';
-import { z } from 'zod';
 import { MODEL_PRO } from '../../config.js';
-import { technicalAnalysisTool, signalEngineTool } from '../tools/tradingTools.js';
+import { getSafetySettings, getTemperatureForModel, getThinkingConfig } from '../../services/genaiClient.js';
+import { technicalAnalysisTool, signalEngineTool, chartTool } from '../tools/tradingTools.js';
 
-const StrategyOutputSchema = z.object({
-    action: z.enum(['BUY', 'SELL', 'HOLD']),
-    confidence: z.number(),
-    reasoning: z.string(),
-    riskLevel: z.enum(['LOW', 'MEDIUM', 'HIGH']),
-    technicals: z.object({
-        rsi: z.number().optional(),
-        macd: z.string().optional(),
-        trend: z.string().optional(),
-    }).optional(),
-    stopLoss: z.number().optional(),
-    takeProfit: z.number().optional(),
-});
+const thinkingConfig = getThinkingConfig(MODEL_PRO);
 
 export const strategyAgent = new LlmAgent({
     name: 'strategy_agent',
@@ -25,11 +13,14 @@ export const strategyAgent = new LlmAgent({
 
 Your role is to analyze global financial markets (Crypto, Stocks, ETFs) and suggest trading actions based on technical analysis. For Swedish stocks, use '.ST' suffix (e.g., 'VOLV-B.ST').
 
+When analyzing a stock or crypto, ALWAYS generate a chart first using the get_chart tool. Analyze the visual pattern (Head & Shoulders, Cup & Handle, Double Top, etc.) before making your recommendation.
+
 When given a symbol:
-1. Use the technical_analysis tool to get price data and indicators
-2. Consider RSI (Overbought > 70, Oversold < 30)
-3. Consider MACD crossover signals
-4. Determine trend direction
+1. Use the get_chart tool to visualize patterns
+2. Use the technical_analysis tool to get price data and indicators
+3. Consider RSI (Overbought > 70, Oversold < 30)
+4. Consider MACD crossover signals
+5. Determine trend direction
 
 After analysis, provide:
 - action: "BUY" | "SELL" | "HOLD"
@@ -39,8 +30,10 @@ After analysis, provide:
 - stopLoss and takeProfit levels when applicable
 
 Be conservative. When in doubt, recommend HOLD.`,
-    tools: [technicalAnalysisTool, signalEngineTool],
+    tools: [technicalAnalysisTool, signalEngineTool, chartTool],
     generateContentConfig: {
-        temperature: 0.3,
+        temperature: getTemperatureForModel(MODEL_PRO, 0.3),
+        safetySettings: getSafetySettings(),
+        ...(thinkingConfig ? { thinkingConfig } : {}),
     },
 });

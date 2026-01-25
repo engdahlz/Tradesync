@@ -4,8 +4,32 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const genAI = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY! })
+function getGenAIClient(): GoogleGenAI {
+    const useVertex = String(process.env.GOOGLE_GENAI_USE_VERTEXAI || '').toLowerCase() === 'true'
+    const apiKey = process.env.GOOGLE_AI_API_KEY
+
+    if (useVertex) {
+        const project = process.env.GOOGLE_CLOUD_PROJECT
+        const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1'
+        if (!project) {
+            throw new Error('GOOGLE_CLOUD_PROJECT environment variable is required for Vertex AI')
+        }
+        return new GoogleGenAI({ vertexai: true, project, location })
+    }
+
+    if (!apiKey) {
+        throw new Error('GOOGLE_AI_API_KEY environment variable is required')
+    }
+
+    return new GoogleGenAI({ apiKey, vertexai: false })
+}
+
+const genAI = getGenAIClient()
 const db = new Firestore({ projectId: process.env.GOOGLE_CLOUD_PROJECT })
+const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'gemini-embedding-001'
+const EMBEDDING_DIMENSION = Number.isFinite(Number(process.env.EMBEDDING_DIMENSION))
+    ? Number(process.env.EMBEDDING_DIMENSION)
+    : 768
 
 function normalizeEmbedding(embedding: number[]): number[] {
     const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0))
@@ -14,12 +38,13 @@ function normalizeEmbedding(embedding: number[]): number[] {
 }
 
 async function generateQueryEmbedding(query: string): Promise<number[]> {
+    const outputDimensionality = EMBEDDING_DIMENSION > 0 ? EMBEDDING_DIMENSION : undefined
     const response = await genAI.models.embedContent({
-        model: 'gemini-embedding-001',
+        model: EMBEDDING_MODEL,
         contents: query,
         config: {
             taskType: 'RETRIEVAL_QUERY',
-            outputDimensionality: 768,
+            ...(outputDimensionality ? { outputDimensionality } : {}),
         }
     })
     return normalizeEmbedding(response.embeddings![0].values!)
@@ -70,9 +95,9 @@ async function searchRAG(query: string, topK: number = 5) {
 async function runTests() {
     console.log('🧪 RAG SYSTEM VERIFICATION TEST')
     console.log('═'.repeat(60))
-    console.log('Model: gemini-embedding-001 (LATEST)')
+    console.log(`Model: ${EMBEDDING_MODEL}`)
     console.log('Task Type: RETRIEVAL_QUERY')
-    console.log('Dimensions: 768 (via outputDimensionality)')
+    console.log(`Dimensions: ${EMBEDDING_DIMENSION} (via outputDimensionality)`)
     console.log('Normalization: L2 enabled')
     console.log('═'.repeat(60))
     

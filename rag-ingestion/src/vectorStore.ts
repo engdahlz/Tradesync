@@ -140,7 +140,9 @@ export async function querySimilarChunks(
             content: data.content,
             tokenCount: data.tokenCount,
             metadata: data.metadata,
-            similarity: data.distance ? 1 - data.distance : 0,
+            similarity: typeof (data._distance ?? data.distance) === 'number'
+                ? 1 - (data._distance ?? data.distance)
+                : 0,
         })
     })
 

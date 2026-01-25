@@ -1,17 +1,18 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import GoogleLayout from './components/layout/GoogleLayout'
-import Dashboard from './pages/Dashboard'
-import MasterSignals from './pages/MasterSignals'
-import FinancialAdvisor from './pages/FinancialAdvisor'
-import MarketNews from './pages/MarketNews'
-import Portfolio from './pages/Portfolio'
-import GeminiTest from './pages/GeminiTest'
 import LoginPage from './pages/LoginPage'
 import PageTransition from './components/layout/PageTransition'
 import ErrorBoundary from './components/ErrorBoundary'
 import { Loader2 } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
+
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const MasterSignals = lazy(() => import('./pages/MasterSignals'))
+const FinancialAdvisor = lazy(() => import('./pages/FinancialAdvisor'))
+const MarketNews = lazy(() => import('./pages/MarketNews'))
+const Portfolio = lazy(() => import('./pages/Portfolio'))
 
 function AppContent() {
     const { user, loading } = useAuth()
@@ -37,16 +38,23 @@ function AppContent() {
     return (
         <GoogleLayout>
             <ErrorBoundary>
-                <AnimatePresence mode="wait">
-                    <Routes location={location} key={location.pathname}>
-                        <Route path="/" element={<PageTransition><Dashboard /></PageTransition>} />
-                        <Route path="/signals" element={<PageTransition><MasterSignals /></PageTransition>} />
-                        <Route path="/advisor" element={<PageTransition><FinancialAdvisor /></PageTransition>} />
-                        <Route path="/news" element={<PageTransition><MarketNews /></PageTransition>} />
-                        <Route path="/portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
-                        <Route path="/gemini-test" element={<PageTransition><GeminiTest /></PageTransition>} />
-                    </Routes>
-                </AnimatePresence>
+                <Suspense
+                    fallback={
+                        <div className="flex h-[60vh] items-center justify-center">
+                            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                        </div>
+                    }
+                >
+                    <AnimatePresence mode="wait">
+                        <Routes location={location} key={location.pathname}>
+                            <Route path="/" element={<PageTransition><Dashboard /></PageTransition>} />
+                            <Route path="/signals" element={<PageTransition><MasterSignals /></PageTransition>} />
+                            <Route path="/advisor" element={<PageTransition><FinancialAdvisor /></PageTransition>} />
+                            <Route path="/news" element={<PageTransition><MarketNews /></PageTransition>} />
+                            <Route path="/portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
+                        </Routes>
+                    </AnimatePresence>
+                </Suspense>
             </ErrorBoundary>
         </GoogleLayout>
     )

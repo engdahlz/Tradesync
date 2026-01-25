@@ -36,8 +36,8 @@ import {
     handleSearchVideos,
 } from './flows/searchVideos.js';
 import {
-    handleIngestKnowledge,
-} from './flows/ingestKnowledge.js';
+    handleIngestRagFromGcs,
+} from './flows/ingestRagFromGcs.js';
 import {
     handleGetMarketNews,
 } from './flows/getMarketNews.js';
@@ -95,6 +95,43 @@ export const marketScanner = onSchedule({
     await runMarketScan();
 });
 
+// Keep Avanza session warm (optional)
+export const avanzaKeepAlive = onSchedule({
+    schedule: 'every 8 minutes',
+    memory: '256MiB',
+    timeoutSeconds: 60,
+}, async () => {
+    const explicitUrl = process.env.AVANZA_KEEP_ALIVE_URL;
+    const project = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT;
+    const region =
+        process.env.AVANZA_KEEP_ALIVE_REGION ||
+        process.env.GCLOUD_REGION ||
+        process.env.FUNCTION_REGION ||
+        'us-central1';
+    const functionName = process.env.AVANZA_KEEP_ALIVE_FUNCTION || 'keep_avanza_alive';
+    const url = explicitUrl || (project ? `https://${region}-${project}.cloudfunctions.net/${functionName}` : '');
+    if (!url) {
+        console.log('[avanzaKeepAlive] Missing keep-alive URL and project ID, skipping');
+        return;
+    }
+
+    const jitterMs = Math.floor(Math.random() * 30000);
+    if (jitterMs > 0) {
+        await new Promise(resolve => setTimeout(resolve, jitterMs));
+    }
+
+    try {
+        const response = await fetch(url, { method: 'POST' });
+        if (!response.ok) {
+            console.warn(`[avanzaKeepAlive] Non-200 response: ${response.status}`);
+        } else {
+            console.log('[avanzaKeepAlive] Success');
+        }
+    } catch (error) {
+        console.error('[avanzaKeepAlive] Failed:', error);
+    }
+});
+
 // Debug Endpoint for Scanner (Manual Trigger)
 export const debugScanner = onRequest({ 
     cors: true, 
@@ -123,5 +160,5 @@ export const getBalance = onRequest({ cors: true }, handleGetBalance);
 export const scheduleSellOrder = onRequest({ cors: true }, handleScheduleSell);
 export const getOrders = onRequest({ cors: true }, handleGetOrders);
 export const searchVideos = onRequest({ cors: true }, handleSearchVideos);
-export const ingestKnowledge = onRequest({ cors: true }, handleIngestKnowledge);
+export const ingestRagFromGcs = onRequest({ cors: true, memory: '1GiB', timeoutSeconds: 300 }, handleIngestRagFromGcs);
 export const getMarketNews = onRequest({ cors: true }, handleGetMarketNews);

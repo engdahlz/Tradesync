@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { X, Loader2, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { executeTrade, type TradeResponse } from '../../services/tradeApi'
+import { executeTrade, type TradeResult } from '@/services/api'
 
 interface TradeModalProps {
     isOpen: boolean
@@ -16,7 +16,7 @@ export default function TradeModal({ isOpen, onClose, defaultSymbol = 'BTCUSDT' 
     const [quantity, setQuantity] = useState('')
     const [isLive, setIsLive] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState<TradeResponse | null>(null)
+    const [result, setResult] = useState<TradeResult | null>(null)
     const [error, setError] = useState<string | null>(null)
 
     if (!isOpen) return null

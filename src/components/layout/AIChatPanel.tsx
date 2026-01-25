@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { X, Send, Sparkles, Loader2 } from 'lucide-react'
 import { API_BASE } from '@/services/api'
 import ReactMarkdown from 'react-markdown'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface AIChatPanelProps {
     isOpen: boolean
@@ -13,7 +14,7 @@ interface Message {
     role: 'user' | 'assistant'
     content: string
     timestamp: Date
-    sources?: Array<{ title: string; excerpt: string }>
+    sources?: Array<{ title: string; excerpt: string; sourceType?: string; page?: number; score?: number }>
 }
 
 export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
@@ -29,6 +30,12 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
     const [isLoading, setIsLoading] = useState(false)
     const [status, setStatus] = useState<string | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
+    const sessionIdRef = useRef<string | null>(null)
+    const { user } = useAuth()
+
+    if (!sessionIdRef.current) {
+        sessionIdRef.current = `panel_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    }
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -64,13 +71,18 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
         }])
 
         try {
+            const history = messages
+                .filter(m => m.id !== 'welcome')
+                .map(m => ({ role: m.role, content: m.content }))
+
             const response = await fetch(`${API_BASE}/advisorChatStream`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    userId: 'user', 
-                    message: input, 
-                    sessionId: 'current-session' 
+                    userId: user?.uid || 'anonymous',
+                    message: input,
+                    conversationHistory: history,
+                    sessionId: sessionIdRef.current
                 }),
             })
 
@@ -81,42 +93,65 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
 
             const decoder = new TextDecoder()
             let accumulatedContent = ''
-            let currentEvent = ''
+            let currentEvent = 'message'
+            let currentData = ''
+            let buffer = ''
+
+            const handleEvent = (eventName: string, data: string) => {
+                if (!eventName) return
+
+                if (eventName === 'text') {
+                    try {
+                        const content = data.trim().startsWith('"') ? JSON.parse(data) : data
+                        accumulatedContent += content
+                        setMessages(prev => prev.map(m =>
+                            m.id === aiMsgId ? { ...m, content: accumulatedContent } : m
+                        ))
+                        setStatus(null)
+                    } catch {
+                        console.warn('Failed to parse stream data:', data)
+                    }
+                } else if (eventName === 'sources') {
+                    try {
+                        const parsed = JSON.parse(data)
+                        setMessages(prev => prev.map(m =>
+                            m.id === aiMsgId ? { ...m, sources: parsed } : m
+                        ))
+                    } catch {
+                        console.warn('Failed to parse sources data:', data)
+                    }
+                } else if (eventName === 'function_call') {
+                    setStatus('Using tool...')
+                } else if (eventName === 'done') {
+                    setIsLoading(false)
+                    setStatus(null)
+                }
+            }
 
             while (true) {
                 const { done, value } = await reader.read()
                 if (done) break
 
-                const chunk = decoder.decode(value, { stream: true })
-                const lines = chunk.split('\n')
+                buffer += decoder.decode(value, { stream: true })
 
-                for (const line of lines) {
-                    if (line.startsWith('event: ')) {
-                        currentEvent = line.slice(7).trim()
-                        if (currentEvent === 'function_call') {
-                            setStatus('Using tool...')
-                        }
-                    } else if (line.startsWith('data: ')) {
-                        const dataStr = line.slice(6).trim()
-                        
-                        if (currentEvent === 'text') {
-                            try {
-                                // Backend might send JSON string or raw text
-                                const content = dataStr.startsWith('"') ? JSON.parse(dataStr) : dataStr
-                                accumulatedContent += content
-                                setMessages(prev => prev.map(m => 
-                                    m.id === aiMsgId ? { ...m, content: accumulatedContent } : m
-                                ))
-                                setStatus(null) // Clear "Thinking..." once we get text
-                            } catch (e) {
-                                console.warn('Failed to parse stream data:', dataStr)
-                            }
-                        } else if (currentEvent === 'done') {
-                            setIsLoading(false)
-                            setStatus(null)
-                        }
+                while (buffer.includes('\n')) {
+                    const lineEnd = buffer.indexOf('\n')
+                    const line = buffer.slice(0, lineEnd).replace(/\r$/, '')
+                    buffer = buffer.slice(lineEnd + 1)
+
+                    if (line.startsWith('event:')) {
+                        currentEvent = line.slice(6).trim()
+                    } else if (line.startsWith('data:')) {
+                        const dataPart = line.slice(5).trim()
+                        currentData = currentData ? `${currentData}\n${dataPart}` : dataPart
+                    } else if (line === '') {
+                        handleEvent(currentEvent, currentData)
+                        currentData = ''
                     }
                 }
+            }
+            if (currentData) {
+                handleEvent(currentEvent, currentData)
             }
         } catch (error) {
             console.error('Chat error:', error)
@@ -183,10 +218,17 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
                             {msg.sources && msg.sources.length > 0 && (
                                 <div className={`mt-4 pt-3 border-t ${msg.role === 'user' ? 'border-primary-foreground/20' : 'border-border/50'}`}>
                                     <p className="text-[10px] font-bold mb-2 opacity-80 uppercase tracking-wider">Sources & Context</p>
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="grid gap-2">
                                         {msg.sources.map((s, i) => (
-                                            <div key={i} className={`text-[10px] px-2 py-1 rounded-md border ${msg.role === 'user' ? 'bg-white/10 border-white/20' : 'bg-secondary border-border'} cursor-help transition-colors hover:bg-primary/5`}>
-                                                {s.title}
+                                            <div key={i} className={`text-[10px] px-2 py-1 rounded-md border ${msg.role === 'user' ? 'bg-white/10 border-white/20' : 'bg-secondary border-border'}`}>
+                                                <div className="font-semibold">
+                                                    {s.title}
+                                                    {s.page !== undefined ? ` (p. ${s.page})` : ''}
+                                                </div>
+                                                {s.excerpt && <div className="opacity-70 mt-1">{s.excerpt}</div>}
+                                                {s.score !== undefined && (
+                                                    <div className="opacity-70 mt-1">Score: {s.score.toFixed(2)}</div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

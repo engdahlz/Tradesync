@@ -4,8 +4,7 @@
  */
 
 import { fetchCurrentPrice } from './priceData';
-
-const API_BASE = 'https://us-central1-tradesync-ai-prod.cloudfunctions.net';
+import { API_BASE } from './apiBase';
 
 export interface Position {
     symbol: string;
@@ -25,7 +24,7 @@ export interface Order {
     symbol: string;
     side: 'buy' | 'sell';
     quantity: number;
-    price: number;
+    price: number | null;
     status: string;
     executedAt: string;
 }
@@ -96,14 +95,23 @@ export async function calculatePositions(orders: Order[]): Promise<Position[]> {
         // Calculate net position
         let totalAmount = 0;
         let totalCost = 0;
+        let missingCostUnits = 0;
 
         for (const order of symbolOrders) {
             if (order.side === 'buy') {
                 totalAmount += order.quantity;
-                totalCost += order.quantity * order.price;
+                if (order.price === null) {
+                    missingCostUnits += order.quantity;
+                } else {
+                    totalCost += order.quantity * order.price;
+                }
             } else {
                 totalAmount -= order.quantity;
-                totalCost -= order.quantity * order.price;
+                if (order.price === null) {
+                    missingCostUnits -= order.quantity;
+                } else {
+                    totalCost -= order.quantity * order.price;
+                }
             }
         }
 
@@ -118,7 +126,11 @@ export async function calculatePositions(orders: Order[]): Promise<Position[]> {
             continue;
         }
 
-        const avgPrice = totalCost / totalAmount;
+        if (missingCostUnits !== 0) {
+            totalCost += missingCostUnits * currentPrice;
+        }
+
+        const avgPrice = totalAmount > 0 ? totalCost / totalAmount : 0;
         const value = totalAmount * currentPrice;
         const pnl = value - totalCost;
         const pnlPercent = (pnl / totalCost) * 100;
@@ -167,33 +179,3 @@ export function calculateStats(positions: Position[]): PortfolioStats {
 /**
  * Execute a trade via the API
  */
-export async function executeTrade(data: {
-    userId: string;
-    symbol: string;
-    side: 'buy' | 'sell';
-    quantity: number;
-    price: number;
-}): Promise<{ success: boolean; orderId?: string; message: string }> {
-    const idempotencyKey = `${data.userId}-${data.symbol}-${data.side}-${Date.now()}`;
-
-    try {
-        const response = await fetch(`${API_BASE}/executeTrade`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                ...data,
-                orderType: 'market',
-                idempotencyKey,
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        return response.json();
-    } catch (error) {
-        console.error('[Portfolio] Trade execution failed:', error);
-        return { success: false, message: String(error) };
-    }
-}

@@ -1,6 +1,7 @@
 import { FunctionTool } from '@google/adk';
 import { z } from 'zod';
 import { fetchMarketNews } from '../../flows/getMarketNews.js';
+import { executeTradeInternal } from '../../flows/tradeExecution.js';
 import { latestSignalsTool } from './latestSignalsTool.js';
 
 export { latestSignalsTool };
@@ -138,28 +139,100 @@ export const signalEngineTool = new FunctionTool({
 
 export const tradeExecutionTool = new FunctionTool({
     name: 'execute_trade',
-    description: 'Places a paper trade order. Records the order for portfolio tracking.',
+    description: 'Places a trade order. Defaults to paper trading unless isDryRun is false and live trading is enabled.',
     parameters: z.object({
         symbol: z.string().describe('Trading pair symbol, e.g. "BTCUSDT"'),
         side: z.enum(['buy', 'sell']),
         quantity: z.number().positive(),
         orderType: z.enum(['market', 'limit']).default('market'),
         price: z.number().optional(),
+        isDryRun: z.boolean().optional().describe('When true (default), executes paper trades even if live trading is enabled.'),
     }),
-    execute: async ({ symbol, side, quantity, orderType, price }) => {
-        const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        return {
-            success: true,
-            orderId,
-            symbol,
-            side,
-            quantity,
-            orderType,
-            price: price ?? 'market',
-            status: 'PAPER_EXECUTED',
-            executedAt: new Date().toISOString(),
-            message: `Paper ${side.toUpperCase()} order placed: ${quantity} ${symbol}`,
-        };
+    execute: async ({ symbol, side, quantity, orderType, price, isDryRun }, toolContext) => {
+        const shouldDryRun = isDryRun ?? true;
+        if (orderType === 'limit' && !price) {
+            return {
+                success: false,
+                status: 'failed',
+                message: 'Limit orders require a price.',
+            };
+        }
+
+        const session = toolContext?.invocationContext?.session;
+        const sessionService = toolContext?.invocationContext?.sessionService as {
+            updateSession: (request: { appName: string; userId: string; sessionId: string; state: any }) => Promise<void>;
+        } | undefined;
+        const state = (session?.state as Record<string, unknown>) || {};
+
+        const liveTradingEnabled = process.env.LIVE_TRADING_ENABLED === 'true';
+        const executeLive = liveTradingEnabled && shouldDryRun === false;
+
+        if (executeLive && !state.pendingTradeConfirmed) {
+            const pendingTrade = {
+                symbol,
+                side,
+                quantity,
+                orderType,
+                price,
+                isDryRun: shouldDryRun,
+                createdAt: new Date().toISOString(),
+            };
+
+            if (session && sessionService) {
+                await sessionService.updateSession({
+                    appName: session.appName,
+                    userId: session.userId,
+                    sessionId: session.id,
+                    state: {
+                        ...state,
+                        pendingTrade,
+                        pendingTradeConfirmed: false,
+                    },
+                });
+            }
+
+            return {
+                success: false,
+                status: 'pending_confirmation',
+                message: 'Live trade requested. Ask the user to confirm to proceed.',
+                pendingTrade,
+            };
+        }
+
+        if (executeLive && state.pendingTradeConfirmed && session && sessionService) {
+            await sessionService.updateSession({
+                appName: session.appName,
+                userId: session.userId,
+                sessionId: session.id,
+                state: {
+                    ...state,
+                    pendingTradeConfirmed: false,
+                    pendingTrade: null,
+                },
+            });
+        }
+
+        const userId = session?.userId || 'anonymous';
+        const idempotencyKey = `adk_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
+        try {
+            return await executeTradeInternal({
+                userId,
+                symbol,
+                side,
+                quantity,
+                orderType,
+                price,
+                idempotencyKey,
+                isDryRun: shouldDryRun,
+            });
+        } catch (error) {
+            return {
+                success: false,
+                status: 'failed',
+                message: error instanceof Error ? error.message : String(error),
+            };
+        }
     },
 });
 
@@ -187,6 +260,36 @@ export const confirmTradeTool = new FunctionTool({
     },
 });
 
+export const chartTool = new FunctionTool({
+    name: 'get_chart',
+    description: 'Generates a visual price chart (candlesticks) for any asset. Returns an image the agent can analyze for patterns.',
+    parameters: z.object({
+        symbol: z.string().describe('Ticker symbol (e.g., AAPL, VOLV-B.ST, BTC-USD)'),
+        period: z.string().optional().describe('Time period: 1mo, 3mo, 6mo, 1y (default: 3mo)'),
+    }),
+    execute: async ({ symbol, period = '3mo' }) => {
+        // Call Python service
+        const response = await fetch('https://us-central1-tradesync-ai-prod.cloudfunctions.net/generate_chart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ symbol, period, interval: '1d' }),
+        });
+        const data = await response.json() as { imageUrl?: string };
+        
+        if (!data.imageUrl) {
+            return { error: 'Failed to generate chart' };
+        }
+        
+        // Return media part for multimodal analysis
+        return {
+            media: {
+                url: data.imageUrl,
+                contentType: 'image/png',
+            }
+        };
+    },
+});
+
 export const allTools = [
     marketNewsTool,
     technicalAnalysisTool,
@@ -194,4 +297,5 @@ export const allTools = [
     tradeExecutionTool,
     latestSignalsTool,
     confirmTradeTool,
+    chartTool,
 ];

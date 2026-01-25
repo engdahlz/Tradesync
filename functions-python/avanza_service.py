@@ -36,15 +36,21 @@ class AvanzaService:
         password: str,
         totp_secret: str,
         session_timeout: int = 600,  # 10 minutes
+        max_auth_failures: int = 3,
+        circuit_breaker_seconds: int = 120,
     ):
         self.username = username
         self.password = password
         self.totp_secret = totp_secret
         self.session_timeout = session_timeout
+        self.max_auth_failures = max_auth_failures
+        self.circuit_breaker_seconds = circuit_breaker_seconds
         
         self._client: Optional[Avanza] = None
         self._last_auth_time: float = 0
         self._lock = threading.Lock()
+        self._auth_failures: int = 0
+        self._circuit_open_until: float = 0
         
         # Rate limiting
         self._last_request_time: float = 0
@@ -65,11 +71,44 @@ class AvanzaService:
                 self._authenticate()
             
             return self._client
+
+    def _check_circuit(self) -> None:
+        if time.time() < self._circuit_open_until:
+            raise RuntimeError("Avanza circuit breaker open - backing off before retrying")
+
+    def _trip_circuit(self) -> None:
+        self._circuit_open_until = time.time() + self.circuit_breaker_seconds
+
+    def _is_auth_error(self, error: Exception) -> bool:
+        response = getattr(error, "response", None)
+        status_code = getattr(response, "status_code", None)
+        if status_code in (401, 403):
+            return True
+
+        message = str(error).lower()
+        return any(keyword in message for keyword in ["401", "403", "unauthorized", "forbidden", "authentication"])
+
+    def _call_with_reauth(self, call):
+        self._check_circuit()
+        try:
+            result = call()
+            self._auth_failures = 0
+            return result
+        except Exception as exc:
+            if not self._is_auth_error(exc):
+                raise
+
+            self._auth_failures += 1
+            if self._auth_failures >= self.max_auth_failures:
+                self._trip_circuit()
+
+            self._authenticate()
+            result = call()
+            self._auth_failures = 0
+            return result
     
     def _authenticate(self) -> None:
         """Authenticate with Avanza using TOTP."""
-        totp_code = self._generate_totp()
-        
         self._client = Avanza({
             'username': self.username,
             'password': self.password,
@@ -77,6 +116,7 @@ class AvanzaService:
         })
         
         self._last_auth_time = time.time()
+        self._auth_failures = 0
     
     def _apply_rate_limit(self) -> None:
         """Apply rate limiting with jitter to avoid detection."""
@@ -104,10 +144,12 @@ class AvanzaService:
     
     def _search_instrument(self, symbol: str) -> Optional[Dict[str, Any]]:
         """Search for instrument by symbol."""
-        client = self._ensure_authenticated()
-        self._apply_rate_limit()
-        
-        results = client.search_for_stock(symbol)
+        def do_call():
+            client = self._ensure_authenticated()
+            self._apply_rate_limit()
+            return client.search_for_stock(symbol)
+
+        results = self._call_with_reauth(do_call)
         
         if not results or 'hits' not in results:
             return None
@@ -146,10 +188,12 @@ class AvanzaService:
             raise ValueError(f"No orderbook ID for: {symbol}")
         
         # Get the orderbook (quote data)
-        client = self._ensure_authenticated()
-        self._apply_rate_limit()
-        
-        orderbook = client.get_orderbook(str(orderbook_id), 'STOCK')
+        def do_call():
+            client = self._ensure_authenticated()
+            self._apply_rate_limit()
+            return client.get_orderbook(str(orderbook_id), 'STOCK')
+
+        orderbook = self._call_with_reauth(do_call)
         
         # Extract and format data
         quote_data = orderbook.get('orderbook', {})
@@ -181,9 +225,12 @@ class AvanzaService:
         requests are being made.
         """
         try:
-            client = self._ensure_authenticated()
-            self._apply_rate_limit()
-            client.get_overview()
+            def do_call():
+                client = self._ensure_authenticated()
+                self._apply_rate_limit()
+                client.get_overview()
+
+            self._call_with_reauth(do_call)
             return True
         except Exception:
             return False

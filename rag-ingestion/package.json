@@ -4,16 +4,18 @@
     "description": "RAG ingestion pipeline for Trade/Sync knowledge base",
     "type": "module",
     "scripts": {
+        "clear": "tsx src/clear-rag.ts",
         "ingest": "tsx src/ingest.ts",
         "ingest:books": "tsx src/ingest.ts --type books",
         "ingest:articles": "tsx src/ingest.ts --type articles",
         "ingest:pdfs": "tsx src/ingest.ts --type pdfs",
-        "test-rag": "tsx src/test-rag.ts"
+        "reingest": "tsx src/clear-rag.ts && tsx src/ingest.ts",
+        "test-rag": "tsx src/test-rag.ts",
+        "eval-rag": "tsx src/eval-rag.ts"
     },
     "dependencies": {
         "@google-cloud/firestore": "^7.0.0",
         "@google/genai": "^1.37.0",
-        "@google/generative-ai": "^0.21.0",
         "commander": "^12.0.0",
         "dotenv": "^16.4.0",
         "pdf-parse": "^1.1.1"

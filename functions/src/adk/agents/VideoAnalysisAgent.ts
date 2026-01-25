@@ -1,5 +1,6 @@
 import { LlmAgent, FunctionTool } from '@google/adk';
 import { MODEL_FLASH } from '../../config.js';
+import { getSafetySettings, getTemperatureForModel, getThinkingConfig } from '../../services/genaiClient.js';
 import { z } from 'zod';
 import { YoutubeTranscript } from 'youtube-transcript';
 
@@ -8,6 +9,8 @@ const YoutubeTranscriptSchema = z.array(z.object({
     duration: z.number(),
     offset: z.number(),
 }));
+
+const thinkingConfig = getThinkingConfig(MODEL_FLASH);
 
 function extractVideoId(url: string): string | null {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
@@ -69,6 +72,8 @@ Provide analysis with:
 Be specific about price levels when mentioned.`,
     tools: [fetchTranscriptTool],
     generateContentConfig: {
-        temperature: 1.0,
+        temperature: getTemperatureForModel(MODEL_FLASH, 1.0),
+        safetySettings: getSafetySettings(),
+        ...(thinkingConfig ? { thinkingConfig } : {}),
     },
 });

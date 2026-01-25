@@ -4,8 +4,9 @@
  */
 
 import { z } from 'zod';
+import { API_BASE } from './apiBase';
 
-export const API_BASE = 'https://us-central1-tradesync-ai-prod.cloudfunctions.net';
+export { API_BASE };
 
 export interface AdvisorChatResponse {
     response: string;
@@ -13,6 +14,8 @@ export interface AdvisorChatResponse {
         title: string;
         sourceType: string;
         excerpt: string;
+        page?: number;
+        score?: number;
     }>;
 }
 
@@ -75,6 +78,7 @@ export interface TradeResult {
     message: string;
     executedAt?: string;
     status: 'executed' | 'pending' | 'failed' | 'duplicate';
+    mode?: 'LIVE' | 'PAPER';
 }
 
 /**
@@ -82,12 +86,19 @@ export interface TradeResult {
  */
 export async function advisorChat(
     message: string,
-    conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = []
+    conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [],
+    context?: { userId?: string; sessionId?: string }
 ): Promise<AdvisorChatResponse> {
     const response = await fetch(`${API_BASE}/advisorChat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, conversationHistory, topK: 5 }),
+        body: JSON.stringify({
+            message,
+            conversationHistory,
+            userId: context?.userId,
+            sessionId: context?.sessionId,
+            topK: 5,
+        }),
     });
 
     if (!response.ok) {
@@ -190,12 +201,18 @@ export async function executeTrade(data: {
     quantity: number;
     price?: number;
     orderType: 'market' | 'limit';
-    idempotencyKey: string;
+    idempotencyKey?: string;
+    isDryRun?: boolean;
 }): Promise<TradeResult> {
+    const idempotencyKey = data.idempotencyKey || `${data.userId}-${data.symbol}-${data.side}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
     const response = await fetch(`${API_BASE}/executeTrade`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+            ...data,
+            idempotencyKey,
+        }),
     });
 
     if (!response.ok) {

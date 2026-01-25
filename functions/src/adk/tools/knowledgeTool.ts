@@ -1,4 +1,3 @@
-
 import { FunctionTool } from '@google/adk';
 import { z } from 'zod';
 import { searchKnowledge } from '../../services/knowledgeService.js';
@@ -24,7 +23,8 @@ export const knowledgeTool = new FunctionTool({
             chunks: results.map(r => {
                 const chunk: any = {
                     content: r.content,
-                    source: r.metadata?.title || 'Unknown Source'
+                    source: r.metadata?.title || 'Unknown Source',
+                    sourceType: r.metadata?.sourceType || 'rag'
                 };
                 
                 // Check both snake_case and camelCase just in case
