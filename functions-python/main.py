@@ -50,7 +50,8 @@ def get_avanza_service() -> AvanzaService:
 
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins="*", cors_methods=["get", "post"])
+    cors=options.CorsOptions(cors_origins="*", cors_methods=["get", "post"]),
+    invoker="public",
 )
 def get_stock_quote(request: https_fn.Request) -> https_fn.Response:
     """
@@ -105,6 +106,7 @@ def get_stock_quote(request: https_fn.Request) -> https_fn.Response:
 @https_fn.on_request(
     cors=options.CorsOptions(cors_origins="*", cors_methods=["get", "post"]),
     memory=options.MemoryOption.GB_1,
+    invoker="public",
 )
 def generate_chart(request: https_fn.Request) -> https_fn.Response:
     """
@@ -193,7 +195,8 @@ def generate_chart(request: https_fn.Request) -> https_fn.Response:
 
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins="*", cors_methods=["get", "post"])
+    cors=options.CorsOptions(cors_origins="*", cors_methods=["get", "post"]),
+    invoker="public",
 )
 def health(request: https_fn.Request) -> https_fn.Response:
     """Health check endpoint."""
@@ -205,7 +208,8 @@ def health(request: https_fn.Request) -> https_fn.Response:
 
 
 @https_fn.on_request(
-    cors=options.CorsOptions(cors_origins="*", cors_methods=["get", "post"])
+    cors=options.CorsOptions(cors_origins="*", cors_methods=["get", "post"]),
+    invoker="public",
 )
 def keep_avanza_alive(request: https_fn.Request) -> https_fn.Response:
     """Keep the Avanza session alive when the function instance is warm."""

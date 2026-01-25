@@ -70,6 +70,20 @@ VITE_ADK_BACKEND=python
 If the Python service needs to call TypeScript functions (market news, trade execution),
 ensure `TS_FUNCTIONS_BASE_URL` is set in the Functions env (or rely on default region + project).
 
+## GenAI Auth Configuration
+
+Python ADK uses `google-genai`, which reads auth from environment variables.
+
+Use **one** of the following:
+
+- Vertex AI (recommended in Firebase if access is enabled):
+  - `GOOGLE_GENAI_USE_VERTEXAI=true`
+  - `GOOGLE_CLOUD_PROJECT=tradesync-ai-prod`
+  - `GOOGLE_CLOUD_LOCATION=global` (or your region)
+- Gemini Developer API (if Vertex access is blocked for the Python runtime):
+  - `GOOGLE_API_KEY=...` (or set `GOOGLE_AI_API_KEY` and the runtime will map it)
+  - `GOOGLE_GENAI_USE_VERTEXAI=false`
+
 ## Optional: Keep-Alive Scheduler
 
 If you want the Avanza session to stay warm for faster first quotes, set

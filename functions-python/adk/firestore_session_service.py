@@ -10,6 +10,7 @@ from firebase_admin import firestore
 from google.adk.events import Event
 from google.adk.sessions.base_session_service import BaseSessionService, GetSessionConfig, ListSessionsResponse
 from google.adk.sessions.session import Session
+from google.cloud.firestore_v1 import FieldFilter
 from . import config
 from .genai_client import summarize_conversation
 
@@ -114,9 +115,11 @@ class FirestoreSessionService(BaseSessionService):
         return session
 
     async def list_sessions(self, *, app_name: str, user_id: Optional[str] = None) -> ListSessionsResponse:
-        query = self._db.collection('sessions').where('appName', '==', app_name)
+        query = self._db.collection('sessions').where(
+            filter=FieldFilter('appName', '==', app_name)
+        )
         if user_id:
-            query = query.where('userId', '==', user_id)
+            query = query.where(filter=FieldFilter('userId', '==', user_id))
         query = query.order_by('lastUpdateTime', direction=firestore.Query.DESCENDING)
 
         sessions = []

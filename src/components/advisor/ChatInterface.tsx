@@ -167,6 +167,20 @@ export default function ChatInterface() {
                     } catch {
                         setStatus('Using tool...')
                     }
+                } else if (eventName === 'error') {
+                    try {
+                        const message = data.trim().startsWith('"') ? JSON.parse(data) : data
+                        const content = typeof message === 'string' ? message : 'AI backend error.'
+                        accumulatedContent = accumulatedContent
+                            ? `${accumulatedContent}\n\n${content}`
+                            : content
+                        setMessages(prev => prev.map(m =>
+                            m.id === aiMsgId ? { ...m, content: accumulatedContent } : m
+                        ))
+                        setStatus(null)
+                    } catch {
+                        setStatus('AI backend error.')
+                    }
                 } else if (eventName === 'done') {
                     setIsLoading(false)
                     setStatus(null)

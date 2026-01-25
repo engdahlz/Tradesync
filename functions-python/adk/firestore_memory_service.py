@@ -10,6 +10,7 @@ from firebase_admin import firestore
 from google.adk.memory.base_memory_service import BaseMemoryService, SearchMemoryResponse
 from google.adk.memory.memory_entry import MemoryEntry
 from google.adk.sessions import Session
+from google.cloud.firestore_v1 import FieldFilter
 from google.cloud.firestore_v1.base_vector_query import DistanceMeasure
 from google.cloud.firestore_v1.vector import Vector
 
@@ -74,7 +75,9 @@ class FirestoreMemoryService(BaseMemoryService):
 
         try:
             vector = generate_embedding(query, 'RETRIEVAL_QUERY')
-            base_query = self._db.collection('memories').where('scopeKey', '==', scope)
+            base_query = self._db.collection('memories').where(
+                filter=FieldFilter('scopeKey', '==', scope)
+            )
             vector_query = base_query.find_nearest(
                 'embedding',
                 vector,

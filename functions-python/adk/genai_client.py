@@ -21,7 +21,7 @@ def get_genai_client() -> genai.Client:
     if _client:
         return _client
 
-    api_key = os.getenv('GOOGLE_AI_API_KEY')
+    api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GOOGLE_AI_API_KEY')
     use_vertex = os.getenv('GOOGLE_GENAI_USE_VERTEXAI', 'false').lower() == 'true' or (
         not api_key and os.getenv('GOOGLE_CLOUD_PROJECT')
     )

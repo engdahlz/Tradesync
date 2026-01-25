@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Optional
 
 import asyncio
 
@@ -87,26 +87,48 @@ def _dedupe_sources(sources: List[Dict[str, Any]], limit: int = 5) -> List[Dict[
     return sorted_sources[:limit]
 
 
-def _collect_agent_text(user_id: str, session_id: str, prompt: str) -> tuple[str, List[Dict[str, Any]]]:
+def _event_error(event: Event) -> Optional[str]:
+    if event.error_message or event.error_code:
+        code = event.error_code or 'unknown_error'
+        message = event.error_message or 'Unknown error'
+        return f'{code}: {message}'
+    return None
+
+
+def _iter_event_text(event: Event) -> Iterable[str]:
+    if not event.content or not event.content.parts:
+        return []
+    return [
+        part.text
+        for part in event.content.parts
+        if getattr(part, 'text', None) and not getattr(part, 'thought', False)
+    ]
+
+
+def _collect_agent_text(user_id: str, session_id: str, prompt: str) -> tuple[str, List[Dict[str, Any]], List[str]]:
     text = ''
     sources: List[Dict[str, Any]] = []
+    errors: List[str] = []
     for event in trade_sync_runner.run(
         user_id=user_id,
         session_id=session_id,
         new_message=types.Content(role='user', parts=[types.Part(text=prompt)]),
     ):
-        if event.content and event.content.parts:
-            for part in event.content.parts:
-                if getattr(part, 'text', None):
-                    text += part.text
-                if part.function_call:
-                    pass
+        for chunk in _iter_event_text(event):
+            text += chunk
+        error_message = _event_error(event)
+        if error_message:
+            errors.append(error_message)
         for response in event.get_function_responses():
             sources.extend(_extract_sources_from_response(response))
-    return text, _dedupe_sources(sources)
+    return text, _dedupe_sources(sources), errors
 
 
-@https_fn.on_request(cors=options.CorsOptions(cors_origins="*", cors_methods=["post"]))
+@https_fn.on_request(
+    cors=options.CorsOptions(cors_origins="*", cors_methods=["post"]),
+    memory=options.MemoryOption.GB_1,
+    invoker="public",
+)
 def advisorChatPy(request: https_fn.Request) -> https_fn.Response:
     payload = request.get_json(silent=True) or {}
     message = payload.get('message')
@@ -125,14 +147,24 @@ def advisorChatPy(request: https_fn.Request) -> https_fn.Response:
     history_text = _format_history(conversation_history) if is_new and conversation_history else ''
     prompt = f"Conversation so far:\n{history_text}\n\nUSER: {message}" if history_text else message
 
-    text, sources = _collect_agent_text(user_id, session.id, prompt)
+    text, sources, errors = _collect_agent_text(user_id, session.id, prompt)
+    if errors and not text:
+        return https_fn.Response(
+            json.dumps({'error': 'Model request failed', 'details': errors, 'sessionId': session.id}),
+            status=500,
+            headers={'Content-Type': 'application/json'},
+        )
     return https_fn.Response(
         json.dumps({'response': text, 'sources': sources, 'sessionId': session.id}),
         headers={'Content-Type': 'application/json'},
     )
 
 
-@https_fn.on_request(cors=options.CorsOptions(cors_origins="*", cors_methods=["post"]))
+@https_fn.on_request(
+    cors=options.CorsOptions(cors_origins="*", cors_methods=["post"]),
+    memory=options.MemoryOption.GB_1,
+    invoker="public",
+)
 def advisorChatStreamPy(request: https_fn.Request) -> https_fn.Response:
     payload = request.get_json(silent=True) or {}
     message = payload.get('message')
@@ -153,21 +185,28 @@ def advisorChatStreamPy(request: https_fn.Request) -> https_fn.Response:
 
     def event_stream():
         sources: List[Dict[str, Any]] = []
+        errors: List[str] = []
         for event in trade_sync_runner.run(
             user_id=user_id,
             session_id=session.id,
             new_message=types.Content(role='user', parts=[types.Part(text=prompt)]),
         ):
+            for chunk in _iter_event_text(event):
+                yield f"event: text\ndata: {json.dumps(chunk)}\n\n"
+            error_message = _event_error(event)
+            if error_message:
+                errors.append(error_message)
+                yield f"event: error\ndata: {json.dumps(error_message)}\n\n"
             if event.content and event.content.parts:
                 for part in event.content.parts:
-                    if getattr(part, 'text', None):
-                        yield f"event: text\ndata: {json.dumps(part.text)}\n\n"
                     if part.function_call:
                         yield f"event: function_call\ndata: {json.dumps({'name': part.function_call.name, 'args': part.function_call.args})}\n\n"
 
             for response in event.get_function_responses():
                 sources.extend(_extract_sources_from_response(response))
 
+        if errors and not sources:
+            yield f"event: error\ndata: {json.dumps('Model request failed. Check server logs for details.')}\n\n"
         yield f"event: sources\ndata: {json.dumps(_dedupe_sources(sources))}\n\n"
         yield "event: done\ndata: {}\n\n"
 
