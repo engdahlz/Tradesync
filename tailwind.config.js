@@ -47,6 +47,14 @@ export default {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                'surface-1': 'hsl(var(--surface-1))',
+                'surface-2': 'hsl(var(--surface-2))',
+                'surface-3': 'hsl(var(--surface-3))',
+                ai: {
+                    DEFAULT: 'hsl(var(--ai-accent))',
+                    soft: 'hsl(var(--ai-soft))',
+                    ink: 'hsl(var(--ai-ink))',
+                },
                 // Custom functional colors mapping
                 'ts-green': 'hsl(var(--ts-green))',
                 'ts-red': 'hsl(var(--ts-red))',
@@ -59,11 +67,11 @@ export default {
                 sm: "calc(var(--radius) - 4px)",
             },
             fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
+                sans: ['Noto Sans', 'Noto Sans Display', 'Helvetica Neue', 'sans-serif'],
+                display: ['Noto Sans Display', 'Noto Sans', 'sans-serif'],
                 mono: ['JetBrains Mono', 'monospace'],
             },
         },
     },
     plugins: [],
 }
-

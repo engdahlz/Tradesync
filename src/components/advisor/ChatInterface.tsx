@@ -16,16 +16,16 @@ const initialMessages: Message[] = [
     {
         id: '1',
         role: 'assistant',
-        content: `Welcome to Trade/Sync AI Advisor! 👋
+        content: `Welcome to Trade/Sync AI. I am your research analyst grounded in **5,742 curated chunks**.
 
-I'm your personal trading coach, grounded in **5,742 chunks** of trading wisdom including:
+I draw from sources like:
 
 • **Trading in the Zone** (Mark Douglas) - Psychology & Discipline
 • **The Intelligent Investor** (Graham) - Value Investing
 • **Market Wizards** (Schwager) - Expert Interviews
 • **Trading Systems & Methods** (Kaufman) - Quantitative Strategies
 
-Ask me about trading psychology, technical analysis, or investment strategies!`,
+Ask me about trading psychology, technical analysis, or portfolio strategy.`,
         timestamp: new Date(),
     },
 ]
@@ -220,7 +220,7 @@ export default function ChatInterface() {
     return (
         <div className="flex flex-col flex-1 min-h-0" data-testid="advisor-chat">
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
                 {messages.map((message) => (
                     <div
                         key={message.id}
@@ -229,8 +229,8 @@ export default function ChatInterface() {
                     >
                         <div
                             className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${message.role === 'assistant'
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted text-muted-foreground'
+                                ? 'bg-ai/10 text-ai'
+                                : 'bg-primary/10 text-primary'
                                 }`}
                         >
                             {message.role === 'assistant' ? (
@@ -240,26 +240,26 @@ export default function ChatInterface() {
                             )}
                         </div>
                         <div
-                            className={`max-w-[80%] p-3 rounded-xl ${message.role === 'assistant'
-                                ? 'bg-primary text-primary-foreground shadow-sm'
-                                : 'bg-muted text-foreground'
+                            className={`max-w-[80%] p-4 rounded-2xl border shadow-sm ${message.role === 'assistant'
+                                ? 'bg-card text-foreground border-border border-l-2 border-l-ai/60'
+                                : 'bg-primary/10 text-foreground border-primary/20'
                                 }`}
                         >
-                            <div className="text-sm prose prose-sm max-w-none prose-headings:text-current prose-p:text-current prose-strong:text-current prose-ul:text-current">
+                            <div className="text-sm leading-relaxed prose prose-sm max-w-none prose-headings:text-current prose-p:text-current prose-strong:text-current prose-ul:text-current">
                                 <ReactMarkdown>
                                     {message.content.replace(/\n/g, '  \n')}
                                 </ReactMarkdown>
                             </div>
-                            <p className="text-[10px] opacity-70 mt-2">
+                            <p className="text-[10px] opacity-60 mt-2">
                                 {message.timestamp.toLocaleTimeString()}
                             </p>
                             {message.sources && message.sources.length > 0 && (
-                                <div className="mt-3 border-t border-primary-foreground/20 pt-2">
-                                    <p className="text-[10px] uppercase tracking-wider opacity-80">Sources</p>
-                                    <div className="mt-2 space-y-2 text-[11px] opacity-90">
+                                <div className="mt-4 border-t border-border/70 pt-3">
+                                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Sources</p>
+                                    <div className="mt-2 space-y-2 text-[11px] text-muted-foreground">
                                         {message.sources.map((source, index) => (
-                                            <div key={`${message.id}-source-${index}`}>
-                                                <div className="font-semibold">
+                                            <div key={`${message.id}-source-${index}`} className="bg-surface-1 border border-border/70 rounded-lg p-2">
+                                                <div className="font-semibold text-foreground">
                                                     {source.title}
                                                     {source.page !== undefined ? ` (p. ${source.page})` : ''}
                                                 </div>
@@ -278,10 +278,10 @@ export default function ChatInterface() {
 
                 {isLoading && (
                     <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-primary text-primary-foreground">
+                        <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-ai/10 text-ai">
                             <Bot className="w-4 h-4" />
                         </div>
-                        <div className="bg-muted text-muted-foreground p-3 rounded-xl">
+                        <div className="bg-surface-2 text-muted-foreground p-3 rounded-2xl border border-border">
                             <div className="flex items-center gap-2">
                                 <Loader2 className="w-4 h-4 animate-spin" />
                                 <span className="text-sm">{status || 'Consulting knowledge base...'}</span>
@@ -294,7 +294,7 @@ export default function ChatInterface() {
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSubmit} className="p-4 border-t border-border">
+            <form onSubmit={handleSubmit} className="p-4 border-t border-border bg-white/70">
                 <div className="flex gap-3">
                     <input
                         data-testid="advisor-chat-input"
@@ -302,14 +302,14 @@ export default function ChatInterface() {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Ask about trading strategies, psychology, or analysis..."
-                        className="flex-1 bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+                        className="flex-1 bg-surface-2 border border-transparent rounded-full px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/30 disabled:opacity-50 transition-all"
                         disabled={isLoading}
                     />
                     <button
                         data-testid="advisor-chat-send"
                         type="submit"
                         disabled={isLoading || !input.trim()}
-                        className="bg-primary text-primary-foreground p-2 rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+                        className="bg-primary text-primary-foreground p-2.5 rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50"
                     >
                         <Send className="w-5 h-5" />
                     </button>
