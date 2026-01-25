@@ -11,6 +11,7 @@ export default function GoogleLayout({ children }: { children: React.ReactNode }
 
     const navItems = [
         { label: 'Home', path: '/' },
+        { label: 'AI Center', path: '/ai' },
         { label: 'Market Trends', path: '/signals' },
         { label: 'Portfolio', path: '/portfolio' },
         { label: 'News', path: '/news' },

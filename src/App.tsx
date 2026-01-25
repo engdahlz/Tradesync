@@ -13,6 +13,7 @@ const MasterSignals = lazy(() => import('./pages/MasterSignals'))
 const FinancialAdvisor = lazy(() => import('./pages/FinancialAdvisor'))
 const MarketNews = lazy(() => import('./pages/MarketNews'))
 const Portfolio = lazy(() => import('./pages/Portfolio'))
+const AICenter = lazy(() => import('./pages/AICenter'))
 
 function AppContent() {
     const { user, loading } = useAuth()
@@ -48,6 +49,7 @@ function AppContent() {
                     <AnimatePresence mode="wait">
                         <Routes location={location} key={location.pathname}>
                             <Route path="/" element={<PageTransition><Dashboard /></PageTransition>} />
+                            <Route path="/ai" element={<PageTransition><AICenter /></PageTransition>} />
                             <Route path="/signals" element={<PageTransition><MasterSignals /></PageTransition>} />
                             <Route path="/advisor" element={<PageTransition><FinancialAdvisor /></PageTransition>} />
                             <Route path="/news" element={<PageTransition><MarketNews /></PageTransition>} />
