@@ -54,6 +54,22 @@ sudo apt install python3.11 python3.11-venv
    Check the output for the Function URL.
    Update `VITE_AVANZA_BACKEND_URL` in your frontend `.env.local` if needed.
 
+## Python ADK Endpoints
+
+The Python ADK pilot exposes:
+
+- `advisorChatPy`
+- `advisorChatStreamPy`
+
+To switch the UI to Python ADK, set:
+
+```
+VITE_ADK_BACKEND=python
+```
+
+If the Python service needs to call TypeScript functions (market news, trade execution),
+ensure `TS_FUNCTIONS_BASE_URL` is set in the Functions env (or rely on default region + project).
+
 ## Optional: Keep-Alive Scheduler
 
 If you want the Avanza session to stay warm for faster first quotes, set

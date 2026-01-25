@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { X, Send, Sparkles, Loader2 } from 'lucide-react'
 import { API_BASE } from '@/services/api'
+import { ADVISOR_CHAT_STREAM_PATH } from '@/services/apiBase'
 import ReactMarkdown from 'react-markdown'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -75,7 +76,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
                 .filter(m => m.id !== 'welcome')
                 .map(m => ({ role: m.role, content: m.content }))
 
-            const response = await fetch(`${API_BASE}/advisorChatStream`, {
+            const response = await fetch(`${API_BASE}/${ADVISOR_CHAT_STREAM_PATH}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, FormEvent } from 'react'
 import { Send, Bot, User, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { API_BASE } from '@/services/api'
+import { ADVISOR_CHAT_STREAM_PATH } from '@/services/apiBase'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface Message {
@@ -109,7 +110,7 @@ export default function ChatInterface() {
         }
 
         try {
-            const response = await fetch(`${API_BASE}/advisorChatStream`, {
+            const response = await fetch(`${API_BASE}/${ADVISOR_CHAT_STREAM_PATH}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

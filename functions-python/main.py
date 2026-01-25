@@ -16,6 +16,7 @@ import firebase_admin
 from firebase_admin import storage
 from firebase_functions import https_fn, options
 from avanza_service import AvanzaService
+from adk.handlers import advisorChatPy, advisorChatStreamPy
 
 # Initialize Firebase Admin
 if not firebase_admin._apps:

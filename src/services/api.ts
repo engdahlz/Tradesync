@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { API_BASE } from './apiBase';
+import { API_BASE, ADVISOR_CHAT_PATH } from './apiBase';
 
 export { API_BASE };
 
@@ -89,7 +89,7 @@ export async function advisorChat(
     conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [],
     context?: { userId?: string; sessionId?: string }
 ): Promise<AdvisorChatResponse> {
-    const response = await fetch(`${API_BASE}/advisorChat`, {
+    const response = await fetch(`${API_BASE}/${ADVISOR_CHAT_PATH}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
