@@ -147,7 +147,7 @@ export const debugScanner = onRequest({
 });
 
 // HTTP endpoints (ADK-based)
-export const advisorChat = onRequest({ cors: true, memory: '1GiB' }, handleAdvisorChat);
+export const advisorChat = onRequest({ cors: true, memory: '1GiB', timeoutSeconds: 300 }, handleAdvisorChat);
 export const advisorChatStream = onRequest({ cors: true, memory: '1GiB', timeoutSeconds: 300 }, handleAdvisorChatStream);
 export const suggestStrategy = onRequest({ cors: true }, handleSuggestStrategy);
 export const analyzeVideo = onRequest({ cors: true }, handleAnalyzeVideo);
