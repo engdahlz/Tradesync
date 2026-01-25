@@ -1,4 +1,5 @@
 import type { Firestore } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import type {
     BaseMemoryService,
     SearchMemoryRequest,
@@ -49,7 +50,7 @@ export class FirestoreMemoryService implements BaseMemoryService {
             userId: session.userId,
             scopeKey,
             content: summary,
-            embedding,
+            embedding: FieldValue.vector(embedding),
             timestamp,
             createdAt: Timestamp.now(),
         });
