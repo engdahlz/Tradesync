@@ -9,6 +9,9 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
+    optimizeDeps: {
+        entries: ['index.html'],
+    },
     build: {
         chunkSizeWarningLimit: 650,
         rollupOptions: {
