@@ -10,7 +10,7 @@ import {
     type Event,
 } from '@google/adk';
 import type { Content } from '@google/genai';
-import { RESEARCH_STATE_KEYS, MEMORY_EVENT_COUNT_KEY } from '../agents/advisorWorkflowState.js';
+import { RESEARCH_STATE_KEYS, MEMORY_EVENT_COUNT_KEY, ROUTING_STATE_KEY } from '../agents/advisorWorkflowState.js';
 
 interface PluginMetrics {
     agentInvocations: number;
@@ -19,8 +19,25 @@ interface PluginMetrics {
     errors: number;
 }
 
+interface DurationStats {
+    count: number;
+    totalMs: number;
+    minMs: number;
+    maxMs: number;
+}
+
+interface RunTelemetry {
+    startedAtMs: number;
+    agentStartMs: Map<string, number>;
+    toolStartMs: Map<string, number>;
+    toolNamesByCallId: Map<string, string>;
+    agentStats: Record<string, DurationStats>;
+    toolStats: Record<string, DurationStats>;
+}
+
 export class TradeSyncPlugin extends BasePlugin {
     private metrics: PluginMetrics;
+    private runTelemetry = new Map<string, RunTelemetry>();
 
     constructor() {
         super('tradesync');
@@ -30,6 +47,63 @@ export class TradeSyncPlugin extends BasePlugin {
             toolCalls: 0,
             errors: 0,
         };
+    }
+
+    private initTelemetry(invocationId: string): RunTelemetry {
+        const telemetry: RunTelemetry = {
+            startedAtMs: Date.now(),
+            agentStartMs: new Map(),
+            toolStartMs: new Map(),
+            toolNamesByCallId: new Map(),
+            agentStats: {},
+            toolStats: {},
+        };
+        this.runTelemetry.set(invocationId, telemetry);
+        return telemetry;
+    }
+
+    private recordStats(stats: Record<string, DurationStats>, key: string, durationMs: number): void {
+        const existing = stats[key];
+        if (!existing) {
+            stats[key] = {
+                count: 1,
+                totalMs: durationMs,
+                minMs: durationMs,
+                maxMs: durationMs,
+            };
+            return;
+        }
+        existing.count += 1;
+        existing.totalMs += durationMs;
+        existing.minMs = Math.min(existing.minMs, durationMs);
+        existing.maxMs = Math.max(existing.maxMs, durationMs);
+    }
+
+    private summarizeStats(stats: Record<string, DurationStats>): Record<string, {
+        count: number;
+        avgMs: number;
+        minMs: number;
+        maxMs: number;
+        totalMs: number;
+    }> {
+        const summary: Record<string, {
+            count: number;
+            avgMs: number;
+            minMs: number;
+            maxMs: number;
+            totalMs: number;
+        }> = {};
+        for (const [key, value] of Object.entries(stats)) {
+            const avgMs = value.count > 0 ? Math.round(value.totalMs / value.count) : 0;
+            summary[key] = {
+                count: value.count,
+                avgMs,
+                minMs: value.minMs,
+                maxMs: value.maxMs,
+                totalMs: value.totalMs,
+            };
+        }
+        return summary;
     }
 
     override async onUserMessageCallback({
@@ -51,6 +125,8 @@ export class TradeSyncPlugin extends BasePlugin {
     }: {
         invocationContext: InvocationContext;
     }): Promise<Content | undefined> {
+        this.resetMetrics();
+        this.initTelemetry(invocationContext.invocationId);
         console.log(`[TradeSync] Run started - Session: ${invocationContext.session?.id}`);
         const session = invocationContext.session;
         if (session) {
@@ -64,6 +140,7 @@ export class TradeSyncPlugin extends BasePlugin {
                 [RESEARCH_STATE_KEYS.search]: '',
                 [RESEARCH_STATE_KEYS.vertexSearch]: '',
                 [RESEARCH_STATE_KEYS.vertexRag]: '',
+                [ROUTING_STATE_KEY]: '',
             };
 
             if (invocationContext.sessionService) {
@@ -86,6 +163,9 @@ export class TradeSyncPlugin extends BasePlugin {
         callbackContext: CallbackContext;
     }): Promise<Content | undefined> {
         this.metrics.agentInvocations++;
+        const telemetry = this.runTelemetry.get(callbackContext.invocationId)
+            ?? this.initTelemetry(callbackContext.invocationId);
+        telemetry.agentStartMs.set(agent.name, Date.now());
         console.log(`[TradeSync] Agent: ${agent.name} (#${this.metrics.agentInvocations})`);
         return undefined;
     }
@@ -97,7 +177,16 @@ export class TradeSyncPlugin extends BasePlugin {
         agent: BaseAgent;
         callbackContext: CallbackContext;
     }): Promise<Content | undefined> {
-        console.log(`[TradeSync] Agent done: ${agent.name}`);
+        const telemetry = this.runTelemetry.get(callbackContext.invocationId);
+        const startedAt = telemetry?.agentStartMs.get(agent.name);
+        if (telemetry && startedAt !== undefined) {
+            const durationMs = Date.now() - startedAt;
+            telemetry.agentStartMs.delete(agent.name);
+            this.recordStats(telemetry.agentStats, agent.name, durationMs);
+            console.log(`[TradeSync] Agent done: ${agent.name} (${durationMs}ms)`);
+        } else {
+            console.log(`[TradeSync] Agent done: ${agent.name}`);
+        }
         return undefined;
     }
 
@@ -154,8 +243,22 @@ export class TradeSyncPlugin extends BasePlugin {
     }): Promise<Record<string, unknown> | undefined> {
         this.metrics.toolCalls++;
         console.log(`[TradeSync] Tool: ${tool.name} (${JSON.stringify(toolArgs).slice(0, 100)})`);
+        const telemetry = this.runTelemetry.get(invocationContext.invocationId)
+            ?? this.initTelemetry(invocationContext.invocationId);
+        const callId = toolContext.functionCallId ?? tool.name;
+        telemetry.toolStartMs.set(callId, Date.now());
+        telemetry.toolNamesByCallId.set(callId, tool.name);
 
         if (tool.name === 'execute_trade') {
+            const isDryRun = typeof toolArgs.isDryRun === 'boolean' ? toolArgs.isDryRun : undefined;
+            const shouldDryRun = isDryRun ?? true;
+            const liveTradingEnabled = process.env.LIVE_TRADING_ENABLED === 'true';
+            const executeLive = liveTradingEnabled && shouldDryRun === false;
+
+            if (!executeLive) {
+                return undefined;
+            }
+
             const state = invocationContext.session?.state as any;
             if (!state?.pendingTradeConfirmed) {
                 console.log(`[TradeSync] 🛑 Intercepting high-risk tool: execute_trade`);
@@ -216,6 +319,16 @@ export class TradeSyncPlugin extends BasePlugin {
         toolContext: ToolContext;
         result: Record<string, unknown>;
     }): Promise<Record<string, unknown> | undefined> {
+        const invocationId = toolContext.invocationContext?.invocationId;
+        const telemetry = invocationId ? this.runTelemetry.get(invocationId) : undefined;
+        const callId = toolContext.functionCallId ?? tool.name;
+        const startedAt = telemetry?.toolStartMs.get(callId);
+        if (telemetry && startedAt !== undefined) {
+            const durationMs = Date.now() - startedAt;
+            telemetry.toolStartMs.delete(callId);
+            const toolName = telemetry.toolNamesByCallId.get(callId) ?? tool.name;
+            this.recordStats(telemetry.toolStats, toolName, durationMs);
+        }
         console.log(`[TradeSync] Tool done: ${tool.name}`);
         return undefined;
     }
@@ -251,6 +364,19 @@ export class TradeSyncPlugin extends BasePlugin {
     }: {
         invocationContext: InvocationContext;
     }): Promise<void> {
+        const telemetry = this.runTelemetry.get(invocationContext.invocationId);
+        if (telemetry) {
+            const totalMs = Date.now() - telemetry.startedAtMs;
+            const agentStats = this.summarizeStats(telemetry.agentStats);
+            const toolStats = this.summarizeStats(telemetry.toolStats);
+            console.log(`[TradeSync] Run telemetry ${invocationContext.invocationId}: ${JSON.stringify({
+                totalMs,
+                agentStats,
+                toolStats,
+            })}`);
+            this.runTelemetry.delete(invocationContext.invocationId);
+        }
+
         console.log(`[TradeSync] Run done - Agents: ${this.metrics.agentInvocations}, Models: ${this.metrics.modelCalls}, Tools: ${this.metrics.toolCalls}`);
 
         const session = invocationContext.session;

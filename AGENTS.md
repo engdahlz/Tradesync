@@ -30,7 +30,7 @@ Trading platform monorepo combining **React+Vite** frontend, **Firebase+ADK** ba
 
 ## AGENTS
 - **TradeSyncOrchestrator** - Routes to specialized agents
-- **AdvisorAgent** - Financial advice with RAG + SOP
+- **AdvisorWorkflowAgent** - Financial advice with parallel research + synthesis
 - **StrategyAgent** - Technical analysis
 - **NewsAnalysisAgent** - Sentiment analysis
 - **VideoAnalysisAgent** - YouTube content analysis

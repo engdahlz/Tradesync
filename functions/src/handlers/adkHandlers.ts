@@ -1,10 +1,12 @@
 import type { Request, Response } from 'express';
 import { runAgent, sessionService, getOrCreateSession } from '../adk/index.js';
-import { getFunctionResponses } from '@google/adk';
+import { createEvent, getFunctionResponses } from '@google/adk';
 import type { FunctionResponse } from '@google/genai';
 import { z } from 'zod';
 import { RSI, MACD, BollingerBands, ADX } from 'technicalindicators';
 import { analyzeNewsStructured, analyzeVideoStructured } from '../services/structuredOutputService.js';
+import { summarizeConversation } from '../services/summaryService.js';
+import { SUMMARY_STATE_KEY } from '../adk/agents/advisorWorkflowState.js';
 
 const StrategyInputSchema = z.object({
     symbol: z.string().min(1),
@@ -17,6 +19,39 @@ const StrategyInputSchema = z.object({
 function formatHistory(history: Array<{ role: 'user' | 'assistant'; content: string }>): string {
     const trimmed = history.slice(-12);
     return trimmed.map(item => `${item.role.toUpperCase()}: ${item.content}`).join('\n');
+}
+
+async function seedSessionSummary(
+    session: { appName: string; userId: string; id: string; state: Record<string, unknown> },
+    history: Array<{ role: 'user' | 'assistant'; content: string }>
+): Promise<void> {
+    const trimmed = history.slice(-12);
+    if (trimmed.length === 0) return;
+
+    try {
+        const events = trimmed.map(item => createEvent({
+            author: item.role,
+            content: {
+                role: item.role,
+                parts: [{ text: item.content }],
+            },
+        }));
+        const summary = await summarizeConversation({ events });
+        if (!summary) return;
+
+        session.state = {
+            ...session.state,
+            [SUMMARY_STATE_KEY]: summary,
+        };
+        await sessionService.updateSession({
+            appName: session.appName,
+            userId: session.userId,
+            sessionId: session.id,
+            state: session.state,
+        });
+    } catch (error) {
+        console.warn('[advisorChat] Failed to seed session summary:', error);
+    }
 }
 
 type AdvisorSource = {
@@ -102,8 +137,7 @@ async function collectAgentText(
     let fullResponse = '';
     const sources: AdvisorSource[] = [];
     for await (const event of runAgent(userId, sessionId, message)) {
-        if (event.content?.parts?.[0]) {
-            const part = event.content.parts[0];
+        for (const part of event.content?.parts ?? []) {
             if ('text' in part && part.text) {
                 fullResponse += part.text;
             }
@@ -128,6 +162,10 @@ export async function handleAdvisorChat(req: Request, res: Response) {
     const resolvedUserId = userId || 'anonymous';
     const { session, isNew } = await getOrCreateSession(resolvedUserId, sessionId);
 
+    if (isNew && Array.isArray(conversationHistory)) {
+        await seedSessionSummary(session, conversationHistory);
+    }
+
     const historyText = (isNew && Array.isArray(conversationHistory)) ? formatHistory(conversationHistory) : '';
     const prompt = historyText ? `Conversation so far:\n${historyText}\n\nUSER: ${message}` : message;
 
@@ -151,6 +189,10 @@ export async function handleAdvisorChatStream(req: Request, res: Response) {
     const resolvedUserId = userId || 'anonymous';
     const { session, isNew } = await getOrCreateSession(resolvedUserId, sessionId);
 
+    if (isNew && Array.isArray(conversationHistory)) {
+        await seedSessionSummary(session, conversationHistory);
+    }
+
     const historyText = (isNew && Array.isArray(conversationHistory)) ? formatHistory(conversationHistory) : '';
     const prompt = historyText ? `Conversation so far:\n${historyText}\n\nUSER: ${message}` : message;
 
@@ -164,9 +206,7 @@ export async function handleAdvisorChatStream(req: Request, res: Response) {
     let eventCount = 0;
     const sources: AdvisorSource[] = [];
     for await (const event of runAgent(resolvedUserId, session.id, prompt)) {
-        if (event.content?.parts?.[0]) {
-            const part = event.content.parts[0];
-
+        for (const part of event.content?.parts ?? []) {
             if ('text' in part && part.text) {
                 res.write(`event: text\ndata: ${JSON.stringify(part.text)}\n\n`);
                 eventCount++;

@@ -3,11 +3,11 @@ import { calculateSignal } from '../utils/signalLogic.js';
 import { executeTradeInternal } from './tradeExecution.js';
 import { fetchMarketAuxNews } from '../services/marketAuxService.js';
 import { sendTopicNotification } from '../utils/notifications.js';
+import { analyzeNewsStructured } from '../services/structuredOutputService.js';
 import { z } from 'zod';
 import { RSI, MACD } from 'technicalindicators';
 import { db } from '../config.js';
 import { FieldValue } from 'firebase-admin/firestore';
-import { tradeSyncRunner, sessionService } from '../adk/index.js'; // Import ADK runner
 
 const CoinCapHistoryItemSchema = z.object({
     priceUsd: z.string(),
@@ -40,23 +40,6 @@ async function checkConnectivity() {
         console.error('[MarketScanner] Connectivity Check FAILED:', e);
         return false;
     }
-}
-
-async function collectAgentText(userId: string, sessionId: string, message: string): Promise<string> {
-    let fullResponse = '';
-    for await (const event of tradeSyncRunner.runAsync({
-        userId,
-        sessionId,
-        newMessage: { role: 'user', parts: [{ text: message }] },
-    })) {
-        if (event.content?.parts?.[0]) {
-            const part = event.content.parts[0];
-            if ('text' in part && part.text) {
-                fullResponse += part.text;
-            }
-        }
-    }
-    return fullResponse;
 }
 
 // Helper to fetch prices from CoinCap (Binance often blocks Cloud Functions)
@@ -125,19 +108,16 @@ export async function runMarketScan() {
                     const news = await fetchMarketAuxNews({ symbols: [asset], limit: 3 });
                     if (news.length > 0) {
                         const content = news.map(n => `${n.title} (${n.source})`).join('. ');
-                        
-                        // Use ADK Agent for News Analysis
-                        const userId = 'market_scanner';
-                        const session = await sessionService.createSession({ appName: 'TradeSync', userId });
-                        const prompt = `Analyze this news for ${asset} and return ONLY a sentiment score between -1.0 and 1.0. News: ${content}`;
-                        
-                        const text = await collectAgentText(userId, session.id, prompt);
-                        const match = text.match(/-?\d+(\.\d+)?/);
-                        if (match) {
-                            sentimentScore = parseFloat(match[0]);
-                            // Clamp
-                            sentimentScore = Math.max(-1, Math.min(1, sentimentScore));
+                        const prompt = `Analyze the following news for ${asset} and return structured sentiment analysis.\n\nNews:\n${content}`;
+                        const analysis = await analyzeNewsStructured(prompt);
+                        if (analysis.sentiment === 'bullish') {
+                            sentimentScore = analysis.confidence;
+                        } else if (analysis.sentiment === 'bearish') {
+                            sentimentScore = -analysis.confidence;
+                        } else {
+                            sentimentScore = 0;
                         }
+                        sentimentScore = Math.max(-1, Math.min(1, sentimentScore));
                     }
                 } catch (e) {
                     console.warn(`[MarketScanner] News fetch failed for ${asset}:`, e);

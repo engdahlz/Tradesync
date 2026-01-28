@@ -16,6 +16,7 @@ const memoryCacheMax = Number(process.env.MEMORY_CACHE_MAX ?? 200);
 const memorySearchLimit = Number(process.env.MEMORY_SEARCH_LIMIT ?? 5);
 const memorySummaryWindow = Number(process.env.MEMORY_SUMMARY_WINDOW ?? 12);
 const memorySummaryMinEvents = Number(process.env.MEMORY_SUMMARY_MIN_EVENTS ?? 6);
+const memorySummaryMinChars = Number(process.env.MEMORY_SUMMARY_MIN_CHARS ?? 120);
 
 const memoryCache = new TtlCache<SearchMemoryResponse>({ maxSize: memoryCacheMax, ttlMs: memoryCacheTtl });
 
@@ -38,6 +39,9 @@ export class FirestoreMemoryService implements BaseMemoryService {
 
         const summary = await summarizeConversation({ events: window });
         if (!summary) {
+            return;
+        }
+        if (memorySummaryMinChars > 0 && summary.length < memorySummaryMinChars) {
             return;
         }
 

@@ -66,7 +66,6 @@ export async function* runAgent(
 
 export { sessionService, artifactService, memoryService };
 export { tradeSyncOrchestrator } from './agents/TradeSyncOrchestrator.js';
-export { advisorAgent } from './agents/AdvisorAgent.js';
 export { advisorWorkflowAgent } from './agents/AdvisorWorkflowAgent.js';
 export { strategyAgent } from './agents/StrategyAgent.js';
 export { newsAnalysisAgent } from './agents/NewsAnalysisAgent.js';

@@ -19,7 +19,7 @@ functions/src/
 
 ## KEY AGENTS
 - **TradeSyncOrchestrator**: Main entry point. Routes to specialized agents.
-- **AdvisorAgent**: Financial advisor with access to RAG and tools.
+- **AdvisorWorkflowAgent**: Parallel research + synthesis pipeline for trading advice.
 - **StrategyAgent**: Technical analysis specialist.
 - **VideoAnalysisAgent**: YouTube transcript analysis.
 - **NewsAnalysisAgent**: Market news impact analysis.

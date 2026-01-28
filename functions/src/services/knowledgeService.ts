@@ -11,6 +11,8 @@ export interface ChunkResult {
 const ragCacheTtl = Number(process.env.RAG_CACHE_TTL_SECONDS ?? 600) * 1000;
 const ragCacheMax = Number(process.env.RAG_CACHE_MAX ?? 200);
 const ragCache = new TtlCache<ChunkResult[]>({ maxSize: ragCacheMax, ttlMs: ragCacheTtl });
+const ragMinSimilarityRaw = Number(process.env.RAG_MIN_SIMILARITY ?? 0);
+const ragMinSimilarity = Number.isFinite(ragMinSimilarityRaw) ? ragMinSimilarityRaw : 0;
 
 function normalizeEmbedding(embedding: number[]): number[] {
     const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
@@ -59,11 +61,14 @@ export async function searchKnowledge(query: string, limit: number = 5): Promise
             // In some SDK versions, distance is automatically populated in doc.data() 
             // when using findNearest.
             const distance = data._distance ?? data.distance;
-            results.push({
-                content: data.content,
-                metadata: data.metadata,
-                similarity: typeof distance === 'number' ? 1 - distance : 0
-            });
+            const similarity = typeof distance === 'number' ? 1 - distance : 0;
+            if (similarity >= ragMinSimilarity) {
+                results.push({
+                    content: data.content,
+                    metadata: data.metadata,
+                    similarity
+                });
+            }
         });
 
         ragCache.set(cacheKey, results);

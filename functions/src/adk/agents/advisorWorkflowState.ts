@@ -12,3 +12,4 @@ export const RESEARCH_STATE_KEYS = {
 export const SUMMARY_STATE_KEY = 'app:summary';
 export const MEMORY_EVENT_COUNT_KEY = 'app:memory_last_event_count';
 export const SUMMARY_EVENT_COUNT_KEY = 'app:summary_last_event_count';
+export const ROUTING_STATE_KEY = 'app:research_routing';

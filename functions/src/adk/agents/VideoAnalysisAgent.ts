@@ -3,6 +3,7 @@ import { MODEL_FLASH } from '../../config.js';
 import { getSafetySettings, getTemperatureForModel, getThinkingConfig } from '../../services/genaiClient.js';
 import { z } from 'zod';
 import { YoutubeTranscript } from 'youtube-transcript';
+import { VIDEO_ANALYSIS_INSTRUCTION } from '../prompts/agentPrompts.js';
 
 const YoutubeTranscriptSchema = z.array(z.object({
     text: z.string(),
@@ -53,23 +54,7 @@ export const videoAnalysisAgent = new LlmAgent({
     name: 'video_analysis_agent',
     model: MODEL_FLASH,
     description: 'Analyzes YouTube trading videos for sentiment and price levels.',
-    instruction: `You are a financial video analyst specializing in crypto trading content.
-
-Your job is to:
-1. Fetch video transcripts using the fetch_youtube_transcript tool
-2. Analyze the content for trading insights
-3. Extract mentioned price targets, support/resistance levels
-4. Determine overall sentiment
-
-Provide analysis with:
-- sentiment: "bullish" | "bearish" | "neutral"
-- confidence: 0-1
-- tickers: Array of mentioned crypto tickers
-- priceLevels: { targets: [], supports: [], resistances: [] }
-- summary: 2 sentence summary
-- keyPoints: 3-5 key takeaways
-
-Be specific about price levels when mentioned.`,
+    instruction: VIDEO_ANALYSIS_INSTRUCTION,
     tools: [fetchTranscriptTool],
     generateContentConfig: {
         temperature: getTemperatureForModel(MODEL_FLASH, 1.0),

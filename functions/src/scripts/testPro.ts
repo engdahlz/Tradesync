@@ -1,19 +1,19 @@
 
 import { VertexAI } from '@google-cloud/vertexai';
 import { Runner, InMemoryArtifactService, InMemoryMemoryService } from '@google/adk';
-import { advisorAgent } from '../adk/agents/AdvisorAgent.js';
+import { advisorWorkflowAgent } from '../adk/agents/AdvisorWorkflowAgent.js';
 import { TradeSyncPlugin } from '../adk/plugins/TradeSyncPlugin.js';
 import { FirestoreSessionService } from '../services/FirestoreSessionService.js';
 import { db, MODEL_PRO } from '../config.js';
 
 async function testWithADK() {
-    console.log('\n--- Testing via ADK (AdvisorAgent) ---');
+    console.log('\n--- Testing via ADK (AdvisorWorkflowAgent) ---');
     const userId = 'test-user';
     const sessionId = 'test-session-adk-' + Date.now();
     
     const sessionService = new FirestoreSessionService(db);
     const runner = new Runner({
-        agent: advisorAgent,
+        agent: advisorWorkflowAgent,
         appName: 'TradeSyncTest',
         plugins: [new TradeSyncPlugin()],
         sessionService,
