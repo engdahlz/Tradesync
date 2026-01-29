@@ -12,6 +12,7 @@ import { signalsResearchAgent } from './signalsResearchAgent.js';
 import { technicalResearchAgent } from './technicalResearchAgent.js';
 import { vertexRagAgent } from './vertexRagAgent.js';
 import { vertexSearchAgent } from './vertexSearchAgent.js';
+import { portfolioResearchAgent } from './portfolioResearchAgent.js';
 
 export {
     advisorSynthesisAgent,
@@ -23,6 +24,7 @@ export {
     technicalResearchAgent,
     vertexRagAgent,
     vertexSearchAgent,
+    portfolioResearchAgent,
 };
 
 export const researchAgents = [
@@ -31,6 +33,7 @@ export const researchAgents = [
     newsResearchAgent,
     ragResearchAgent,
     memoryResearchAgent,
+    portfolioResearchAgent,
     ...(enableGoogleSearch ? [searchResearchAgent] : []),
     ...(enableVertexSearch ? [vertexSearchAgent] : []),
     ...(enableVertexRag ? [vertexRagAgent] : []),

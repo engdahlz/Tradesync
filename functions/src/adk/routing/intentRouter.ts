@@ -9,6 +9,7 @@ import {
     KNOWN_TICKERS,
     MEMORY_KEYWORDS,
     NEWS_KEYWORDS,
+    PORTFOLIO_KEYWORDS,
     QUICK_QUESTION_PHRASES,
     SIGNAL_KEYWORDS,
     SOURCE_KEYWORDS,
@@ -25,6 +26,7 @@ export type SelectionIntent = {
     wantsSignals: boolean;
     wantsKnowledge: boolean;
     wantsMemory: boolean;
+    wantsPortfolio: boolean;
     wantsFresh: boolean;
     wantsSources: boolean;
     isTradeRequest: boolean;
@@ -129,6 +131,7 @@ export function analyzeIntent(rawText: string): SelectionIntent {
     const wantsSignals = textHasAny(text, SIGNAL_KEYWORDS);
     const wantsKnowledge = textHasAny(text, KNOWLEDGE_KEYWORDS);
     const wantsMemory = textHasAny(text, MEMORY_KEYWORDS);
+    const wantsPortfolio = textHasAny(text, PORTFOLIO_KEYWORDS);
     const wantsFresh = textHasAny(text, FRESH_KEYWORDS);
     const wantsSources = textHasAny(text, SOURCE_KEYWORDS);
     const isTradeRequest = textHasAny(text, TRADE_KEYWORDS);
@@ -143,6 +146,7 @@ export function analyzeIntent(rawText: string): SelectionIntent {
         wantsSignals,
         wantsKnowledge,
         wantsMemory,
+        wantsPortfolio,
         wantsFresh,
         wantsSources,
         isTradeRequest,

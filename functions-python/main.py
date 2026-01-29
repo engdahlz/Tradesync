@@ -113,10 +113,12 @@ def generate_chart(request: https_fn.Request) -> https_fn.Response:
     HTTP Cloud Function for generating stock charts using yfinance and mplfinance.
 
     Request Body:
-        {"symbol": "AAPL", "interval": "1d", "period": "1mo"}
+        {"symbol": "AAPL", "interval": "1d", "period": "1mo", "returnType": "image" | "json"}
 
     Response:
         {"imageUrl": "https://storage.googleapis.com/..."}
+        OR
+        {"data": [...OHLCV...]}
     """
     try:
         # Parse request
@@ -131,6 +133,7 @@ def generate_chart(request: https_fn.Request) -> https_fn.Response:
         symbol = request_json["symbol"]
         interval = request_json.get("interval", "1d")
         period = request_json.get("period", "1mo")
+        return_type = request_json.get("returnType", "image")
 
         # 1. Fetch data
         import yfinance as yf
@@ -148,7 +151,26 @@ def generate_chart(request: https_fn.Request) -> https_fn.Response:
                 headers={"Content-Type": "application/json"},
             )
 
-        # 2. Generate chart
+        if return_type == "json":
+            # Return OHLCV data directly
+            json_data = []
+            for index, row in data.iterrows():
+                json_data.append({
+                    "time": index.strftime('%Y-%m-%d'), # Lightweight charts expects YYYY-MM-DD for daily
+                    "open": row['Open'],
+                    "high": row['High'],
+                    "low": row['Low'],
+                    "close": row['Close'],
+                    "volume": row['Volume'] if 'Volume' in row else 0
+                })
+            
+            return https_fn.Response(
+                json.dumps({"data": json_data, "symbol": symbol}),
+                status=200,
+                headers={"Content-Type": "application/json"},
+            )
+
+        # 2. Generate chart (Image fallback)
         import mplfinance as mpf
 
         temp_file = "/tmp/chart.png"

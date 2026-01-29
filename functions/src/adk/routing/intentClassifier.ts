@@ -17,6 +17,7 @@ const IntentSchema = z.object({
     wantsSignals: z.boolean().optional().default(false),
     wantsKnowledge: z.boolean().optional().default(false),
     wantsMemory: z.boolean().optional().default(false),
+    wantsPortfolio: z.boolean().optional().default(false),
     wantsFresh: z.boolean().optional().default(false),
     wantsSources: z.boolean().optional().default(false),
     isTradeRequest: z.boolean().optional().default(false),
@@ -40,6 +41,7 @@ const classifyIntentDeclaration: FunctionDeclaration = {
             'wantsSignals',
             'wantsKnowledge',
             'wantsMemory',
+            'wantsPortfolio',
             'wantsFresh',
             'wantsSources',
             'isTradeRequest',
@@ -54,6 +56,7 @@ const classifyIntentDeclaration: FunctionDeclaration = {
             wantsSignals: { type: 'boolean' },
             wantsKnowledge: { type: 'boolean' },
             wantsMemory: { type: 'boolean' },
+            wantsPortfolio: { type: 'boolean' },
             wantsFresh: { type: 'boolean' },
             wantsSources: { type: 'boolean' },
             isTradeRequest: { type: 'boolean' },
@@ -74,7 +77,8 @@ Guidelines:
 - wantsTechnical: charts, indicators, support/resistance, levels, technical analysis.
 - wantsSignals: signals, scans, alerts, setups.
 - wantsKnowledge: definitions, explanations, strategies, risk management, portfolio.
-- wantsMemory: user's own portfolio, risk, preferences, constraints.
+- wantsMemory: user's own preferences, risk tolerance, constraints.
+- wantsPortfolio: user's current holdings, positions, exposure, PnL, balance.
 - wantsFresh: latest, recent, today, this week.
 - wantsSources: asks for sources, citations, reports, studies.
 - isTradeRequest: buy, sell, enter, exit, allocate, rebalance.
@@ -104,6 +108,7 @@ function normalizeIntent(input: IntentSchemaType): SelectionIntent {
         wantsSignals: input.wantsSignals,
         wantsKnowledge: input.wantsKnowledge,
         wantsMemory: input.wantsMemory,
+        wantsPortfolio: input.wantsPortfolio,
         wantsFresh: input.wantsFresh,
         wantsSources: input.wantsSources,
         isTradeRequest: input.isTradeRequest,

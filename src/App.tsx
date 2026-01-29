@@ -14,6 +14,7 @@ const FinancialAdvisor = lazy(() => import('./pages/FinancialAdvisor'))
 const MarketNews = lazy(() => import('./pages/MarketNews'))
 const Portfolio = lazy(() => import('./pages/Portfolio'))
 const AICenter = lazy(() => import('./pages/AICenter'))
+const AutoPilot = lazy(() => import('./pages/AutoPilot'))
 
 function AppContent() {
     const { user, loading } = useAuth()
@@ -50,6 +51,7 @@ function AppContent() {
                         <Routes location={location} key={location.pathname}>
                             <Route path="/" element={<PageTransition><Dashboard /></PageTransition>} />
                             <Route path="/ai" element={<PageTransition><AICenter /></PageTransition>} />
+                            <Route path="/autopilot" element={<PageTransition><AutoPilot /></PageTransition>} />
                             <Route path="/signals" element={<PageTransition><MasterSignals /></PageTransition>} />
                             <Route path="/advisor" element={<PageTransition><FinancialAdvisor /></PageTransition>} />
                             <Route path="/news" element={<PageTransition><MarketNews /></PageTransition>} />

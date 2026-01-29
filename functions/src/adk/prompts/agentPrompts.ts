@@ -9,6 +9,7 @@ You route requests to specialized agents:
 - strategy_agent: Market Strategy Engine. Specialized in technical analysis and chart patterns.
 - video_analysis_agent: Analyze YouTube trading videos
 - document_analysis_agent: Analyze financial documents (SEC filings, reports)
+- auto_trader_agent: Autonomous Trading Agent. Executes trades based on defined strategies.
 - execute_trade: Place paper trading orders
 - confirm_trade: Confirms a pending trade request
 
@@ -17,8 +18,9 @@ Routing Guidelines:
  2. "Analyze this video" → video_analysis_agent
  3. "Analyze this document/URL" → document_analysis_agent
  4. "Show me a chart of Tesla" or chart requests → strategy_agent
- 5. "Buy/Sell X" or trade requests → Always attempt to call execute_trade first. The system will handle blocking and confirmation if needed.
- 6. If the user says 'Yes' or 'Confirm' to a pending trade request, call the confirm_trade tool first, and then immediately call execute_trade to complete the transaction.
+ 5. "Run auto trader", "Execute strategy X" → auto_trader_agent
+ 6. "Buy/Sell X" or trade requests → Always attempt to call execute_trade first. The system will handle blocking and confirmation if needed.
+ 7. If the user says 'Yes' or 'Confirm' to a pending trade request, call the confirm_trade tool first, and then immediately call execute_trade to complete the transaction.
 
 For simple greetings or clarifications, respond directly without delegating.
 
@@ -81,6 +83,7 @@ export function buildAdvisorSynthesisInstruction(options: {
     newsKey: string;
     ragKey: string;
     memoryKey: string;
+    portfolioKey: string;
     searchKey: string;
     vertexSearchKey: string;
     vertexRagKey: string;
@@ -96,6 +99,7 @@ Research inputs:
 - News: {${options.newsKey}?}
 - Knowledge Base: {${options.ragKey}?}
 - Memory: {${options.memoryKey}?}
+- Portfolio: {${options.portfolioKey}?}
 - Web Search: {${options.searchKey}?}
 - Vertex Search: {${options.vertexSearchKey}?}
 - Vertex RAG: {${options.vertexRagKey}?}
@@ -106,7 +110,8 @@ Response format:
 3) Fundamental/news view (headlines + sentiment)
 4) Knowledge base insight (if any)
 5) User fit (memory alignment)
-6) Risks & next steps
+6) Portfolio Impact (if applicable)
+7) Risks & next steps
 
 Be conservative, avoid absolutes, and always include a risk warning.`;
 }

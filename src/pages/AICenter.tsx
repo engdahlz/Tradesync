@@ -15,6 +15,7 @@ import {
     Clock,
 } from 'lucide-react'
 import ChatInterface from '../components/advisor/ChatInterface'
+import LiveVoiceAssistant from '../components/voice/LiveVoiceAssistant'
 
 const quickPrompts = [
     {
@@ -227,6 +228,8 @@ export default function AICenter() {
                 </div>
 
                 <aside className="space-y-6">
+                    <LiveVoiceAssistant />
+
                     <section className="ai-panel p-6 space-y-3 reveal-up" style={{ animationDelay: '0.1s' }}>
                         <div className="flex items-center gap-2">
                             <Activity className="w-5 h-5 text-ai" />

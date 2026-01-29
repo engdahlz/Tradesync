@@ -58,6 +58,11 @@ export const MEMORY_KEYWORDS = [
     'min', 'mina', 'mig', 'min portfolj', 'min profil', 'min risk',
 ];
 
+export const PORTFOLIO_KEYWORDS = [
+    'portfolio', 'holdings', 'positions', 'exposure', 'allocation', 'balance', 'pnl', 'profit', 'loss',
+    'portfolj', 'innehav', 'positioner', 'exponering', 'allokering', 'balans', 'vinst', 'forlust',
+];
+
 export const FRESH_KEYWORDS = [
     'latest', 'today', 'recent', 'this week', 'this month', 'update', 'breaking', 'now',
     'senaste', 'idag', 'nyss', 'denna vecka', 'denna veckan', 'denna manad', 'just nu',

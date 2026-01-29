@@ -1,6 +1,4 @@
 
-import { z } from 'zod';
-
 export interface SignalInput {
     symbol: string;
     sentimentScore: number;

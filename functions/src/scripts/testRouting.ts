@@ -43,8 +43,8 @@ async function runPrompt(userId: string, sessionId: string, message: string, dry
 
     if (!dryRun) {
         try {
-            for await (const _ of runAgent(userId, sessionId, message)) {
-                // Consume events to completion.
+            for await (const event of runAgent(userId, sessionId, message)) {
+                void event;
             }
         } catch (error) {
             console.warn('[RoutingTest] Agent run failed, falling back to heuristic routing.');

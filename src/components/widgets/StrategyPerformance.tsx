@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
+import { collection, query, orderBy, limit, onSnapshot, type Timestamp } from 'firebase/firestore'
 import { db } from '@/config/firebase'
 import { Brain, Activity, TrendingUp } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -11,7 +11,7 @@ interface Signal {
     confidence: number
     score: number
     reasoning: string
-    createdAt: any
+    createdAt?: Timestamp
 }
 
 export default function StrategyPerformance() {

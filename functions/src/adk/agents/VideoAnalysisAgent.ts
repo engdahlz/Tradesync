@@ -54,6 +54,7 @@ export const videoAnalysisAgent = new LlmAgent({
     name: 'video_analysis_agent',
     model: MODEL_FLASH,
     description: 'Analyzes YouTube trading videos for sentiment and price levels.',
+    disallowTransferToParent: true,
     instruction: VIDEO_ANALYSIS_INSTRUCTION,
     tools: [fetchTranscriptTool],
     generateContentConfig: {

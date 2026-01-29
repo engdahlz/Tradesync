@@ -7,7 +7,6 @@ import ccxt from 'ccxt';
 import type { ExchangeService, Balance, Ticker, TradeResult } from './exchangeService.js';
 
 export class BinanceAdapter implements ExchangeService {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private exchange: any;
 
     private normalizeSymbol(symbol: string): string {
@@ -112,7 +111,6 @@ export class BinanceAdapter implements ExchangeService {
 
         try {
             const result = await this.exchange.cancelAllOrders(this.normalizeSymbol(symbol));
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return result.map((order: any) => order.id);
         } catch (error) {
             console.error('Failed to cancel all orders:', error);

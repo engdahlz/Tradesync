@@ -91,7 +91,6 @@ export async function fetchMarketAuxNews(options: {
         throw new Error(`MarketAux API error: ${response.status}`);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rawData: any = await response.json();
 
     if (rawData.error) {

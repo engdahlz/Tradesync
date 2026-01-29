@@ -17,6 +17,7 @@ export const advisorSynthesisAgent = new LlmAgent({
         newsKey: RESEARCH_STATE_KEYS.news,
         ragKey: RESEARCH_STATE_KEYS.rag,
         memoryKey: RESEARCH_STATE_KEYS.memory,
+        portfolioKey: RESEARCH_STATE_KEYS.portfolio,
         searchKey: RESEARCH_STATE_KEYS.search,
         vertexSearchKey: RESEARCH_STATE_KEYS.vertexSearch,
         vertexRagKey: RESEARCH_STATE_KEYS.vertexRag,

@@ -9,3 +9,10 @@ export const API_BASE = import.meta.env.VITE_FUNCTIONS_BASE_URL || (import.meta.
 export const ADK_BACKEND = (import.meta.env.VITE_ADK_BACKEND || 'ts').toLowerCase();
 export const ADVISOR_CHAT_PATH = ADK_BACKEND === 'python' ? 'advisorChatPy' : 'advisorChat';
 export const ADVISOR_CHAT_STREAM_PATH = ADK_BACKEND === 'python' ? 'advisorChatStreamPy' : 'advisorChatStream';
+
+// Strategy Endpoints
+export const CREATE_STRATEGY_PATH = 'createStrategy';
+export const GET_STRATEGIES_PATH = 'getStrategies';
+export const UPDATE_STRATEGY_PATH = 'updateStrategy';
+export const DELETE_STRATEGY_PATH = 'deleteStrategy';
+export const GET_STRATEGY_LOGS_PATH = 'getStrategyLogs';

@@ -71,3 +71,4 @@ export { strategyAgent } from './agents/StrategyAgent.js';
 export { newsAnalysisAgent } from './agents/NewsAnalysisAgent.js';
 export { videoAnalysisAgent } from './agents/VideoAnalysisAgent.js';
 export { documentAnalysisAgent } from './agents/DocumentAnalysisAgent.js';
+export { autoTraderAgent } from './agents/AutoTraderAgent.js';

@@ -77,7 +77,6 @@ export async function executeTradeInternal(params: TradeParams) {
     const liveTradingEnabled = process.env.LIVE_TRADING_ENABLED === 'true';
     const executeLive = liveTradingEnabled && isDryRun !== true;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let tradeResult: any;
     let executionStatus = 'executed'; // Default for paper trading
     let executionPrice = price ? Number(price) : null;

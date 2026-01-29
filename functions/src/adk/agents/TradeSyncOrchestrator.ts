@@ -5,7 +5,8 @@ import { advisorWorkflowAgent } from './AdvisorWorkflowAgent.js';
 import { strategyAgent } from './StrategyAgent.js';
 import { videoAnalysisAgent } from './VideoAnalysisAgent.js';
 import { documentAnalysisAgent } from './DocumentAnalysisAgent.js';
-import { tradeExecutionTool, confirmTradeTool } from '../tools/tradingTools.js';
+import { autoTraderAgent } from './AutoTraderAgent.js';
+import { tradeExecutionTool, confirmTradeTool, portfolioTool } from '../tools/tradingTools.js';
 import { ORCHESTRATOR_GLOBAL_INSTRUCTION, ORCHESTRATOR_INSTRUCTION } from '../prompts/agentPrompts.js';
 
 const thinkingConfig = getThinkingConfig(MODEL_FLASH);
@@ -21,8 +22,9 @@ export const tradeSyncOrchestrator = new LlmAgent({
         strategyAgent,
         videoAnalysisAgent,
         documentAnalysisAgent,
+        autoTraderAgent,
     ],
-    tools: [tradeExecutionTool, confirmTradeTool],
+    tools: [tradeExecutionTool, confirmTradeTool, portfolioTool],
     generateContentConfig: {
         temperature: getTemperatureForModel(MODEL_FLASH, 0.7),
         safetySettings: getSafetySettings(),

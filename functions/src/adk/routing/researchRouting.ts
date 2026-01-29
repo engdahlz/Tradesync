@@ -10,6 +10,7 @@ import {
     technicalResearchAgent,
     vertexRagAgent,
     vertexSearchAgent,
+    portfolioResearchAgent,
 } from '../agents/research/index.js';
 import { enableGoogleSearch, enableVertexRag, enableVertexSearch } from '../agents/research/researchConfig.js';
 import { analyzeIntent, type SelectionIntent } from './intentRouter.js';
@@ -131,6 +132,9 @@ function buildResearchSelectionFromIntent(
         if (intent.wantsMemory || intent.isTradeRequest) {
             addAgent(memoryResearchAgent, 'user constraints');
         }
+        if (intent.wantsPortfolio || intent.isTradeRequest) {
+            addAgent(portfolioResearchAgent, 'portfolio context');
+        }
     }
 
     if (enableGoogleSearch && (intent.wantsFresh || intent.wantsNews || intent.wantsSources)) {
@@ -172,6 +176,7 @@ function isIntentEmpty(intent: SelectionIntent): boolean {
         || intent.wantsSignals
         || intent.wantsKnowledge
         || intent.wantsMemory
+        || intent.wantsPortfolio
         || intent.wantsFresh
         || intent.wantsSources
         || intent.isTradeRequest

@@ -42,6 +42,8 @@ export class SelectiveParallelAgent extends BaseAgent {
     }
 
     protected async *runLiveImpl(context: InvocationContext): AsyncGenerator<Event, void, void> {
+        void context;
+        yield* [];
         throw new Error('This is not supported yet for SelectiveParallelAgent.');
     }
 }

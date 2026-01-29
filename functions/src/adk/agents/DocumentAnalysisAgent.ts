@@ -9,6 +9,7 @@ export const documentAnalysisAgent = new LlmAgent({
     name: 'document_analysis_agent',
     model: MODEL_PRO,
     description: 'Analyzes financial documents (SEC filings, earnings reports) for trading insights.',
+    disallowTransferToParent: true,
     instruction: DOCUMENT_ANALYSIS_INSTRUCTION,
     tools: [GOOGLE_SEARCH],
     generateContentConfig: {

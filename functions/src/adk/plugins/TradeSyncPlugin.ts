@@ -10,7 +10,15 @@ import {
     type Event,
 } from '@google/adk';
 import type { Content } from '@google/genai';
-import { RESEARCH_STATE_KEYS, MEMORY_EVENT_COUNT_KEY, ROUTING_STATE_KEY } from '../agents/advisorWorkflowState.js';
+import { createHash } from 'crypto';
+import { MODEL_PRO } from '../../config.js';
+import { getGenAiClient } from '../../services/genaiClient.js';
+import {
+    RESEARCH_STATE_KEYS,
+    MEMORY_EVENT_COUNT_KEY,
+    ROUTING_STATE_KEY,
+    RAG_CACHE_STATE_KEYS,
+} from '../agents/advisorWorkflowState.js';
 
 interface PluginMetrics {
     agentInvocations: number;
@@ -33,6 +41,92 @@ interface RunTelemetry {
     toolNamesByCallId: Map<string, string>;
     agentStats: Record<string, DurationStats>;
     toolStats: Record<string, DurationStats>;
+}
+
+function parseNumber(value: string | undefined, fallback: number): number {
+    if (!value) return fallback;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+const ragContextCacheEnabled = process.env.RAG_CONTEXT_CACHE_ENABLED === 'true';
+const ragContextCacheTtlSeconds = parseNumber(process.env.RAG_CONTEXT_CACHE_TTL_SECONDS, 3600);
+const ragContextCacheMinChars = parseNumber(process.env.RAG_CONTEXT_CACHE_MIN_CHARS, 280);
+const ragContextCacheModel = process.env.RAG_CONTEXT_CACHE_MODEL || MODEL_PRO;
+
+function normalizeRagText(value: unknown): string {
+    return typeof value === 'string' ? value.trim() : '';
+}
+
+function readStateString(state: Record<string, unknown>, key: string): string {
+    const value = state[key];
+    return typeof value === 'string' ? value : '';
+}
+
+function hashRagText(text: string): string {
+    return createHash('sha256').update(text).digest('hex');
+}
+
+function isRagCacheEligible(text: string): boolean {
+    if (!ragContextCacheEnabled) return false;
+    if (!text || text.length < ragContextCacheMinChars) return false;
+    const lower = text.toLowerCase();
+    if (lower.includes('no rag lookup needed')) return false;
+    if (lower.includes('no relevant information found')) return false;
+    return true;
+}
+
+function parseExpireTime(expireTime: unknown): number | null {
+    if (typeof expireTime !== 'string' || !expireTime) return null;
+    const parsed = Date.parse(expireTime);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isExpired(expireTime: unknown): boolean {
+    const parsed = parseExpireTime(expireTime);
+    return parsed !== null && parsed <= Date.now();
+}
+
+function redactRagSection(instruction: string): string {
+    const lines = instruction.split('\n');
+    const startIndex = lines.findIndex(line => line.trimStart().startsWith('- Knowledge Base:'));
+    if (startIndex === -1) return instruction;
+
+    const indentMatch = lines[startIndex].match(/^\s*/);
+    const indent = indentMatch ? indentMatch[0] : '';
+    let endIndex = startIndex + 1;
+    while (endIndex < lines.length) {
+        const line = lines[endIndex];
+        if (line.startsWith(`${indent}- `)) break;
+        endIndex++;
+    }
+
+    const updatedLine = `${indent}- Knowledge Base: (cached context provided separately)`;
+    return [...lines.slice(0, startIndex), updatedLine, ...lines.slice(endIndex)].join('\n');
+}
+
+function redactRagFromSystemInstruction(systemInstruction: unknown): unknown {
+    if (typeof systemInstruction === 'string') {
+        return redactRagSection(systemInstruction);
+    }
+
+    if (!systemInstruction || typeof systemInstruction !== 'object') {
+        return systemInstruction;
+    }
+
+    const content = systemInstruction as Content;
+    if (!Array.isArray(content.parts)) {
+        return systemInstruction;
+    }
+
+    const parts = content.parts.map(part => {
+        if ('text' in part && typeof part.text === 'string') {
+            return { ...part, text: redactRagSection(part.text) };
+        }
+        return part;
+    });
+
+    return { ...content, parts };
 }
 
 export class TradeSyncPlugin extends BasePlugin {
@@ -113,6 +207,7 @@ export class TradeSyncPlugin extends BasePlugin {
         invocationContext: InvocationContext;
         userMessage: Content;
     }): Promise<Content | undefined> {
+        void invocationContext;
         const text = userMessage.parts?.[0] && 'text' in userMessage.parts[0]
             ? userMessage.parts[0].text ?? '[empty]'
             : '[non-text content]';
@@ -187,6 +282,80 @@ export class TradeSyncPlugin extends BasePlugin {
         } else {
             console.log(`[TradeSync] Agent done: ${agent.name}`);
         }
+        if (agent.name === 'rag_research_agent' && ragContextCacheEnabled) {
+            const session = callbackContext.invocationContext.session;
+            const sessionService = callbackContext.invocationContext.sessionService;
+            const ragText = normalizeRagText(session?.state?.[RESEARCH_STATE_KEYS.rag]);
+            const existingName = readStateString(session.state, RAG_CACHE_STATE_KEYS.cachedContent);
+            const existingHash = readStateString(session.state, RAG_CACHE_STATE_KEYS.cachedContentHash);
+            const existingModel = readStateString(session.state, RAG_CACHE_STATE_KEYS.cachedContentModel);
+            const existingExpiresAt = session.state?.[RAG_CACHE_STATE_KEYS.cachedContentExpiresAt];
+
+            if (!isRagCacheEligible(ragText)) {
+                if (existingName || existingHash) {
+                    session.state = {
+                        ...session.state,
+                        [RAG_CACHE_STATE_KEYS.cachedContent]: '',
+                        [RAG_CACHE_STATE_KEYS.cachedContentHash]: '',
+                        [RAG_CACHE_STATE_KEYS.cachedContentExpiresAt]: '',
+                        [RAG_CACHE_STATE_KEYS.cachedContentModel]: '',
+                    };
+                    if (sessionService) {
+                        await (sessionService as any).updateSession({
+                            appName: session.appName,
+                            userId: session.userId,
+                            sessionId: session.id,
+                            state: session.state,
+                        });
+                    }
+                }
+                return undefined;
+            }
+
+            const ragHash = hashRagText(ragText);
+            const cacheExpired = isExpired(existingExpiresAt);
+            const cacheMatches = !!existingName && existingHash === ragHash && existingModel === ragContextCacheModel && !cacheExpired;
+            if (cacheMatches) {
+                return undefined;
+            }
+
+            try {
+                const ai = getGenAiClient();
+                const response = await ai.caches.create({
+                    model: ragContextCacheModel,
+                    config: {
+                        contents: [{
+                            role: 'user',
+                            parts: [{ text: `Knowledge Base Context:\n${ragText}` }],
+                        }],
+                        displayName: `rag-context-${ragHash.slice(0, 10)}`,
+                        ttl: `${ragContextCacheTtlSeconds}s`,
+                    },
+                });
+
+                if (response?.name) {
+                    session.state = {
+                        ...session.state,
+                        [RAG_CACHE_STATE_KEYS.cachedContent]: response.name,
+                        [RAG_CACHE_STATE_KEYS.cachedContentHash]: ragHash,
+                        [RAG_CACHE_STATE_KEYS.cachedContentExpiresAt]: response.expireTime ?? '',
+                        [RAG_CACHE_STATE_KEYS.cachedContentModel]: ragContextCacheModel,
+                    };
+                    if (sessionService) {
+                        await (sessionService as any).updateSession({
+                            appName: session.appName,
+                            userId: session.userId,
+                            sessionId: session.id,
+                            state: session.state,
+                        });
+                    }
+                    console.log(`[TradeSync] RAG context cached: ${response.name}`);
+                }
+            } catch (error) {
+                console.warn('[TradeSync] Failed to create RAG context cache:', error);
+            }
+        }
+
         return undefined;
     }
 
@@ -199,6 +368,49 @@ export class TradeSyncPlugin extends BasePlugin {
     }): Promise<LlmResponse | undefined> {
         this.metrics.modelCalls++;
         console.log(`[TradeSync] Model call #${this.metrics.modelCalls}`);
+
+        if (callbackContext.agentName === 'advisor_synthesis_agent' && ragContextCacheEnabled) {
+            const session = callbackContext.invocationContext.session;
+            const ragText = normalizeRagText(session?.state?.[RESEARCH_STATE_KEYS.rag]);
+            const cachedName = readStateString(session.state, RAG_CACHE_STATE_KEYS.cachedContent);
+            const cachedHash = readStateString(session.state, RAG_CACHE_STATE_KEYS.cachedContentHash);
+            const cachedModel = readStateString(session.state, RAG_CACHE_STATE_KEYS.cachedContentModel);
+            const cachedExpiresAt = session.state?.[RAG_CACHE_STATE_KEYS.cachedContentExpiresAt];
+
+            if (cachedName && ragText) {
+                const ragHash = hashRagText(ragText);
+                const cacheExpired = isExpired(cachedExpiresAt);
+                const modelMatches = !cachedModel || cachedModel === (llmRequest.model ?? ragContextCacheModel);
+                if (cacheExpired) {
+                    session.state = {
+                        ...session.state,
+                        [RAG_CACHE_STATE_KEYS.cachedContent]: '',
+                        [RAG_CACHE_STATE_KEYS.cachedContentHash]: '',
+                        [RAG_CACHE_STATE_KEYS.cachedContentExpiresAt]: '',
+                        [RAG_CACHE_STATE_KEYS.cachedContentModel]: '',
+                    };
+                    const sessionService = callbackContext.invocationContext.sessionService;
+                    if (sessionService) {
+                        await (sessionService as any).updateSession({
+                            appName: session.appName,
+                            userId: session.userId,
+                            sessionId: session.id,
+                            state: session.state,
+                        });
+                    }
+                } else if (cachedHash === ragHash && modelMatches) {
+                    llmRequest.config = llmRequest.config || {};
+                    if (!llmRequest.config.cachedContent) {
+                        llmRequest.config.cachedContent = cachedName;
+                        llmRequest.config.systemInstruction = redactRagFromSystemInstruction(
+                            llmRequest.config.systemInstruction
+                        ) as any;
+                        console.log('[TradeSync] Using cached RAG context for synthesis.');
+                    }
+                }
+            }
+        }
+
         return undefined;
     }
 
@@ -209,6 +421,7 @@ export class TradeSyncPlugin extends BasePlugin {
         callbackContext: CallbackContext;
         llmResponse: LlmResponse;
     }): Promise<LlmResponse | undefined> {
+        void callbackContext;
         const usage = llmResponse.usageMetadata;
         if (usage) {
             console.log(`[TradeSync] Tokens: ${usage.totalTokenCount}`);
@@ -225,6 +438,8 @@ export class TradeSyncPlugin extends BasePlugin {
         llmRequest: LlmRequest;
         error: Error;
     }): Promise<LlmResponse | undefined> {
+        void callbackContext;
+        void llmRequest;
         this.metrics.errors++;
         console.error(`[TradeSync] Model error:`, error.message);
         return undefined;
@@ -243,13 +458,20 @@ export class TradeSyncPlugin extends BasePlugin {
     }): Promise<Record<string, unknown> | undefined> {
         this.metrics.toolCalls++;
         console.log(`[TradeSync] Tool: ${tool.name} (${JSON.stringify(toolArgs).slice(0, 100)})`);
-        const telemetry = this.runTelemetry.get(invocationContext.invocationId)
-            ?? this.initTelemetry(invocationContext.invocationId);
-        const callId = toolContext.functionCallId ?? tool.name;
-        telemetry.toolStartMs.set(callId, Date.now());
-        telemetry.toolNamesByCallId.set(callId, tool.name);
+        const safeInvocationContext = invocationContext ?? toolContext.invocationContext;
+        const invocationId = safeInvocationContext?.invocationId;
+        if (invocationId) {
+            const telemetry = this.runTelemetry.get(invocationId)
+                ?? this.initTelemetry(invocationId);
+            const callId = toolContext.functionCallId ?? tool.name;
+            telemetry.toolStartMs.set(callId, Date.now());
+            telemetry.toolNamesByCallId.set(callId, tool.name);
+        }
 
         if (tool.name === 'execute_trade') {
+            if (!safeInvocationContext) {
+                return undefined;
+            }
             const isDryRun = typeof toolArgs.isDryRun === 'boolean' ? toolArgs.isDryRun : undefined;
             const shouldDryRun = isDryRun ?? true;
             const liveTradingEnabled = process.env.LIVE_TRADING_ENABLED === 'true';
@@ -259,23 +481,23 @@ export class TradeSyncPlugin extends BasePlugin {
                 return undefined;
             }
 
-            const state = invocationContext.session?.state as any;
+            const state = safeInvocationContext.session?.state as any;
             if (!state?.pendingTradeConfirmed) {
                 console.log(`[TradeSync] 🛑 Intercepting high-risk tool: execute_trade`);
                 
                 // Store pending trade and set awaiting confirmation
-                if (invocationContext.session && invocationContext.sessionService) {
-                    invocationContext.session.state = {
-                        ...invocationContext.session.state,
+                if (safeInvocationContext.session && safeInvocationContext.sessionService) {
+                    safeInvocationContext.session.state = {
+                        ...safeInvocationContext.session.state,
                         pendingTrade: toolArgs,
                         awaitingConfirmation: true
                     };
                     
-                    await (invocationContext.sessionService as any).updateSession({
-                        appName: invocationContext.session.appName,
-                        userId: invocationContext.session.userId,
-                        sessionId: invocationContext.session.id,
-                        state: invocationContext.session.state,
+                    await (safeInvocationContext.sessionService as any).updateSession({
+                        appName: safeInvocationContext.session.appName,
+                        userId: safeInvocationContext.session.userId,
+                        sessionId: safeInvocationContext.session.id,
+                        state: safeInvocationContext.session.state,
                     });
                 }
 
@@ -287,18 +509,18 @@ export class TradeSyncPlugin extends BasePlugin {
                 console.log(`[TradeSync] ✅ execute_trade confirmed, allowing execution`);
                 
                 // Reset confirmation flags
-                if (invocationContext.session && invocationContext.sessionService) {
-                    const newState = { ...invocationContext.session.state };
+                if (safeInvocationContext.session && safeInvocationContext.sessionService) {
+                    const newState = { ...safeInvocationContext.session.state };
                     delete newState.pendingTradeConfirmed;
                     delete newState.pendingTrade;
                     delete newState.awaitingConfirmation;
-                    invocationContext.session.state = newState;
+                    safeInvocationContext.session.state = newState;
 
-                    await (invocationContext.sessionService as any).updateSession({
-                        appName: invocationContext.session.appName,
-                        userId: invocationContext.session.userId,
-                        sessionId: invocationContext.session.id,
-                        state: invocationContext.session.state,
+                    await (safeInvocationContext.sessionService as any).updateSession({
+                        appName: safeInvocationContext.session.appName,
+                        userId: safeInvocationContext.session.userId,
+                        sessionId: safeInvocationContext.session.id,
+                        state: safeInvocationContext.session.state,
                     });
                 }
                 return undefined;
@@ -319,6 +541,8 @@ export class TradeSyncPlugin extends BasePlugin {
         toolContext: ToolContext;
         result: Record<string, unknown>;
     }): Promise<Record<string, unknown> | undefined> {
+        void toolArgs;
+        void result;
         const invocationId = toolContext.invocationContext?.invocationId;
         const telemetry = invocationId ? this.runTelemetry.get(invocationId) : undefined;
         const callId = toolContext.functionCallId ?? tool.name;
@@ -344,6 +568,8 @@ export class TradeSyncPlugin extends BasePlugin {
         toolContext: ToolContext;
         error: Error;
     }): Promise<Record<string, unknown> | undefined> {
+        void toolArgs;
+        void toolContext;
         this.metrics.errors++;
         console.error(`[TradeSync] Tool error in ${tool.name}:`, error.message);
         return { error: true, message: error.message };
@@ -356,6 +582,8 @@ export class TradeSyncPlugin extends BasePlugin {
         invocationContext: InvocationContext;
         event: Event;
     }): Promise<Event | undefined> {
+        void invocationContext;
+        void event;
         return undefined;
     }
 

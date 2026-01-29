@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect, FormEvent } from 'react'
+import { useState, useRef, useEffect, FormEvent, useCallback } from 'react'
 import { Send, Bot, User, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { API_BASE } from '@/services/api'
 import { ADVISOR_CHAT_STREAM_PATH } from '@/services/apiBase'
 import { useAuth } from '@/contexts/AuthContext'
+import { createChart, ColorType } from 'lightweight-charts'
 
 interface Message {
     id: string
@@ -11,6 +12,7 @@ interface Message {
     content: string
     timestamp: Date
     sources?: Array<{ title: string; sourceType: string; excerpt: string; page?: number; score?: number }>
+    chartData?: { symbol: string; data: any[] }
 }
 
 const initialMessages: Message[] = [
@@ -31,12 +33,66 @@ Ask me about trading psychology, technical analysis, or portfolio strategy.`,
     },
 ]
 
+function ChartComponent({ data, symbol }: { data: any[], symbol: string }) {
+    const chartContainerRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (!chartContainerRef.current) return
+
+        const chart = createChart(chartContainerRef.current, {
+            layout: {
+                background: { type: ColorType.Solid, color: 'transparent' },
+                textColor: '#94a3b8',
+            },
+            width: chartContainerRef.current.clientWidth,
+            height: 300,
+            grid: {
+                vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
+                horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+            },
+        })
+
+        const candlestickSeries = chart.addCandlestickSeries({
+            upColor: '#22c55e',
+            downColor: '#ef4444',
+            borderVisible: false,
+            wickUpColor: '#22c55e',
+            wickDownColor: '#ef4444',
+        })
+
+        candlestickSeries.setData(data)
+        chart.timeScale().fitContent()
+
+        const handleResize = () => {
+            if (chartContainerRef.current) {
+                chart.applyOptions({ width: chartContainerRef.current.clientWidth })
+            }
+        }
+
+        window.addEventListener('resize', handleResize)
+
+        return () => {
+            window.removeEventListener('resize', handleResize)
+            chart.remove()
+        }
+    }, [data])
+
+    return (
+        <div className="mt-4 border border-border/50 rounded-xl overflow-hidden bg-surface-1 p-4">
+            <div className="text-xs font-medium text-muted-foreground mb-2">{symbol} - Daily</div>
+            <div ref={chartContainerRef} className="w-full" />
+        </div>
+    )
+}
+
 export default function ChatInterface() {
     const [messages, setMessages] = useState<Message[]>(initialMessages)
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [status, setStatus] = useState<string | null>(null)
+    const messagesContainerRef = useRef<HTMLDivElement>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
+    const shouldAutoScrollRef = useRef(true)
     const { user } = useAuth()
     const sessionIdRef = useRef<string | null>(null)
 
@@ -44,13 +100,22 @@ export default function ChatInterface() {
         sessionIdRef.current = `web_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
     }
 
-    const scrollToBottom = () => {
+    const scrollToBottom = useCallback((force = false) => {
+        if (!force && !shouldAutoScrollRef.current) return
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, [])
+
+    const handleScroll = () => {
+        const container = messagesContainerRef.current
+        if (!container) return
+        const threshold = 120
+        const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
+        shouldAutoScrollRef.current = distanceFromBottom < threshold
     }
 
     useEffect(() => {
         scrollToBottom()
-    }, [messages])
+    }, [messages, scrollToBottom])
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
@@ -70,15 +135,6 @@ export default function ChatInterface() {
         setStatus('Thinking...')
 
         const aiMsgId = (Date.now() + 1).toString()
-        setMessages((prev) => [
-            ...prev,
-            {
-                id: aiMsgId,
-                role: 'assistant',
-                content: '',
-                timestamp: new Date(),
-            },
-        ])
 
         const history = messages
             .filter(m => m.id !== '1')
@@ -96,6 +152,8 @@ export default function ChatInterface() {
                     return 'Searching knowledge base...'
                 case 'search_memory':
                     return 'Looking up preferences...'
+                case 'get_portfolio':
+                    return 'Analyzing portfolio...'
                 case 'vertex_ai_search':
                     return 'Searching private sources...'
                 case 'vertex_ai_rag_retrieval':
@@ -136,6 +194,18 @@ export default function ChatInterface() {
             let currentData = ''
             let buffer = ''
 
+            const upsertAssistantMessage = (update: (existing?: Message) => Message) => {
+                setMessages((prev) => {
+                    const index = prev.findIndex((message) => message.id === aiMsgId)
+                    if (index === -1) {
+                        return [...prev, update(undefined)]
+                    }
+                    const next = [...prev]
+                    next[index] = update(next[index])
+                    return next
+                })
+            }
+
             const handleEvent = (eventName: string, data: string) => {
                 if (!eventName) return
 
@@ -143,9 +213,14 @@ export default function ChatInterface() {
                     try {
                         const content = data.trim().startsWith('"') ? JSON.parse(data) : data
                         accumulatedContent += content
-                        setMessages(prev => prev.map(m =>
-                            m.id === aiMsgId ? { ...m, content: accumulatedContent } : m
-                        ))
+                        upsertAssistantMessage((existing) => ({
+                            id: aiMsgId,
+                            role: 'assistant',
+                            content: accumulatedContent,
+                            timestamp: existing?.timestamp ?? new Date(),
+                            sources: existing?.sources,
+                            chartData: existing?.chartData,
+                        }))
                         setStatus(null)
                     } catch {
                         console.warn('Failed to parse stream data:', data)
@@ -153,11 +228,30 @@ export default function ChatInterface() {
                 } else if (eventName === 'sources') {
                     try {
                         const parsed = JSON.parse(data)
-                        setMessages(prev => prev.map(m =>
-                            m.id === aiMsgId ? { ...m, sources: parsed } : m
-                        ))
+                        upsertAssistantMessage((existing) => ({
+                            id: aiMsgId,
+                            role: 'assistant',
+                            content: existing?.content ?? accumulatedContent,
+                            timestamp: existing?.timestamp ?? new Date(),
+                            sources: parsed,
+                            chartData: existing?.chartData,
+                        }))
                     } catch {
                         console.warn('Failed to parse sources data:', data)
+                    }
+                } else if (eventName === 'chart_data') {
+                    try {
+                        const parsed = JSON.parse(data)
+                        upsertAssistantMessage((existing) => ({
+                            id: aiMsgId,
+                            role: 'assistant',
+                            content: existing?.content ?? accumulatedContent,
+                            timestamp: existing?.timestamp ?? new Date(),
+                            sources: existing?.sources,
+                            chartData: parsed,
+                        }))
+                    } catch {
+                        console.warn('Failed to parse chart data:', data)
                     }
                 } else if (eventName === 'function_call') {
                     try {
@@ -174,9 +268,14 @@ export default function ChatInterface() {
                         accumulatedContent = accumulatedContent
                             ? `${accumulatedContent}\n\n${content}`
                             : content
-                        setMessages(prev => prev.map(m =>
-                            m.id === aiMsgId ? { ...m, content: accumulatedContent } : m
-                        ))
+                        upsertAssistantMessage((existing) => ({
+                            id: aiMsgId,
+                            role: 'assistant',
+                            content: accumulatedContent,
+                            timestamp: existing?.timestamp ?? new Date(),
+                            sources: existing?.sources,
+                            chartData: existing?.chartData,
+                        }))
                         setStatus(null)
                     } catch {
                         setStatus('AI backend error.')
@@ -223,7 +322,7 @@ export default function ChatInterface() {
                 content: 'I apologize, but I encountered an error connecting to the knowledge base. Please try again.',
                 timestamp: new Date(),
             }
-            setMessages((prev) => prev.map(m => (m.id === aiMsgId ? errorMessage : m)))
+            setMessages((prev) => [...prev, errorMessage])
 
             ;(window as unknown as { __tradesync_last_advisor_response?: string }).__tradesync_last_advisor_response = errorMessage.content
         } finally {
@@ -235,7 +334,11 @@ export default function ChatInterface() {
     return (
         <div className="flex flex-col flex-1 min-h-0" data-testid="advisor-chat">
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            <div
+                ref={messagesContainerRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto px-6 py-5 space-y-5"
+            >
                 {messages.map((message) => (
                     <div
                         key={message.id}
@@ -265,6 +368,14 @@ export default function ChatInterface() {
                                     {message.content.replace(/\n/g, '  \n')}
                                 </ReactMarkdown>
                             </div>
+                            
+                            {message.chartData && (
+                                <ChartComponent 
+                                    data={message.chartData.data} 
+                                    symbol={message.chartData.symbol} 
+                                />
+                            )}
+
                             <p className="text-[10px] opacity-60 mt-2">
                                 {message.timestamp.toLocaleTimeString()}
                             </p>

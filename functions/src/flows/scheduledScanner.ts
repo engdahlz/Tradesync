@@ -1,209 +1,184 @@
-
-import { calculateSignal } from '../utils/signalLogic.js';
-import { executeTradeInternal } from './tradeExecution.js';
-import { fetchMarketAuxNews } from '../services/marketAuxService.js';
-import { sendTopicNotification } from '../utils/notifications.js';
-import { analyzeNewsStructured } from '../services/structuredOutputService.js';
-import { z } from 'zod';
-import { RSI, MACD } from 'technicalindicators';
 import { db } from '../config.js';
-import { FieldValue } from 'firebase-admin/firestore';
+import { runAgent, sessionService } from '../adk/index.js';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-const CoinCapHistoryItemSchema = z.object({
-    priceUsd: z.string(),
-    time: z.number(),
-    date: z.string().optional()
-});
+interface ActiveStrategy {
+    id: string;
+    userId: string;
+    name: string;
+    assets: string[];
+    interval: string; // e.g., '1h', '4h', '1d'
+    status: 'ACTIVE' | 'PAUSED';
+    riskProfile: 'CONSERVATIVE' | 'MODERATE' | 'AGGRESSIVE';
+    maxPositionSize: number;
+    mode: 'PAPER' | 'LIVE';
+    lastRun?: FirebaseFirestore.Timestamp;
+    lastAttempt?: FirebaseFirestore.Timestamp;
+    scanLockUntil?: FirebaseFirestore.Timestamp;
+}
 
-const CoinCapHistoryResponseSchema = z.object({
-    data: z.array(CoinCapHistoryItemSchema),
-    timestamp: z.number().optional()
-});
-
-const ASSET_MAP: { [key: string]: string } = {
-    'BTC': 'bitcoin',
-    'ETH': 'ethereum',
-    'SOL': 'solana',
-    'XRP': 'xrp',
-    'ADA': 'cardano'
-};
-
-const CONFIDENCE_THRESHOLD = 0.8;
-
-// Helper to check basic connectivity
-async function checkConnectivity() {
-    try {
-        await fetch('https://www.google.com');
-        console.log('[MarketScanner] Connectivity Check: OK');
-        return true;
-    } catch (e: unknown) {
-        console.error('[MarketScanner] Connectivity Check FAILED:', e);
-        return false;
+function parseIntervalToMs(interval: string | undefined): number | null {
+    if (!interval) return null;
+    const match = interval.trim().match(/^(\d+)\s*([smhd])$/i);
+    if (!match) return null;
+    const value = Number(match[1]);
+    const unit = match[2].toLowerCase();
+    if (!Number.isFinite(value) || value <= 0) return null;
+    switch (unit) {
+        case 's':
+            return value * 1000;
+        case 'm':
+            return value * 60 * 1000;
+        case 'h':
+            return value * 60 * 60 * 1000;
+        case 'd':
+            return value * 24 * 60 * 60 * 1000;
+        default:
+            return null;
     }
 }
 
-// Helper to fetch prices from CoinCap (Binance often blocks Cloud Functions)
-async function fetchCoinCapPrices(symbol: string): Promise<number[]> {
-    const id = ASSET_MAP[symbol];
-    if (!id) throw new Error(`Unknown asset id for ${symbol}`);
-
-    // Fetch last 24 hours of 1h candles
-    const url = `https://api.coincap.io/v2/assets/${id}/history?interval=h1`;
-    const response = await fetch(url, {
-        headers: {
-            'User-Agent': 'TradeSync/1.0',
-            'Accept': 'application/json'
-        }
-    });
-
-    if (!response.ok) {
-        const txt = await response.text();
-        throw new Error(`CoinCap fetch failed for ${id}: ${txt}`);
+function toMillis(ts?: FirebaseFirestore.Timestamp): number | null {
+    if (!ts) return null;
+    try {
+        return ts.toMillis();
+    } catch {
+        return null;
     }
-
-    const json = await response.json();
-    
-    // Validate with Zod
-    const validation = CoinCapHistoryResponseSchema.safeParse(json);
-    if (!validation.success) {
-        console.error(`CoinCap Schema Validation Error for ${id}:`, validation.error);
-        throw new Error('Invalid data format from CoinCap');
-    }
-
-    const data = validation.data.data;
-    
-    // CoinCap returns { priceUsd, time, ... } - Take last 30 points
-    return data.slice(-30).map((d) => parseFloat(d.priceUsd));
 }
 
 export async function runMarketScan() {
+    console.log('Starting autonomous market scan...');
+    
+    // 1. Fetch active strategies
+    const strategiesSnapshot = await db.collection('strategies')
+        .where('status', '==', 'ACTIVE')
+        .get();
+
+    if (strategiesSnapshot.empty) {
+        console.log('No active strategies found.');
+        return { success: true, scanned: 0 };
+    }
+
     const results = [];
-    console.log(`[MarketScanner] Starting scan...`);
 
-    await checkConnectivity();
+    // 2. Iterate through strategies
+    for (const doc of strategiesSnapshot.docs) {
+        const strategy = { id: doc.id, ...doc.data() } as ActiveStrategy;
+        const now = Date.now();
+        const intervalMs = parseIntervalToMs(strategy.interval) ?? 60 * 60 * 1000;
+        const lockTtlMs = Math.min(intervalMs, 10 * 60 * 1000);
 
-    const assets = Object.keys(ASSET_MAP);
-    for (const asset of assets) {
+        const lease = await db.runTransaction(async (tx) => {
+            const fresh = await tx.get(doc.ref);
+            const data = { id: fresh.id, ...fresh.data() } as ActiveStrategy;
+            if (!fresh.exists || data.status !== 'ACTIVE') {
+                return { shouldRun: false, reason: 'inactive' };
+            }
+
+            const lockUntilMs = toMillis(data.scanLockUntil);
+            if (lockUntilMs && lockUntilMs > now) {
+                return { shouldRun: false, reason: 'locked' };
+            }
+
+            const lastRunMs = toMillis(data.lastRun);
+            const lastAttemptMs = toMillis(data.lastAttempt);
+            const lastActivityMs = Math.max(lastRunMs ?? 0, lastAttemptMs ?? 0);
+            if (lastActivityMs && now - lastActivityMs < intervalMs) {
+                return { shouldRun: false, reason: 'interval' };
+            }
+
+            tx.update(doc.ref, {
+                scanLockUntil: Timestamp.fromMillis(now + lockTtlMs),
+                lastAttempt: FieldValue.serverTimestamp(),
+            });
+            return { shouldRun: true };
+        });
+
+        if (!lease.shouldRun) {
+            results.push({ strategyId: strategy.id, status: 'skipped', reason: lease.reason });
+            continue;
+        }
+
+        console.log(`Running strategy: ${strategy.name} (${strategy.id}) for user ${strategy.userId}`);
+
+        // 3. Create a dedicated session for this run
+        const sessionId = `autotrade_${strategy.id}_${Date.now()}`;
+        await sessionService.createSession({
+            appName: 'TradeSync',
+            userId: strategy.userId,
+            sessionId,
+            state: {
+                strategyContext: strategy,
+                autoConfirmTrades: strategy.mode === 'LIVE',
+                autoPilotRun: true
+            }
+        });
+
+        // 4. Construct the prompt for the AutoTraderAgent
+        const assetsList = strategy.assets.join(', ');
+        const prompt = `
+        AUTONOMOUS TRADING RUN
+        Strategy: ${strategy.name}
+        Risk Profile: ${strategy.riskProfile}
+        Max Position Size: $${strategy.maxPositionSize}
+        Mode: ${strategy.mode}
+        Assets to Scan: ${assetsList}
+
+        Please analyze these assets. If you find a high-probability setup that matches the risk profile:
+        1. Verify with technicals and news.
+        2. Check portfolio constraints.
+        3. Execute the trade using 'execute_trade' with isDryRun=${strategy.mode === 'PAPER'}.
+        
+        If no trade is found, simply report "No trades executed".
+        `;
+
+        // 5. Run the agent
+        let agentOutput = '';
         try {
-            const prices = await fetchCoinCapPrices(asset);
-
-            // 1. Technical Analysis
-            const rsiValues = RSI.calculate({values: prices, period: 14});
-            const currentRsi = rsiValues[rsiValues.length - 1] || 50;
-
-            const macdValues = MACD.calculate({
-                values: prices,
-                fastPeriod: 12,
-                slowPeriod: 26,
-                signalPeriod: 9,
-                SimpleMAOscillator: false,
-                SimpleMASignal: false
-            });
-            const currentMacd = macdValues[macdValues.length - 1] || { MACD: 0, signal: 0, histogram: 0 };
-
-            // 2. News Sentiment (Restricted to major assets to save API quota)
-            let sentimentScore = 0;
-            if (['BTC', 'ETH'].includes(asset)) {
-                try {
-                    const news = await fetchMarketAuxNews({ symbols: [asset], limit: 3 });
-                    if (news.length > 0) {
-                        const content = news.map(n => `${n.title} (${n.source})`).join('. ');
-                        const prompt = `Analyze the following news for ${asset} and return structured sentiment analysis.\n\nNews:\n${content}`;
-                        const analysis = await analyzeNewsStructured(prompt);
-                        if (analysis.sentiment === 'bullish') {
-                            sentimentScore = analysis.confidence;
-                        } else if (analysis.sentiment === 'bearish') {
-                            sentimentScore = -analysis.confidence;
-                        } else {
-                            sentimentScore = 0;
-                        }
-                        sentimentScore = Math.max(-1, Math.min(1, sentimentScore));
+            for await (const event of runAgent(strategy.userId, sessionId, prompt)) {
+                for (const part of event.content?.parts ?? []) {
+                    if ('text' in part && part.text) {
+                        agentOutput += part.text;
                     }
-                } catch (e) {
-                    console.warn(`[MarketScanner] News fetch failed for ${asset}:`, e);
                 }
             }
 
-            // 3. Run Signal Engine
-            const signal = calculateSignal({
-                symbol: asset,
-                sentimentScore,
-                rsi: currentRsi,
-                macd: {
-                    macd: currentMacd.MACD || 0,
-                    signal: currentMacd.signal || 0,
-                    histogram: currentMacd.histogram || 0
-                },
-                price: prices[prices.length - 1]
+            // 6. Log the run
+            await db.collection('strategy_logs').add({
+                strategyId: strategy.id,
+                userId: strategy.userId,
+                timestamp: FieldValue.serverTimestamp(),
+                output: agentOutput,
+                status: 'SUCCESS'
             });
 
-            // Store Signal in Firestore for Frontend Dashboard
-            await db.collection('signals').add({
-                symbol: asset,
-                action: signal.action,
-                confidence: signal.confidence,
-                score: signal.score,
-                reasoning: signal.reasoning,
-                sentimentScore,
-                rsi: currentRsi,
-                macd: currentMacd,
-                price: prices[prices.length - 1],
-                createdAt: FieldValue.serverTimestamp()
+            // Update last run time
+            await doc.ref.update({
+                lastRun: FieldValue.serverTimestamp(),
+                scanLockUntil: FieldValue.delete()
             });
 
-            console.log(`[MarketScanner] ${asset}: ${signal.action} (${signal.confidence.toFixed(2)}) - Score: ${signal.score}`);
-
-            results.push({
-                asset,
-                signal: signal.action,
-                confidence: signal.confidence,
-                summary: signal.reasoning,
-                score: signal.score
-            });
-
-            // 4. Auto-Trade & Notify
-            if (signal.action !== 'HOLD' && signal.confidence >= CONFIDENCE_THRESHOLD) {
-                // Execute Trade (Paper/Live based on env)
-                try {
-                    const trade = await executeTradeInternal({
-                        userId: 'auto-trader',
-                        symbol: `${asset}USDT`, // Assuming Binance symbol format
-                        side: signal.action === 'BUY' ? 'buy' : 'sell',
-                        quantity: 0.0001, // Safety: Very small fixed amount
-                        orderType: 'market',
-                        idempotencyKey: `auto_${asset}_${Date.now()}`
-                    });
-                    console.log(`[MarketScanner] Auto-Trade executed:`, trade);
-                } catch (e) {
-                    console.error(`[MarketScanner] Auto-Trade failed:`, e);
-                }
-
-                const title = `🚨 ${asset} Signal: ${signal.action}`;
-                const body = `High confidence (${(signal.confidence * 100).toFixed(0)}%) signal. ${signal.reasoning}`;
-
-                await sendTopicNotification('signals', {
-                    title,
-                    body,
-                    data: {
-                        asset,
-                        signal: signal.action,
-                        confidence: String(signal.confidence)
-                    }
-                });
-            }
+            results.push({ strategyId: strategy.id, status: 'success' });
 
         } catch (error) {
-            console.error(`[MarketScanner] Error analyzing ${asset}:`, error);
-            results.push({
-                asset,
-                error: String(error)
+            console.error(`Error running strategy ${strategy.id}:`, error);
+            
+            await db.collection('strategy_logs').add({
+                strategyId: strategy.id,
+                userId: strategy.userId,
+                timestamp: FieldValue.serverTimestamp(),
+                error: String(error),
+                status: 'FAILED'
             });
+
+            await doc.ref.update({
+                scanLockUntil: FieldValue.delete()
+            });
+
+            results.push({ strategyId: strategy.id, status: 'failed', error: String(error) });
         }
     }
 
-    return {
-        timestamp: new Date().toISOString(),
-        scanned: assets.length,
-        results
-    };
+    return { success: true, scanned: results.length, results };
 }

@@ -35,10 +35,10 @@ export const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || '';
 // Updated Jan 22, 2026 - Gemini 3.0 (us-central1)
 
 // Flash: High-frequency agentic loops
-export const MODEL_FLASH = process.env.MODEL_FLASH || process.env.GEMINI_FLASH_MODEL || 'gemini-3-flash-preview';
+export const MODEL_FLASH = process.env.MODEL_FLASH || process.env.GEMINI_FLASH_MODEL || 'gemini-2.5-flash';
 
 // Pro: Deep reasoning ("vibe-coding")
-export const MODEL_PRO = process.env.MODEL_PRO || process.env.GEMINI_PRO_MODEL || 'gemini-3-pro-preview';
+export const MODEL_PRO = process.env.MODEL_PRO || process.env.GEMINI_PRO_MODEL || 'gemini-2.5-pro';
 
 export const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'gemini-embedding-001';
 
@@ -52,3 +52,17 @@ export const EMBEDDING_DIMENSION = parseNumber(process.env.EMBEDDING_DIMENSION, 
 // Trading Safety Configuration
 export const MAX_TRADE_AMOUNT_USD = 100; // Hard safety cap: $100 per trade
 export const LIVE_TRADING_ENABLED = process.env.LIVE_TRADING_ENABLED === 'true';
+
+// Strategy Configuration
+export const StrategySchema = z.object({
+    id: z.string(),
+    userId: z.string(),
+    name: z.string(),
+    assets: z.array(z.string()),
+    interval: z.string(),
+    status: z.enum(['ACTIVE', 'PAUSED']),
+    riskProfile: z.enum(['CONSERVATIVE', 'MODERATE', 'AGGRESSIVE']),
+    maxPositionSize: z.number(),
+    mode: z.enum(['PAPER', 'LIVE']),
+    lastRun: z.any().optional(),
+});

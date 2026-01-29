@@ -14,7 +14,6 @@ if (!process.env.GOOGLE_CLOUD_PROJECT && process.env.GCLOUD_PROJECT) {
 }
 
 import { db, ScheduledSellSchema, FieldValue } from './config.js';
-import { z } from 'zod';
 
 import {
     handleAdvisorChat,
@@ -42,8 +41,21 @@ import {
     handleGetMarketNews,
 } from './flows/getMarketNews.js';
 import {
+    handleCreateLiveToken,
+} from './flows/createLiveToken.js';
+import {
+    handleCleanupRagCaches,
+} from './flows/cleanupRagCaches.js';
+import {
     runMarketScan,
 } from './flows/scheduledScanner.js';
+import {
+    handleCreateStrategy,
+    handleGetStrategies,
+    handleUpdateStrategy,
+    handleDeleteStrategy,
+    handleGetStrategyLogs,
+} from './flows/strategyManagement.js';
 
 // Scheduled function to check expired trades
 export const checkExpiredTrades = onSchedule('every 5 minutes', async () => {
@@ -132,6 +144,13 @@ export const avanzaKeepAlive = onSchedule({
     }
 });
 
+const ragCacheCleanupSchedule = process.env.RAG_CONTEXT_CACHE_CLEANUP_SCHEDULE || 'every 24 hours';
+export const ragCacheCleanup = onSchedule({
+    schedule: ragCacheCleanupSchedule,
+    memory: '256MiB',
+    timeoutSeconds: 60,
+}, handleCleanupRagCaches);
+
 // Debug Endpoint for Scanner (Manual Trigger)
 export const debugScanner = onRequest({ 
     cors: true, 
@@ -162,3 +181,11 @@ export const getOrders = onRequest({ cors: true }, handleGetOrders);
 export const searchVideos = onRequest({ cors: true }, handleSearchVideos);
 export const ingestRagFromGcs = onRequest({ cors: true, memory: '1GiB', timeoutSeconds: 300 }, handleIngestRagFromGcs);
 export const getMarketNews = onRequest({ cors: true }, handleGetMarketNews);
+export const createLiveToken = onRequest({ cors: true }, handleCreateLiveToken);
+
+// Strategy Management Endpoints
+export const createStrategy = onRequest({ cors: true }, handleCreateStrategy);
+export const getStrategies = onRequest({ cors: true }, handleGetStrategies);
+export const updateStrategy = onRequest({ cors: true }, handleUpdateStrategy);
+export const deleteStrategy = onRequest({ cors: true }, handleDeleteStrategy);
+export const getStrategyLogs = onRequest({ cors: true }, handleGetStrategyLogs);

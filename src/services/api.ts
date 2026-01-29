@@ -81,6 +81,22 @@ export interface TradeResult {
     mode?: 'LIVE' | 'PAPER';
 }
 
+export interface LiveTokenResponse {
+    token: string;
+    apiVersion: string;
+    model: string;
+    expireTime: string;
+    newSessionExpireTime: string;
+    uses: number;
+    config: {
+        responseModalities?: string[];
+        temperature?: number;
+        topP?: number;
+        topK?: number;
+        maxOutputTokens?: number;
+    };
+}
+
 /**
  * Chat with the AI Financial Advisor (RAG-enhanced)
  */
@@ -236,6 +252,31 @@ export async function scheduleSellOrder(data: {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+export async function createLiveApiToken(payload?: {
+    model?: string;
+    systemInstruction?: string;
+    responseModalities?: Array<'AUDIO' | 'TEXT'>;
+    temperature?: number;
+    topP?: number;
+    topK?: number;
+    maxOutputTokens?: number;
+    uses?: number;
+    expireMinutes?: number;
+    newSessionExpireMinutes?: number;
+}): Promise<LiveTokenResponse> {
+    const response = await fetch(`${API_BASE}/createLiveToken`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload ?? {}),
     });
 
     if (!response.ok) {

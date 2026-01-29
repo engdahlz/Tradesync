@@ -116,6 +116,16 @@ function extractSourcesFromResponse(response: FunctionResponse): AdvisorSource[]
     return [];
 }
 
+function extractChartDataFromResponse(response: FunctionResponse): { symbol: string; data: any[] } | null {
+    const raw = (response.response as Record<string, unknown> | undefined) ?? {};
+    const payload = (raw as { output?: Record<string, unknown> }).output ?? raw;
+
+    if (response.name === 'get_chart' && payload.chartData) {
+        return payload.chartData as { symbol: string; data: any[] };
+    }
+    return null;
+}
+
 function dedupeSources(sources: AdvisorSource[], limit: number = 5): AdvisorSource[] {
     const byTitle = new Map<string, AdvisorSource>();
     for (const source of sources) {
@@ -133,9 +143,11 @@ async function collectAgentText(
     userId: string,
     sessionId: string,
     message: string
-): Promise<{ text: string; sources: AdvisorSource[] }> {
+): Promise<{ text: string; sources: AdvisorSource[]; chartData: { symbol: string; data: any[] } | null }> {
     let fullResponse = '';
     const sources: AdvisorSource[] = [];
+    let chartData: { symbol: string; data: any[] } | null = null;
+
     for await (const event of runAgent(userId, sessionId, message)) {
         for (const part of event.content?.parts ?? []) {
             if ('text' in part && part.text) {
@@ -146,9 +158,13 @@ async function collectAgentText(
         const functionResponses = getFunctionResponses(event);
         for (const response of functionResponses) {
             sources.push(...extractSourcesFromResponse(response));
+            const chart = extractChartDataFromResponse(response);
+            if (chart) {
+                chartData = chart;
+            }
         }
     }
-    return { text: fullResponse, sources: dedupeSources(sources) };
+    return { text: fullResponse, sources: dedupeSources(sources), chartData };
 }
 
 export async function handleAdvisorChat(req: Request, res: Response) {
@@ -169,11 +185,12 @@ export async function handleAdvisorChat(req: Request, res: Response) {
     const historyText = (isNew && Array.isArray(conversationHistory)) ? formatHistory(conversationHistory) : '';
     const prompt = historyText ? `Conversation so far:\n${historyText}\n\nUSER: ${message}` : message;
 
-    const { text, sources } = await collectAgentText(resolvedUserId, session.id, prompt);
+    const { text, sources, chartData } = await collectAgentText(resolvedUserId, session.id, prompt);
 
     res.json({
         response: text,
         sources,
+        chartData,
         sessionId: session.id,
     });
 }
@@ -221,6 +238,11 @@ export async function handleAdvisorChatStream(req: Request, res: Response) {
         const functionResponses = getFunctionResponses(event);
         for (const response of functionResponses) {
             sources.push(...extractSourcesFromResponse(response));
+            const chartData = extractChartDataFromResponse(response);
+            if (chartData) {
+                res.write(`event: chart_data\ndata: ${JSON.stringify(chartData)}\n\n`);
+                eventCount++;
+            }
         }
     }
 
@@ -281,7 +303,6 @@ export async function handleAnalyzeVideo(req: Request, res: Response) {
         return;
     }
 
-    const userId = 'video_analyzer';
     const message = `Analyze this trading video with transcript and metadata.
 
 Video: ${videoUrl}${title ? `\nTitle: ${title}` : ''}${description ? `\nDescription: ${description}` : ''}`;
@@ -322,7 +343,7 @@ export async function handleAnalyzeDocument(req: Request, res: Response) {
     });
 
     const fullResponse = await collectAgentText(userId, session.id, message);
-    res.json({ result: fullResponse });
+    res.json({ result: fullResponse.text });
 }
 
 export async function handleSuggestStrategy(req: Request, res: Response) {
@@ -332,7 +353,7 @@ export async function handleSuggestStrategy(req: Request, res: Response) {
         return;
     }
 
-    const { symbol, prices, highs, lows, closes } = parsed.data;
+    const { prices, highs, lows, closes } = parsed.data;
     const closeSeries = (closes && closes.length > 0) ? closes : prices;
     const highSeries = (highs && highs.length === closeSeries.length) ? highs : closeSeries;
     const lowSeries = (lows && lows.length === closeSeries.length) ? lows : closeSeries;

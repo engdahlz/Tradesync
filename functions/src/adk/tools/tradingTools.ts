@@ -5,8 +5,9 @@ import { fetchMarketNews } from '../../flows/getMarketNews.js';
 import { executeTradeInternal } from '../../flows/tradeExecution.js';
 import { latestSignalsTool } from './latestSignalsTool.js';
 import { fetchPriceSeries } from '../../services/priceService.js';
+import { portfolioTool } from './portfolioTool.js';
 
-export { latestSignalsTool };
+export { latestSignalsTool, portfolioTool };
 
 interface NewsItem {
     title: string;
@@ -14,6 +15,52 @@ interface NewsItem {
     sentiment: string;
     source: string;
     time_published: string;
+}
+
+type StrategyContext = {
+    id?: string;
+    name?: string;
+    assets?: string[];
+    mode?: 'PAPER' | 'LIVE';
+    maxPositionSize?: number;
+};
+
+function assetVariants(raw: string): string[] {
+    const upper = raw.trim().toUpperCase();
+    const noSlash = upper.replace('/', '');
+    const variants = new Set<string>();
+    variants.add(upper);
+    variants.add(noSlash);
+    if (noSlash.endsWith('USDT')) variants.add(noSlash.slice(0, -4));
+    if (noSlash.endsWith('USD')) variants.add(noSlash.slice(0, -3));
+    if (upper.endsWith('-USDT')) variants.add(upper.slice(0, -5));
+    if (upper.endsWith('-USD')) variants.add(upper.slice(0, -4));
+    return Array.from(variants);
+}
+
+function isSymbolAllowed(symbol: string, assets: string[]): boolean {
+    if (!assets.length) return true;
+    const allowed = new Set<string>();
+    for (const asset of assets) {
+        for (const variant of assetVariants(asset)) {
+            allowed.add(variant);
+        }
+    }
+    for (const variant of assetVariants(symbol)) {
+        if (allowed.has(variant)) return true;
+    }
+    return false;
+}
+
+async function resolveEstimatedPrice(symbol: string): Promise<number | null> {
+    try {
+        const series = await fetchPriceSeries(symbol);
+        const closes = series.closes;
+        if (!closes.length) return null;
+        return closes[closes.length - 1];
+    } catch {
+        return null;
+    }
 }
 
 export const marketNewsTool = new FunctionTool({
@@ -24,13 +71,15 @@ export const marketNewsTool = new FunctionTool({
      }),
     execute: async ({ tickers }) => {
         const news = await fetchMarketNews(tickers, 5);
-        return news.map((n: NewsItem) => ({
-            title: `${n.title} (${n.source}) - [${n.time_published}]`,
-            summary: n.summary.slice(0, 200) + '...',
-            sentiment: n.sentiment,
-            source: n.source,
-            time_published: n.time_published
-        }));
+        return {
+            items: news.map((n: NewsItem) => ({
+                title: `${n.title} (${n.source}) - [${n.time_published}]`,
+                summary: n.summary.slice(0, 200) + '...',
+                sentiment: n.sentiment,
+                source: n.source,
+                time_published: n.time_published,
+            })),
+        };
     },
 });
 
@@ -156,7 +205,7 @@ export const tradeExecutionTool = new FunctionTool({
         isDryRun: z.boolean().optional().describe('When true (default), executes paper trades even if live trading is enabled.'),
     }),
     execute: async ({ symbol, side, quantity, orderType, price, isDryRun }, toolContext) => {
-        const shouldDryRun = isDryRun ?? true;
+        let shouldDryRun = isDryRun ?? true;
         if (orderType === 'limit' && !price) {
             return {
                 success: false,
@@ -170,11 +219,48 @@ export const tradeExecutionTool = new FunctionTool({
             updateSession: (request: { appName: string; userId: string; sessionId: string; state: any }) => Promise<void>;
         } | undefined;
         const state = (session?.state as Record<string, unknown>) || {};
+        const strategyContext = state.strategyContext as StrategyContext | undefined;
+        const strategyMode = strategyContext?.mode;
+        const autoConfirmTrades = Boolean(state.autoConfirmTrades);
+
+        if (strategyMode === 'PAPER') {
+            shouldDryRun = true;
+        } else if (strategyMode === 'LIVE' && isDryRun === undefined && autoConfirmTrades) {
+            shouldDryRun = false;
+        }
+
+        if (strategyContext?.assets?.length && !isSymbolAllowed(symbol, strategyContext.assets)) {
+            return {
+                success: false,
+                status: 'rejected',
+                message: `Symbol ${symbol} is outside the active strategy assets.`,
+            };
+        }
+
+        const maxPositionSize = Number(strategyContext?.maxPositionSize);
+        if (side === 'buy' && Number.isFinite(maxPositionSize) && maxPositionSize > 0) {
+            const estimatedPrice = price ?? (await resolveEstimatedPrice(symbol));
+            if (!estimatedPrice || Number.isNaN(estimatedPrice)) {
+                return {
+                    success: false,
+                    status: 'failed',
+                    message: `Unable to price ${symbol} for max position size check.`,
+                };
+            }
+            const totalValue = Number(quantity) * estimatedPrice;
+            if (totalValue > maxPositionSize) {
+                return {
+                    success: false,
+                    status: 'rejected',
+                    message: `Trade value $${totalValue.toFixed(2)} exceeds strategy max $${maxPositionSize.toFixed(2)}.`,
+                };
+            }
+        }
 
         const liveTradingEnabled = process.env.LIVE_TRADING_ENABLED === 'true';
         const executeLive = liveTradingEnabled && shouldDryRun === false;
 
-        if (executeLive && !state.pendingTradeConfirmed) {
+        if (executeLive && !autoConfirmTrades && !state.pendingTradeConfirmed) {
             const pendingTrade = {
                 symbol,
                 side,
@@ -269,31 +355,51 @@ export const confirmTradeTool = new FunctionTool({
 
 export const chartTool = new FunctionTool({
     name: 'get_chart',
-    description: 'Generates a visual price chart (candlesticks) for any asset. Returns an image the agent can analyze for patterns.',
+    description: 'Generates a visual price chart (candlesticks) for any asset. Returns JSON data for interactive charts or an image URL.',
     parameters: z.object({
         symbol: z.string().describe('Ticker symbol (e.g., AAPL, VOLV-B.ST, BTC-USD)'),
         period: z.string().optional().describe('Time period: 1mo, 3mo, 6mo, 1y (default: 3mo)'),
+        returnType: z.enum(['image', 'json']).optional().describe('Format to return: "image" (default) or "json" for raw OHLCV data.'),
     }),
-    execute: async ({ symbol, period = '3mo' }) => {
-        // Call Python service
-        const response = await fetch('https://us-central1-tradesync-ai-prod.cloudfunctions.net/generate_chart', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ symbol, period, interval: '1d' }),
-        });
-        const data = await response.json() as { imageUrl?: string };
-        
-        if (!data.imageUrl) {
-            return { error: 'Failed to generate chart' };
-        }
-        
-        // Return media part for multimodal analysis
-        return {
-            media: {
-                url: data.imageUrl,
-                contentType: 'image/png',
+    execute: async ({ symbol, period = '3mo', returnType = 'json' }) => {
+        try {
+            const response = await fetch('https://us-central1-tradesync-ai-prod.cloudfunctions.net/generate_chart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbol, period, interval: '1d', returnType }),
+            });
+
+            if (!response.ok) {
+                return { error: `Chart service unavailable (${response.status})` };
             }
-        };
+
+            const data: any = await response.json().catch(() => null);
+            if (!data) {
+                return { error: 'Invalid chart response' };
+            }
+
+            if (returnType === 'json' && data.data) {
+                return {
+                    chartData: {
+                        symbol: data.symbol,
+                        data: data.data
+                    }
+                };
+            }
+
+            if (data.imageUrl) {
+                return {
+                    media: {
+                        url: data.imageUrl,
+                        contentType: 'image/png',
+                    }
+                };
+            }
+
+            return { error: 'Failed to generate chart' };
+        } catch (error) {
+            return { error: 'Chart service unavailable', message: error instanceof Error ? error.message : String(error) };
+        }
     },
 });
 
@@ -305,4 +411,5 @@ export const allTools = [
     latestSignalsTool,
     confirmTradeTool,
     chartTool,
+    portfolioTool,
 ];

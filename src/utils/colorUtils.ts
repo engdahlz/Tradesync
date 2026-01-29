@@ -10,7 +10,7 @@
  */
 export function hslToHex(input: string): string {
     // 1. Normalize input: remove "hsl(", ")", and commas
-    let cleanInput = input
+    const cleanInput = input
         .replace(/hsl\(/g, '')
         .replace(/\)/g, '')
         .replace(/,/g, ' ')
